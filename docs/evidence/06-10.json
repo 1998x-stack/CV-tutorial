@@ -1,0 +1,75 @@
+{
+  "title": "CV Tutorial — chapters 06–10 evidence register",
+  "date": "2026-11-22",
+  "scope": "This ledger lists claim/source pairs; does not assert historical benchmark reproduction.",
+  "entries": [
+    {
+      "chapter": "06",
+      "claim": "Autograd tracks dynamic graphs and gradients accumulate on leaf tensors; eval and inference_mode are separate",
+      "sources": [
+        "https://docs.pytorch.org/docs/stable/notes/autograd.html",
+        "https://docs.pytorch.org/docs/stable/generated/torch.autograd.grad_mode.inference_mode.html"
+      ],
+      "boundary": "Examples verify local shapes/gradients, not convergence on a benchmark"
+    },
+    {
+      "chapter": "07",
+      "claim": "ILSVRC 2012 defines ImageNet-1K benchmark; train/validation/test protocols should be kept distinct",
+      "sources": [
+        "https://www.image-net.org/challenges/LSVRC/2012/index.php",
+        "https://www.image-net.org/static_files/papers/imagenet_cvpr09.pdf"
+      ],
+      "boundary": "Top-k and confusion matrix are deterministic pedagogical samples"
+    },
+    {
+      "chapter": "08",
+      "claim": "Original AlexNet has five conv and three FC layers; original top-5 winner error is 15.3% vs 26.2% runner-up",
+      "sources": [
+        "https://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks"
+      ],
+      "boundary": "Competition submission is not single torchvision pretrained validation result; modern stem shape has explicit padding"
+    },
+    {
+      "chapter": "08",
+      "claim": "Current torchvision AlexNet is structurally not a literal reproduction of original 96-channel first convolution/two-GPU partition",
+      "sources": [
+        "https://github.com/pytorch/vision/blob/main/torchvision/models/alexnet.py"
+      ],
+      "boundary": "Model API/version can change; do not compare parameters without a pinned version"
+    },
+    {
+      "chapter": "09",
+      "claim": "VGG increases depth through small 3x3 filters to 16–19 weight layers; VGG16 config D uses 13 conv + 3 FC",
+      "sources": [
+        "https://arxiv.org/abs/1409.1556",
+        "https://www.robots.ox.ac.uk/~vgg/research/very_deep/"
+      ],
+      "boundary": "The figures use stage geometry from stated 224 input and no-BN variant"
+    },
+    {
+      "chapter": "09",
+      "claim": "Classic torchvision vgg16 no-BN reports 138,357,544 parameters",
+      "sources": [
+        "https://docs.pytorch.org/vision/main/models/generated/torchvision.models.vgg16.html"
+      ],
+      "boundary": "FC1 102,764,544 is calculated from 7*7*512*4096+4096, not benchmark metric"
+    },
+    {
+      "chapter": "10",
+      "claim": "Paper Table 2 reports Plain-18 27.94, ResNet-18 27.88, Plain-34 28.54 and ResNet-34 25.03 Top-1 error",
+      "sources": [
+        "https://arxiv.org/abs/1512.03385"
+      ],
+      "boundary": "ImageNet validation, 10-crop; ResNet option A, not current torchvision defaults"
+    },
+    {
+      "chapter": "10",
+      "claim": "v2 pre-activation and torchvision v1.5 stride variant are different from original v1",
+      "sources": [
+        "https://arxiv.org/abs/1603.05027",
+        "https://docs.pytorch.org/vision/main/models/generated/torchvision.models.resnet50.html"
+      ],
+      "boundary": "Derivative I+JF only holds at pre-activation addition node, not automatically after ReLU"
+    }
+  ]
+}

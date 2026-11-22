@@ -1,201 +1,22 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
-    <title>第9章 VGG——小卷积堆叠的简洁哲学</title>
-    <link rel="stylesheet" href="theme.css">
-</head>
-<body>
-<div class="double-border">
-<div class="container">
-    <div class="sidebar">
-        <h3>🖼️ 课程目录</h3>
-        <ul class="chapter-list">
-            <li><a href="01.html">第1章 计算机视觉概述与发展简史</a></li>
-            <li><a href="02.html">第2章 数字图像处理基础</a></li>
-            <li><a href="03.html">第3章 传统特征提取方法</a></li>
-            <li><a href="04.html">第4章 神经网络与反向传播</a></li>
-            <li><a href="05.html">第5章 卷积神经网络原理</a></li>
-            <li><a href="06.html">第6章 深度学习框架入门</a></li>
-            <li><a href="07.html">第7章 图像分类任务与数据集</a></li>
-            <li><a href="08.html">第8章 AlexNet——深度学习视觉起点</a></li>
-            <li><a href="09.html" class="active">第9章 VGG——小卷积堆叠的简洁哲学</a></li>
-            <li><a href="10.html">第10章 ResNet——残差学习突破深度瓶颈</a></li>
-            <li><a href="11.html">第11章 ViT——视觉Transformer革命</a></li>
-            <li><a href="12.html">第12章 ConvNeXt——CNN现代化改造</a></li>
-            <li><a href="13.html">第13章 训练策略与调参实战</a></li>
-            <li><a href="14.html">第14章 模型评估与对比分析</a></li>
-            <li><a href="15.html">第15章 目标检测基础</a></li>
-            <li><a href="16.html">第16章 R-CNN——两阶段检测开山</a></li>
-            <li><a href="17.html">第17章 Faster R-CNN与区域提议网络</a></li>
-            <li><a href="18.html">第18章 单阶段检测概述与对比</a></li>
-            <li><a href="19.html">第19章 图像分割基础与分类</a></li>
-            <li><a href="20.html">第20章 U-Net——医学图像分割标配</a></li>
-            <li><a href="21.html">第21章 Mask R-CNN——检测+分割统一</a></li>
-            <li><a href="22.html">第22章 语义分割前沿与全景分割</a></li>
-            <li><a href="23.html">第23章 数据增强与预处理实战</a></li>
-            <li><a href="24.html">第24章 迁移学习与模型微调</a></li>
-            <li><a href="25.html">第25章 模型优化与部署</a></li>
-            <li><a href="26.html">第26章 自监督学习与基础模型</a></li>
-            <li><a href="27.html">第27章 多模态与生成模型概览</a></li>
-            <li><a href="28.html">第28章 综合实战项目</a></li>
-        </ul>
-    </div>
-    <div class="main-content">
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>第09章 · VGG：小卷积核与深度 | CV Tutorial</title><meta name="description" content="VGG16 五阶段模型、3x3堆叠感受野、参数计算、FC瓶颈与论文变体的逐步可视化。"><link rel="stylesheet" href="../assets/css/article.css"></head><body><a class="skip" href="#content">跳转正文</a><div class="chapter-shell"><nav class="toc" aria-label="文章目录"><h2>第 09 章 · 导览</h2><div class="toc-items"><a href="../index.html">← 全部章节</a><a href="#hypothesis">01 · VGG 真正提出的可检验假设</a><a href="#kernels">02 · 两个 3×3 为何能覆盖 5×5？</a><a href="#vgg16">03 · VGG-16 的五阶段，每一步张量怎样变？</a><a href="#cost">04 · 它的代价：计算密集与全连接参数集中</a><a href="#experiment">05 · 实验：计算理论参数与实际形状</a><a href="#interpret">06 · VGG 留下的贡献与适用边界</a><a href="#references">来源</a></div></nav><main class="reading" id="content"><article><header><div class="chapter-top"><a href="../index.html">CV TUTORIAL</a><span>视觉架构 / 09</span></div><p class="chapter-kicker">CHAPTER 09 · VGG</p><h1>VGG：把小卷积堆叠成清晰的深度</h1><p class="dek">连续 3×3 不只是替代大卷积核：更规则的计算块把深度、感受野和参数效率拆成可验证的问题，也暴露了全连接分类头的巨大成本。</p></header><section id="hypothesis" aria-labelledby="h-hypothesis"><h2 id="h-hypothesis">01 · VGG 真正提出的可检验假设</h2><p>AlexNet 的早期大核与跨度较大的下采样虽然有效，但当卷积计算可以更深地堆叠时，有没有一种更统一的结构更容易比较？Simonyan 与 Zisserman 围绕一个问题做了系统实验：在保持卷积核小而结构较一致时，增加权重层数是否能改善大规模分类表现。</p><p>VGG 的核心不是“任何情况下只要更深就更好”，而是研究用连续 <strong>3×3 卷积、stride 1</strong>，加上 <strong>2×2 最大池化、stride 2</strong>组成的网络族。不同深度配置在类似设计规则下比较，减少了同时修改大量架构变量造成的解释困难。</p><p>其原工作以 2014 年 arXiv 预印本公开，并在 ICLR 2015 发表。Oxford VGG 团队的官方页面说明，他们在 ILSVRC 2014 的定位赛道第一、分类赛道第二；这与“VGG 拿了分类第一”并不等价。</p></section><section id="kernels" aria-labelledby="h-kernels"><h2 id="h-kernels">02 · 两个 3×3 为何能覆盖 5×5？</h2><p>对步长 1、dilation 1 的卷积，每多叠加一层 3×3，单个输出的理论感受野边长增加 2。第一层取 3×3，第二层基于前层三个相邻位置聚合，回到原始输入便可覆盖 5×5；三层则覆盖 7×7。注意这只描述依赖范围，不说明数值算子相同。</p><figure><img src="../assets/svg/09-small-kernels.svg" width="900" height="420" alt="2 层 3×3 得到 5×5 理论感受野，3 层 3×3 得到 7×7；固定通道数时，堆叠小核可以使用更少卷积核权重并引入更多非线性。" loading="lazy"><figcaption>2 层 3×3 得到 5×5 理论感受野，3 层 3×3 得到 7×7；固定通道数时，堆叠小核可以使用更少卷积核权重并引入更多非线性。</figcaption></figure><div class="equation" role="group" tabindex="0" aria-label="n 个 3×3、stride=1、dilation=1 卷积连续堆叠时，单输出位置的理论感受野边长。"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><msub><mi>R</mi><mi>n</mi></msub><mo>=</mo><mn>1</mn><mo>+</mo><mn>2</mn><mi>n</mi></math><p class="eq-caption">n 个 3×3、stride=1、dilation=1 卷积连续堆叠时，单输出位置的理论感受野边长。</p></div><p>如果输入输出通道都固定为 C 且不计偏置：两个 3×3 卷积共有 <code>2×9C² = 18C²</code> 个核参数，而一个 5×5 卷积为 <code>25C²</code>；三个 3×3 为 <code>27C²</code>，一个 7×7 为 <code>49C²</code>。实际 stage 从 C_in 变为 C_out 时，第一层通道不同，不能照搬这个比较公式。</p><p>更重要的是，两个卷积之间加 ReLU 后，堆叠表达的是两次可学习变换与非线性，<strong>理论感受野相同，不意味着与一层大卷积函数等价</strong>。</p></section><section id="vgg16" aria-labelledby="h-vgg16"><h2 id="h-vgg16">03 · VGG-16 的五阶段，每一步张量怎样变？</h2><p>VGG-16 即论文配置 D，有 13 个卷积层和 3 个全连接层。卷积阶段的层数为 <strong>2、2、3、3、3</strong>，通道数为 <strong>64、128、256、512、512</strong>。对于典型 224×224 RGB 输入，各阶段卷积保持空间尺寸，最大池化之后依次是 112、56、28、14、7。</p><figure><img src="../assets/svg/09-stages.svg" width="900" height="420" alt="VGG-16 的五个 stage：2、2、3、3、3 次 3×3 卷积，之后各一次最大池化，通道数逐步增加而空间分辨率减半。" loading="lazy"><figcaption>VGG-16 的五个 stage：2、2、3、3、3 次 3×3 卷积，之后各一次最大池化，通道数逐步增加而空间分辨率减半。</figcaption></figure><table><thead><tr><th>阶段</th><th>卷积配置</th><th>池化后输出</th></tr></thead><tbody><tr><td>1</td><td>2×Conv3×3, 64ch</td><td>112×112×64</td></tr><tr><td>2</td><td>2×Conv3×3, 128ch</td><td>56×56×128</td></tr><tr><td>3</td><td>3×Conv3×3, 256ch</td><td>28×28×256</td></tr><tr><td>4</td><td>3×Conv3×3, 512ch</td><td>14×14×512</td></tr><tr><td>5</td><td>3×Conv3×3, 512ch</td><td>7×7×512</td></tr><tr><td>分类头</td><td>FC 4096 → 4096 → 1000</td><td>1000 logits</td></tr></tbody></table><p>该表采用单输入图像和 HWC 表示方便阅读；实际 PyTorch 批次常为 NCHW。具体输出通道、BatchNorm 是否启用、权重版本与分类头行为取决于实现和参数。</p></section><section id="cost" aria-labelledby="h-cost"><h2 id="h-cost">04 · 它的代价：计算密集与全连接参数集中</h2><p>VGG-16 经典无 BatchNorm 版本大约有 <strong>138.36M</strong> 个参数（以 torchvision 同名无 BN 实现为参照）。网络早期在较大分辨率上进行卷积，因此 FLOPs 与激活内存都不小；而分类头特别重：最后一层卷积输出 7×7×512 = 25,088 个元素，直接连接 4096 个神经元，第一 FC 层就含约 <strong>102.76M</strong> 个参数。</p><figure><img src="../assets/svg/09-parameter-budget.svg" width="900" height="420" alt="VGG-16 的第一 FC 层约 102.76M 参数，占常见无 BN 整网约 138.36M 参数的 74%；这是结构计算而非实验推测。" loading="lazy"><figcaption>VGG-16 的第一 FC 层约 102.76M 参数，占常见无 BN 整网约 138.36M 参数的 74%；这是结构计算而非实验推测。</figcaption></figure><p>这个密集分类头限制了参数效率，所以现代网络经常使用全局平均池化减少分类头规模，但不能把它倒推成原论文 VGG 的做法。模型参数量、算力与内存瓶颈也不完全相同：推理权重大小与卷积中的中间激活开销应分别计量。</p></section><section id="experiment" aria-labelledby="h-experiment"><h2 id="h-experiment">05 · 实验：计算理论参数与实际形状</h2><p>下面先用纯 Python 验算不含偏置的通道恒定参数比较，再用一个缩小的两卷积 stage 在 PyTorch 中验证 32×32 → 16×16。缩小通道只是教学示例，并非 VGG-16 复刻。</p><pre><code>import torch
+from torch import nn
 
-        <h2>9.1 当"更深"变成一种信仰</h2>
+C = 64
+params_two_3 = 2 * (3*3*C*C)
+params_one_5 = 5*5*C*C
+assert params_two_3 == 73728
+assert params_one_5 == 102400
+assert params_two_3 &lt; params_one_5
 
-        <p>AlexNet的成功让整个CV社区陷入了对"深度"的狂热追求。2013年和2014年，ILSVRC上的几乎所有参赛队伍都在尝试同一个方向：把AlexNet变得更宽、更深、更大。但正如我们在上章提到的：简单地堆叠层数并不总是有效——梯度消失、过拟合、训练不稳定，这些问题随着深度增加而急剧恶化。</p>
+stage = nn.Sequential(
+    nn.Conv2d(3, 8, 3, padding=1), nn.ReLU(),
+    nn.Conv2d(8, 8, 3, padding=1), nn.ReLU(),
+    nn.MaxPool2d(2, stride=2)
+)
+with torch.inference_mode():
+    out = stage(torch.randn(1, 3, 32, 32))
+assert tuple(out.shape) == (1, 8, 16, 16)
 
-        <p>在这样的大背景下，2014年牛津大学视觉几何组（Visual Geometry Group，也就是VGG名称的由来）提交了一篇论文，标题简单到令人难以置信——"Very Deep Convolutional Networks for Large-Scale Image Recognition"。他们的方法可以用一句话概括：<strong>全部用3×3的小卷积核，堆得越深越好</strong>。</p>
-
-        <p>VGG的核心思想非常简洁，但它的影响力远远超出了论文本身。如果你今天去GitHub上搜索预训练模型，VGG仍然是下载量最高的主干网络之一——不是因为它最新，而是因为它作为特征提取器实在是太好用了。</p>
-
-        <h2>9.2 为什么是3×3小卷积核？</h2>
-
-        <p>在VGG之前，卷积核的设计并没有统一的标准。AlexNet用了11×11和5×5的大核，后面跟了一些3×3。VGG的贡献在于：它把所有卷积核统一成了3×3，并且用堆叠多个3×3层的方式来等效更大的感受野。</p>
-
-        <h3>9.2.1 感受野等价性分析</h3>
-
-        <p>VGG的核心洞察来自于一个简单的数学事实：<strong>两个连续的3×3卷积层堆叠，等效于一个5×5卷积的感受野；三个3×3堆叠，等效于一个7×7卷积</strong>。理解这一点需要算一下感受野的递推公式：</p>
-
-        <pre><code># 感受野递推计算
-# 对于第k层，感受野大小 r_k 满足：
-# r_{k-1} = 1 + stride * (r_k - 1) + (kernel_size - 1) * dilation
-#
-# 简化情况（stride=1, dilation=1）：
-# r_{k-1} = r_k + (kernel_size - 1)
-#
-# 反向递推（从后往前）：
-# 从输出层（感受野=1）开始，向输入方向逐层计算
-#
-# 3×3卷积：
-# r_0 = 1 + (3-1) = 3   -> 感受野 3×3
-# 再加一层3×3：
-# r_0 = 3 + (3-1) = 5   -> 感受野 5×5
-# 再加一层3×3：
-# r_0 = 5 + (3-1) = 7   -> 感受野 7×7</code></pre>
-
-        <p>为什么要用小核堆叠代替大核？有三个关键优势：</p>
-
-        <ul>
-            <li><strong>更少的参数量：</strong>单个7×7卷积的参数是49（不计偏置），而三个3×3的总参数是3×9=27，节省了45%的参数。堆叠更深的同时，参数量反而更少。</li>
-            <li><strong>更多的非线性：</strong>每个卷积层后面都有一个ReLU激活函数。三个3×3层包含三次非线性变换，而一个7×7层只有一次。更多的非线性意味着更强的表示能力。</li>
-            <li><strong>更规则化的架构：</strong>所有卷积层使用相同的3×3核，这在工程实现和硬件优化上非常友好。</li>
-        </ul>
-
-        <div class="tip">
-            <strong>💡 深层理解：</strong>小卷积核堆叠不仅减少了参数量，更重要的是它引入了"深层而窄"的设计理念。如果你把卷积核理解为特征检测器，那么浅层的大核是在用一个复杂的检测器一次完成所有检测，而深层的小核则是用多个简单的检测器逐步构建更复杂的特征。后者更符合深度学习的层级特征学习哲学——从边缘到纹理到部件到物体。
-        </div>
-
-        <h2>9.3 VGG的家族谱系</h2>
-
-        <p>VGG论文提出了一个家族系列，包括6种不同的配置。其中最常见的是VGG16和VGG19——名字中的数字代表网络中可学习参数层的数量（卷积层 + 全连接层）。</p>
-
-        <table>
-            <tr><th>配置</th><th>网络深度（可学习层）</th><th>卷积层详细配置</th><th>参数量</th></tr>
-            <tr><td>VGG11 (A)</td><td>11层</td><td>Conv3-64 → Conv3-128 → Conv3-256 → Conv3-256 → Conv3-512 → Conv3-512 → FC</td><td>133M</td></tr>
-            <tr><td>VGG13 (B)</td><td>13层</td><td>A + 在Conv3-128和Conv3-256后各增加一层Conv3</td><td>133M</td></tr>
-            <tr><td>VGG16 (D)</td><td>16层</td><td>B + 在Conv3-256后增加两层Conv3-256 → Conv3-512 → Conv3-512 → Conv3-512 → FC</td><td>138M</td></tr>
-            <tr><td>VGG19 (E)</td><td>19层</td><td>D + 在Conv3-512后各增加一层Conv3-512 → FC</td><td>144M</td></tr>
-        </table>
-
-        <p>注意VGG的<strong>通道数进化规律</strong>：从64开始，经过128、256，最终到512。每经过一次池化（空间尺寸减半），通道数就翻倍。这个"空间缩小、通道扩大"的设计模式后来被几乎所有CNN所继承——包括ResNet、DenseNet、ConvNeXt等。VGG把这个设计模式固化成了行业标准。</p>
-
-        <p>在ILSVRC 2014上，VGG以7.3%的Top-5错误率获得了定位任务的冠军和分类任务的亚军（冠军是GoogLeNet/Inception v1，6.7%）。虽然分类任务上输给了GoogLeNet，但VGG因为其简洁、规则化的设计，在迁移学习场景中远远比GoogLeNet更受欢迎。一个重要的原因是：VGG是一个"直筒"结构，所有层串联成一条直线，非常容易理解和修改。而GoogLeNet的Inception模块内部结构复杂（包含多个并行分支），修改起来要麻烦得多。</p>
-
-        <h2>9.4 VGG的完整架构（以VGG16为例）</h2>
-
-        <p>VGG16是最具代表性的版本。它的完整结构如下：</p>
-
-        <pre><code># VGG16架构（PyTorch风格表示）
-# 注意：所有卷积核均为 3×3，padding=1，stride=1
-# 所有MaxPool均为 2×2，stride=2
-#
-# 输入: 224 × 224 × 3
-#
-# Block 1: 64个通道
-Conv3-64 → ReLU → Conv3-64 → ReLU → MaxPool
-# 输出: 112 × 112 × 64
-#
-# Block 2: 128个通道
-Conv3-128 → ReLU → Conv3-128 → ReLU → MaxPool
-# 输出: 56 × 56 × 128
-#
-# Block 3: 256个通道，3个卷积层
-Conv3-256 → ReLU → Conv3-256 → ReLU → Conv3-256 → ReLU → MaxPool
-# 输出: 28 × 28 × 256
-#
-# Block 4: 512个通道，3个卷积层
-Conv3-512 → ReLU → Conv3-512 → ReLU → Conv3-512 → ReLU → MaxPool
-# 输出: 14 × 14 × 512
-#
-# Block 5: 512个通道，3个卷积层
-Conv3-512 → ReLU → Conv3-512 → ReLU → Conv3-512 → ReLU → MaxPool
-# 输出: 7 × 7 × 512
-#
-# 全连接层（展平后）
-FC-4096 → ReLU → Dropout(0.5) → FC-4096 → ReLU → Dropout(0.5) → FC-1000 → Softmax</code></pre>
-
-        <h2>9.5 VGG的代价：138M参数的"重量级选手"</h2>
-
-        <p>VGG的简洁是有代价的——它非常"重"。VGG16的参数量高达1.38亿，其中超过90%的参数集中在全连接层中。这带来了几个实际问题：</p>
-
-        <ul>
-            <li><strong>存储成本：</strong>VGG16的模型文件（单精度浮点）超过500MB。相比之下，ResNet-50只有约100MB。</li>
-            <li><strong>计算成本：</strong>一次前向传播需要约153亿次浮点运算（15.3 GFLOPs）。注意，这是对待一张224×224的图像而言。如果在4K分辨率下运行VGG做检测，计算量会爆炸式增长。</li>
-            <li><strong>训练成本：</strong>2014年训练VGG16需要2-3周时间，使用4块NVIDIA Titan Black GPU。</li>
-        </ul>
-
-        <div class="warning">
-            <strong>⚠️ 踩坑故事：</strong>2016年，我在做一个视频分析项目时，天真地把VGG16作为特征提取器对每一帧运行。结果发现：处理一段10分钟的视频（约18000帧），一台配置了Titan X的服务器需要跑将近6个小时。后来我们把采样率从每帧改为每秒2帧，才勉强让项目在deadline前跑完。这个教训让我记住了：<strong>模型精度和计算效率之间的权衡，是工程落地中最核心的决策之一</strong>。VGG虽然精度高，但在实际部署中往往过于昂贵。
-        </div>
-
-        <h2>9.6 VGG为什么至今仍被使用？</h2>
-
-        <p>虽然VGG已经快十年了，但它在今天仍然被广泛使用。原因有几点：</p>
-
-        <p>第一，<strong>VGG是最佳的特征提取器</strong>。大量研究表明，在ImageNet上预训练的VGG提取的特征，相比其他网络，具有更好的泛化能力和可迁移性。特别是VGG的FC7层（第二个4096维全连接层的输出），作为通用图像特征表示，在风格迁移、图像检索、视觉问答等任务中表现极好。</p>
-
-        <p>第二，<strong>VGG的结构极其规整</strong>。对于一个刚入门CV的研究者来说，VGG的架构可以在三分钟内讲清楚——"卷积→池化→卷积→池化→全连接"。对比之下，解释清楚一个Swin Transformer或者EfficientNet需要至少半小时。这种简洁性让VGG成为教学和快速原型验证的首选。</p>
-
-        <p>第三，<strong>VGG是许多经典论文的基准</strong>。当你阅读2015-2018年间的CV论文时，会发现大量工作都是在VGG的基础上进行改进的——神经风格迁移（Neural Style Transfer）使用的是VGG19，目标检测领域的R-CNN系列最初也基于VGG16。理解VGG，就是理解那一时期大量工作的基础。</p>
-
-        <div class="highlight">
-            <strong>🧱 VGG对后续架构设计的深远影响：</strong>
-            <ul>
-                <li><strong>模块化设计：</strong>VGG将网络划分为"卷积块 → 池化 → 卷积块 → 池化"的序列，这种模块化思想被ResNet的"残差块"、Inception的"Inception模块"、以及Transformer的"Encoder Block"所继承。</li>
-                <li><strong>规则化设计：</strong>所有卷积核统一为3×3——"少一些特例，多一些规则"成为后续架构设计的黄金法则。</li>
-                <li><strong>"空间缩小、通道翻倍"的通道进化律：</strong>这一模式被几乎所有CNN架构继承，直到ViT才首次被打破。</li>
-                <li><strong>迁移学习：</strong>VGG证明了一个在大规模数据上预训练的通用特征提取器可以迁移到各类下游任务——这是今天"预训练+微调"范式的雏形。</li>
-            </ul>
-        </div>
-
-        <h2>9.7 VGG与AlexNet的对比</h2>
-
-        <table>
-            <tr><th>维度</th><th>AlexNet (2012)</th><th>VGG16 (2014)</th></tr>
-            <tr><td>深度</td><td>8层</td><td>16层</td></tr>
-            <tr><td>卷积核</td><td>11×11, 5×5, 3×3混合</td><td>全部3×3</td></tr>
-            <tr><td>参数量</td><td>60M</td><td>138M</td></tr>
-            <tr><td>Top-5错误率 (ILSVRC)</td><td>15.3%</td><td>7.3%</td></tr>
-            <tr><td>训练时间 (2014年硬件)</td><td>5-6天 (2×GTX 580)</td><td>2-3周 (4×Titan Black)</td></tr>
-            <tr><td>核心贡献</td><td>开创了深度学习CV时代</td><td>确立了规则化深度CNN的设计范式</td></tr>
-        </table>
-
-        <p>从AlexNet到VGG，CV的深度学习从"证明有效"进入了"如何做得更好"的阶段。VGG用最简洁的架构设计，告诉了我们一个朴素的真理：有时候最好的创新，是把已有的东西做到极致——全部参数统一、全部规则可循、全部设计透明。这种极致的工程美感，是VGG穿越时间的魅力所在。</p>
-
-        <p>然而，VGG的"深"是有上限的。当网络继续加深到20层、30层时，新的问题出现了——不是过拟合，而是网络变得无法训练。这个问题困扰了研究者一年多，直到2015年ResNet的出现才从根本上解决。下一章，我们将深入探讨ResNet——那个让100层网络变得可行的革命性架构。我们下一章见！</p>
-
-        <div class="footer-nav">
-            <a href="08.html">← 上一章</a>
-            <a href="index.html">📖 返回目录</a>
-            <a href="10.html">下一章 →</a>
-        </div>
-
-    </div>
-</div>
-</div>
-</body>
-</html>
+fc1 = 7*7*512*4096 + 4096
+assert fc1 == 102764544
+print(&quot;toy stage:&quot;, tuple(out.shape), &quot;VGG FC1:&quot;, fc1)</code></pre><p>完整 VGG-16 可用 <code>torchvision.models.vgg16(weights=None)</code> 构造并统计参数，但这会创建约 138M 参数、占用较大内存；在资源有限的教学环境里，直接验证结构式和小型 stage 更合理。要获得论文准确率，仍需复现数据、训练配方和多尺度测试，不能只运行前向传播。</p></section><section id="interpret" aria-labelledby="h-interpret"><h2 id="h-interpret">06 · VGG 留下的贡献与适用边界</h2><p>VGG 的价值不仅在于性能，还在于其规则化阶段设计使“深度改变了什么”更容易观察。中间特征图可用于迁移、可视化和感知特征的研究，但预训练权重来自何种任务、输入归一化如何定义，都会影响迁移效果。传统 VGG 分类头庞大、缺少现代高效算子设计，在移动端或实时系统未必合适。</p><table><thead><tr><th>版本</th><th>注意点</th></tr></thead><tbody><tr><td>论文配置 D</td><td>13 卷积 + 3 FC 的 VGG-16；原设计未使用后来的 BatchNorm 变体</td></tr><tr><td>torchvision vgg16</td><td>基础结构近似对应配置 D；预训练权重与推理 transforms 必须匹配</td></tr><tr><td>torchvision vgg16_bn</td><td>加入 BN，层次与可训练参数不同，不是论文原始配置</td></tr></tbody></table><details class="mini-test"><summary>检查理解：为什么“两个 3×3 感受野等于 5×5”不能作为数学函数完全等价的证明？</summary><p>感受野只规定依赖位置的范围；中间的非线性激活、不同的参数分解以及通道变换决定了实际函数族，单层和多层并不一般性等价。</p></details></section><section id="references"><h2>原论文、官方实现与适用范围</h2><p>图中阶段、核数与参数用于解释确定的架构配置；不能当作所有 VGG 变体或所有推理精度的统一结果。</p><ol class="refs"><li><a href="https://arxiv.org/abs/1409.1556">Simonyan & Zisserman, Very Deep Convolutional Networks (arXiv 1409.1556)</a></li><li><a href="https://www.robots.ox.ac.uk/~vgg/research/very_deep/">Oxford Visual Geometry Group 原始项目页</a></li><li><a href="https://docs.pytorch.org/vision/main/models/generated/torchvision.models.vgg16.html">torchvision vgg16 官方模型文档</a></li><li><a href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Conv2d.html">PyTorch Conv2d 维度定义</a></li></ol></section><nav class="pager" aria-label="章节导航"><a href="08.html">← 第 08 章</a><a href="10.html">第 10 章：ResNet →</a></nav></article></main></div></body></html>

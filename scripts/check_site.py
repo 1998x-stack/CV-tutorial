@@ -25,6 +25,8 @@ def check():
     if len(set(c["file"] for c in chapters))!=28: bad("courses.json: duplicate chapter paths")
     for c in chapters:
         if not (SITE/c["file"]).is_file(): bad("missing chapter: "+c["file"])
+    home_html=(SITE/"index.html").read_text(encoding="utf-8")
+    if home_html.count('class="state"') != 15: bad("home: exactly 15 chapters should be visibly refined")
     files=[SITE/"index.html"]+sorted((SITE/"chapters").glob("*.html"))
     for file in files:
         html=file.read_text(encoding="utf-8")

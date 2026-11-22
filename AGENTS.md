@@ -27,7 +27,7 @@
 1. 校验 `docs/courses.json` 恰好 28 项、编号和章节路径完整。
 2. `python3 scripts/check_site.py` 必须通过，检查 HTML 内部资源和 SVG XML。
 3. 浏览器分别检查 1440px 桌面、768px 平板、390px 和 360px 手机、键盘导航、断网后的关键阅读、打印、reduced motion，并屏蔽外部资源验证离线阅读。
-4. 06–20 的最小实验额外运行 `python3 tests/test_cv_examples.py`；CI 应保存 Chromium 截图，并且不得只看截图忽略溢出与脚本报错。 
+4. 06–25 的最小实验额外运行 `python3 tests/test_cv_examples.py`；CI 应保存 Chromium 截图，并且不得只看截图忽略溢出与脚本报错。 
 5. 有公式时检查 MathML 实际布局，包含结构式而非字符拼接；有互动时检查默认、交互和状态恢复。
 6. 无法运行浏览器时必须写“未验证”，不可标为通过。优先通过 PR / CI，比较 diff 和远程文件，再合并或部署。
 7. Pages 可使用 `docs/` 作为静态发布目录；根路径兼容跳转。无论 Actions Pages 还是 branch Pages，需实际验证可访问后才能声称已上线。
@@ -51,3 +51,12 @@
 - YOLO/SSD/RetinaNet/DETR：YOLOv1 的类别概率按 cell 共享，SSD 按 default box 输出；8732 只对应原始 SSD300 六层配置。RetinaNet 的 Focal Loss 通过调制因子压低 easy examples；DETR 通过 Hungarian 一对一集合匹配训练，原始版本不使用经典 NMS。不得把现代 YOLO anchor/multi-scale heads 当作 YOLOv1 原结构。
 - U-Net：原版 valid 3×3 conv，572 输入输出 388，skip 先 center-crop 再 concatenate；原始训练用 weighted pixel-wise softmax CE 与 elastic deformation。Dice loss 是常见后续选择，不是原论文主损失。医学图像数据划分要防患者/切片泄漏。
 - tests/test_cv_examples.py 执行 06–20 的正文 Python 代码块；新代码不得依赖外部权重、数据或下载。
+
+
+## 第五批案例专项规范（21–25）
+- Mask R-CNN：RoIAlign 不量化 RoI 边界/bin，按连续坐标双线性采样；原论文 mask branch 输出 K 个 m×m 二值 mask，真实类别通道用 sigmoid BCE，mask loss 只对正 RoI 生效。不要把 mask branch 说成全图语义 softmax。
+- DeepLab / Panoptic / SAM：区分 semantic（每像素类别）、instance（每对象 ID）、panoptic（things + stuff）；PQ 匹配按类别一对一且 IoU>0.5。DeepLabv3+ 的 ASPP 多尺度上下文与 decoder 边界细化分工明确。SAM 的 image encoder / prompt encoder / mask decoder 与 SAM 2 视频 memory 分开描述；原始 SAM 的 text prompt 是探索性功能，不能声称原生语义/全景分割。
+- 数据增强：几何变换必须同步 image、categorical mask、boxes、keypoints；categorical masks 用 nearest-neighbor，连续 depth/heatmap 可用连续插值。MixUp 同时混合 image/label；CutMix 的 label lambda 使用裁剪后真实面积。split 必须先于随机增强，group-aware split 防止患者/视频/同源图像泄漏。
+- 迁移学习：使用 weights enum 对应的预处理；替换分类 head 并确认 optimizer 包含新参数；requires_grad=False 不会自动冻结 BatchNorm running stats。原始 LoRA 论文研究 Transformer 语言模型，视觉 ViT 的 LoRA 属于后续应用；记录 target modules、rank、alpha、dropout 与参数总量。
+- 部署优化：结构化通道剪枝才会改变 dense tensor shape；非结构化稀疏不保证加速。区分 PTQ/QAT、per-tensor/per-channel、权重/激活量化。PyTorch 新量化路径优先参考 torchao PT2E；ONNX dynamo=True 使用 dynamic_shapes；TensorRT 11.x 使用 strong typing 与显式 Q/DQ，不把 10.x implicit INT8 示例冒充新版本流程。报告目标硬件上的端到端 P50/P95/P99、吞吐、内存和质量变化。
+- tests/test_cv_examples.py 独立执行 06–25 的每个正文 Python 代码块；新增实验不得依赖外部数据、权重、下载或未声明的可选库。

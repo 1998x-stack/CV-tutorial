@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 420" role="img" aria-labelledby="title desc"><title id="title">LoRA 参数预算随 rank 线性增长</title><desc id="desc">对 768×768 的线性层，完整权重包含 589,824 个参数；rank 8 的 LoRA 仅训练 8×(768+768)=12,288 个参数，比例约 2.08%。</desc><defs><marker id="arrow" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0 0 L7 3 L0 6" fill="none" stroke="#566a70" stroke-width="1.2"/></marker></defs><rect width="900" height="420" rx="18" fill="#fffdfa" stroke="#e0e7e4"/>
+<text x="35" y="45" text-anchor="start" font-family="Arial,'Noto Sans CJK SC',sans-serif" font-size="20" font-weight="700" fill="#243338">一个可复算的参数量例子：d_in = d_out = 768</text>
+<rect x="70" y="105" width="760" height="65" rx="9" fill="#e4f2eb" stroke="#087b7c" stroke-width="2"/>
+<rect x="70" y="105" width="760" height="65" rx="9" fill="#087b7c" opacity=".12"/>
+<text x="450" y="145" text-anchor="middle" font-family="Arial,'Noto Sans CJK SC',sans-serif" font-size="18" font-weight="700" fill="#243338">Full fine-tuning: 768 × 768 = 589,824 trainable weights</text>
+<rect x="70" y="225" width="16" height="65" rx="6" fill="#7560b5"/><rect x="70" y="225" width="760" height="65" rx="9" fill="none" stroke="#7560b5" stroke-width="2"/>
+<text x="450" y="265" text-anchor="middle" font-family="Arial,'Noto Sans CJK SC',sans-serif" font-size="18" font-weight="700" fill="#243338">LoRA r=8: 8 × (768 + 768) = 12,288 trainable weights</text>
+<text x="450" y="345" text-anchor="middle" font-family="Arial,'Noto Sans CJK SC',sans-serif" font-size="15" font-weight="400" fill="#566a70">12,288 / 589,824 ≈ 2.08%（仅该线性层；不含其它层与优化器状态）</text>
+</svg>

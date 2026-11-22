@@ -252,63 +252,63 @@
     },
     {
       "num": "21",
-      "title": "Mask R-CNN——检测+分割统一",
+      "title": "Mask R-CNN：让检测框长出实例掩码",
       "topics": [
-        "RoIAlign",
-        "多任务损失",
-        "实例分割"
+        "RoIAlign 连续采样",
+        "并行分类/框/掩码分支",
+        "前景门控 BCE 损失"
       ],
       "file": "chapters/21.html",
       "stage": "segmentation",
-      "refined": false
+      "refined": true
     },
     {
       "num": "22",
-      "title": "语义分割前沿与全景分割",
+      "title": "从 DeepLab 到 SAM：分割模型的三条演进路线",
       "topics": [
-        "DeepLab系列",
-        "全景分割",
-        "SAM基础模型"
+        "Atrous 与 ASPP",
+        "Panoptic / Mask2Former",
+        "SAM 与 SAM 2 提示式分割"
       ],
       "file": "chapters/22.html",
       "stage": "segmentation",
-      "refined": false
+      "refined": true
     },
     {
       "num": "23",
-      "title": "数据增强与预处理实战",
+      "title": "数据增强：把标签约束一起变换",
       "topics": [
-        "几何与颜色增强",
-        "MixUp/CutMix",
-        "Albumentations"
+        "同步几何变换",
+        "MixUp / CutMix",
+        "Mask 插值与无泄漏 Pipeline"
       ],
       "file": "chapters/23.html",
       "stage": "practice",
-      "refined": false
+      "refined": true
     },
     {
       "num": "24",
-      "title": "迁移学习与模型微调",
+      "title": "迁移学习与 LoRA：让预训练表征适应新任务",
       "topics": [
-        "预训练权重",
-        "微调策略",
-        "LoRA适配"
+        "Linear Probe / 解冻策略",
+        "差分学习率",
+        "LoRA 低秩参数预算"
       ],
       "file": "chapters/24.html",
       "stage": "practice",
-      "refined": false
+      "refined": true
     },
     {
       "num": "25",
-      "title": "模型优化与部署",
+      "title": "模型压缩与部署：从浮点权重到真实推理",
       "topics": [
-        "量化与剪枝",
-        "知识蒸馏",
-        "ONNX与TensorRT"
+        "结构化剪枝与量化",
+        "蒸馏 / ONNX",
+        "TensorRT 11 / 端到端基准"
       ],
       "file": "chapters/25.html",
       "stage": "practice",
-      "refined": false
+      "refined": true
     },
     {
       "num": "26",

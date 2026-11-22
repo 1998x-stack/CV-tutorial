@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 420" role="img" aria-labelledby="rpn-title rpn-desc" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif">
+<title id="rpn-title">RPN 的滑动窗口与双分支输出</title>
+<desc id="rpn-desc">共享特征图上用 3×3 窗口逐位置卷积得到一个低维向量，分两路：分类分支输出 2k 个前景背景得分，回归分支输出 4k 个锚框偏移；每个位置对应 k 个定义在原图坐标上的锚框。</desc>
+<rect width="900" height="420" fill="#fffdf9"/>
+<text x="45" y="46" font-size="22" font-weight="700" fill="#203035">RPN：滑窗 + 锚框 + 双分支</text>
+<g font-size="18" text-anchor="middle" fill="#203035">
+<rect x="40" y="140" width="180" height="140" rx="10" fill="#d6f1eb" stroke="#147f80" stroke-width="2.5"/>
+<text x="130" y="200">共享特征图</text><text x="130" y="226" font-size="15" fill="#53676d">H×W×C</text>
+<rect x="150" y="180" width="60" height="60" fill="none" stroke="#d06d4d" stroke-width="4"/>
+<rect x="280" y="160" width="150" height="100" rx="10" fill="#ffecd9" stroke="#d06d4d" stroke-width="2.5"/>
+<text x="355" y="200">3×3 卷积</text><text x="355" y="226" font-size="15" fill="#8a4526">低维向量</text>
+<rect x="500" y="100" width="180" height="80" rx="10" fill="#ebe5ff" stroke="#7461ba" stroke-width="2.5"/>
+<text x="590" y="132">分类分支</text><text x="590" y="158" font-size="15" fill="#6b57a8">2k 前景/背景得分</text>
+<rect x="500" y="250" width="180" height="80" rx="10" fill="#ebe5ff" stroke="#7461ba" stroke-width="2.5"/>
+<text x="590" y="282">回归分支</text><text x="590" y="308" font-size="15" fill="#6b57a8">4k 框偏移</text>
+<rect x="730" y="175" width="140" height="80" rx="10" fill="#d6f1eb" stroke="#147f80" stroke-width="2.5"/>
+<text x="800" y="207">k 个锚框</text><text x="800" y="233" font-size="15" fill="#0f5f60">原图坐标</text>
+</g>
+<g stroke="#147f80" stroke-width="4" fill="none" marker-end="url(#rpn-ah)">
+<path d="M220 210H276"/><path d="M434 195 L496 145"/><path d="M434 225 L496 285"/><path d="M684 200 L726 210"/><path d="M684 250 L726 225"/>
+</g>
+<defs><marker id="rpn-ah" markerWidth="10" markerHeight="10" refX="7" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#147f80"/></marker></defs>
+<text x="450" y="388" font-size="18" text-anchor="middle" fill="#53676d">一次前向产生 H·W·k 个候选评分与偏移，再按得分与 NMS 筛选</text>
+</svg>

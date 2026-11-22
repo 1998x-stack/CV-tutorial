@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 420" role="img" aria-labelledby="ev-title ev-desc" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif">
+<title id="ev-title">从 R-CNN 到 Faster R-CNN 的逐步内化</title>
+<desc id="ev-desc">三代两阶段检测器：R-CNN 对每个候选重跑 CNN；Fast R-CNN 只跑一次卷积并在共享特征图上取区域；Faster R-CNN 再把候选生成内化为 RPN，瓶颈逐代前移直至消失。</desc>
+<rect width="900" height="420" fill="#fffdf9"/>
+<g font-size="19" text-anchor="middle" fill="#203035">
+<text x="150" y="46" font-size="21" font-weight="700">R-CNN</text>
+<text x="450" y="46" font-size="21" font-weight="700">Fast R-CNN</text>
+<text x="750" y="46" font-size="21" font-weight="700">Faster R-CNN</text>
+<rect x="50" y="90" width="200" height="70" rx="10" fill="#ebe5ff" stroke="#7461ba" stroke-width="2.5"/>
+<text x="150" y="118">外部候选框</text><text x="150" y="142" font-size="15" fill="#53676d">每框重跑 CNN</text>
+<rect x="350" y="90" width="200" height="70" rx="10" fill="#ebe5ff" stroke="#7461ba" stroke-width="2.5"/>
+<text x="450" y="118">外部候选框</text><text x="450" y="142" font-size="15" fill="#53676d">共享特征图取区域</text>
+<rect x="650" y="90" width="200" height="70" rx="10" fill="#d6f1eb" stroke="#147f80" stroke-width="2.5"/>
+<text x="750" y="118">RPN 生成提议</text><text x="750" y="142" font-size="15" fill="#0f5f60">内化进网络</text>
+<rect x="50" y="210" width="200" height="80" rx="10" fill="#ffecd9" stroke="#d06d4d" stroke-width="2.5"/>
+<text x="150" y="245">慢：重复卷积</text><text x="150" y="270" font-size="15" fill="#8a4526">数十秒/图</text>
+<rect x="350" y="210" width="200" height="80" rx="10" fill="#ffecd9" stroke="#d06d4d" stroke-width="2.5"/>
+<text x="450" y="245">慢：外部候选</text><text x="450" y="270" font-size="15" fill="#8a4526">候选生成成瓶颈</text>
+<rect x="650" y="210" width="200" height="80" rx="10" fill="#d6f1eb" stroke="#147f80" stroke-width="2.5"/>
+<text x="750" y="245">快：单网络</text><text x="750" y="270" font-size="15" fill="#0f5f60">亚秒级/图</text>
+</g>
+<g stroke="#53676d" stroke-width="4" fill="none" marker-end="url(#ev-ah)">
+<path d="M258 250H342"/><path d="M558 250H642"/>
+</g>
+<defs><marker id="ev-ah" markerWidth="10" markerHeight="10" refX="7" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#53676d"/></marker></defs>
+<text x="450" y="375" font-size="18" text-anchor="middle" fill="#53676d">每一步只把上一代的一个外部瓶颈收进网络</text>
+</svg>

@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 420" role="img" aria-labelledby="an-title an-desc" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif">
+<title id="an-title">同一中心点的 3 尺度 × 3 长宽比锚框</title>
+<desc id="an-desc">以同一中心点为中心，三种面积尺度各配三种长宽比共 9 个锚框：1:1 为正方形，1:2 高而窄，2:1 宽而矮，覆盖不同形状的目标。</desc>
+<rect width="900" height="420" fill="#fffdf9"/>
+<text x="45" y="46" font-size="22" font-weight="700" fill="#203035">锚框：3 尺度 × 3 长宽比 = 9</text>
+<line x1="330" y1="70" x2="330" y2="380" stroke="#e0ebe5" stroke-width="2"/>
+<line x1="330" y1="225" x2="860" y2="225" stroke="#e0ebe5" stroke-width="2"/>
+<g fill="none" stroke-width="3">
+<rect x="270" y="165" width="120" height="120" fill="#d6f1eb" fill-opacity="0.35" stroke="#147f80"/>
+<rect x="255" y="185" width="150" height="80" fill="#ffecd9" fill-opacity="0.35" stroke="#d06d4d"/>
+<rect x="285" y="155" width="90" height="140" fill="#ebe5ff" fill-opacity="0.35" stroke="#7461ba"/>
+<rect x="230" y="125" width="200" height="200" fill="none" stroke="#147f80" stroke-dasharray="7 5"/>
+<rect x="205" y="150" width="250" height="150" fill="none" stroke="#d06d4d" stroke-dasharray="7 5"/>
+<rect x="245" y="115" width="170" height="220" fill="none" stroke="#7461ba" stroke-dasharray="7 5"/>
+</g>
+<circle cx="330" cy="225" r="5" fill="#203035"/>
+<g font-size="18" fill="#203035">
+<text x="470" y="120">长宽比 1:1 → 正方形</text>
+<text x="470" y="170" fill="#8a4526">长宽比 2:1 → 宽而矮</text>
+<text x="470" y="220" fill="#6b57a8">长宽比 1:2 → 高而窄</text>
+<text x="470" y="285" fill="#0f5f60">3 种面积尺度（128²、256²、512²）</text>
+<text x="470" y="320" fill="#53676d">只在空间上密集，尺度/长宽比上稀疏</text>
+</g>
+</svg>

@@ -20,6 +20,24 @@
       "claim": "Selective Search oversegments, greedily merges regions by color/texture/size/shape and needs no training data",
       "sources": ["https://link.springer.com/article/10.1007/s11263-013-0620-5"],
       "caveat": "The ~2000-box budget and recall percentage are paper-specific and not reproduced numerically here"
+    },
+    {
+      "chapter": "17",
+      "claim": "Faster R-CNN shares the backbone with RPN; default anchors are 3 scales (128^2,256^2,512^2) x 3 ratios (1:1,1:2,2:1) = 9 per location",
+      "sources": ["https://arxiv.org/abs/1506.01497"],
+      "caveat": "Scale set and k are implementation choices; only the default config is stated, and other rows in the anchor table are labelled as adjustments"
+    },
+    {
+      "chapter": "17",
+      "claim": "RPN labels anchors positive at IoU>0.7 (or best match), negative at IoU<0.3, ignores the rest; loss = cls + lambda*reg with reg masked by p*",
+      "sources": ["https://arxiv.org/abs/1506.01497"],
+      "caveat": "MathML shows the two-term multi-task loss; N_cls/N_reg normalisation constants and lambda value come from the paper's default setup"
+    },
+    {
+      "chapter": "17",
+      "claim": "The paper alternates RPN and Fast R-CNN training; modern frameworks use approximate joint training",
+      "sources": ["https://arxiv.org/abs/1506.01497", "https://github.com/facebookresearch/detectron2"],
+      "caveat": "RoIAlign comes from Mask R-CNN (2017), not from the 2015 faster R-CNN paper; numeric AP gains are not fixed here"
     }
   ]
 }

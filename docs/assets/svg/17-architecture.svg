@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 420" role="img" aria-labelledby="ar-title ar-desc" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif">
+<title id="ar-title">Faster R-CNN 共享主干上的端到端结构</title>
+<desc id="ar-desc">图像经共享卷积主干得到特征图；RPN 在特征图上生成提议；提议与特征图一起进入 RoI Pooling 得到固定尺寸特征，再由分类与回归头输出检测结果；全流程可端到端反向传播。</desc>
+<rect width="900" height="420" fill="#fffdf9"/>
+<g font-size="18" text-anchor="middle" fill="#203035">
+<rect x="25" y="170" width="120" height="80" rx="10" fill="#d6f1eb" stroke="#147f80" stroke-width="2.5"/>
+<text x="85" y="216">输入图像</text>
+<rect x="185" y="160" width="150" height="100" rx="10" fill="#ffecd9" stroke="#d06d4d" stroke-width="2.5"/>
+<text x="260" y="200">共享主干</text><text x="260" y="226" font-size="15" fill="#8a4526">卷积特征图</text>
+<rect x="375" y="80" width="160" height="80" rx="10" fill="#d6f1eb" stroke="#147f80" stroke-width="2.5"/>
+<text x="455" y="112">RPN</text><text x="455" y="138" font-size="15" fill="#0f5f60">数百个提议</text>
+<rect x="375" y="260" width="160" height="80" rx="10" fill="#ebe5ff" stroke="#7461ba" stroke-width="2.5"/>
+<text x="455" y="292">RoI Pooling</text><text x="455" y="318" font-size="15" fill="#6b57a8">7×7 特征</text>
+<rect x="595" y="260" width="150" height="80" rx="10" fill="#ffecd9" stroke="#d06d4d" stroke-width="2.5"/>
+<text x="670" y="292">分类头</text><text x="670" y="318" font-size="15" fill="#8a4526">类别得分</text>
+<rect x="595" y="80" width="150" height="80" rx="10" fill="#ebe5ff" stroke="#7461ba" stroke-width="2.5"/>
+<text x="670" y="112">回归头</text><text x="670" y="138" font-size="15" fill="#6b57a8">边界框精修</text>
+<rect x="770" y="170" width="105" height="80" rx="10" fill="#d6f1eb" stroke="#147f80" stroke-width="2.5"/>
+<text x="822" y="216" font-size="16">检测输出</text>
+</g>
+<g stroke="#147f80" stroke-width="4" fill="none" marker-end="url(#ar-ah)">
+<path d="M145 210H181"/><path d="M335 200 L371 130"/><path d="M335 220 L371 290"/><path d="M455 160V256"/><path d="M535 300H591"/><path d="M535 120 L591 110"/><path d="M745 300 L790 250"/><path d="M745 120 L790 175"/>
+</g>
+<defs><marker id="ar-ah" markerWidth="10" markerHeight="10" refX="7" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#147f80"/></marker></defs>
+<text x="450" y="392" font-size="18" text-anchor="middle" fill="#53676d">共享主干让 RPN 几乎不增加额外成本；全流程端到端可训练</text>
+</svg>

@@ -68,7 +68,7 @@ python3 scripts/check_browser.py
 | 21–25 | Mask R-CNN、DeepLab、Mask2Former、SAM、数据增强、迁移学习、LoRA、量化、剪枝、蒸馏与部署 | 20 张 | 已深化 |
 | 26–28 | 自监督表征 SimCLR/MoCo/DINOv2/MAE、CLIP/VLM/扩散/3DGS、端到端视觉工程 | 15 张 | 已深化 |
 
-01–05 第二轮精修新增 BGR/RGB 张量索引、空并集 IoU 处理、Canny 与形态学断言、确定性 SIFT 128 维描述子、OpenCV HOG 324 维窗口特征、积分图四角查询、softmax 交叉熵与多通道互相关。15 张新 SVG 解释颜色通道、Sobel、形态学、SIFT/HOG、积分图、链式法则、softmax 与卷积算术。\n\n26–28 章完成 SimCLR NT-Xent 与 2N 视图监督、MoCo EMA 队列、DINO 自蒸馏与 DINOv2 数据配方、MAE visible-only encoder；分离 CLIP 图文检索、BLIP/LLaVA 视觉语言生成、DDPM/LDM 与 NeRF/3DGS 的任务边界；最后以分组无泄漏数据划分、合成图像分类器、拒识阈值、可复现工件与部署回归门禁构建完整工程闭环。新增 15 张独立 SVG 和 `docs/evidence/26-28.json`，每章有独立 CPU Python/PyTorch 实验与断言。
+01–05 第二轮精修新增 BGR/RGB 张量索引、空并集 IoU 处理、Canny 与形态学断言、确定性 SIFT 128 维描述子、OpenCV HOG 324 维窗口特征、积分图四角查询、softmax 交叉熵与多通道互相关。15 张新 SVG 解释颜色通道、Sobel、形态学、SIFT/HOG、积分图、链式法则、softmax 与卷积算术；站点当前共有 115 张 SVG（含首页图）。\n\n26–28 章完成 SimCLR NT-Xent 与 2N 视图监督、MoCo EMA 队列、DINO 自蒸馏与 DINOv2 数据配方、MAE visible-only encoder；分离 CLIP 图文检索、BLIP/LLaVA 视觉语言生成、DDPM/LDM 与 NeRF/3DGS 的任务边界；最后以分组无泄漏数据划分、合成图像分类器、拒识阈值、可复现工件与部署回归门禁构建完整工程闭环。新增 15 张独立 SVG 和 `docs/evidence/26-28.json`，每章有独立 CPU Python/PyTorch 实验与断言。
 
 21–25 章进一步梳理 Mask R-CNN 的 RoIAlign 与正 RoI mask BCE；对照 DeepLabv3+、Mask2Former、SAM/SAM 2 的输出契约；推导 MixUp/CutMix 标签权重与 mask 最近邻插值；区分迁移学习策略和原始 LoRA 论文的语言模型范围；按 2026 年工具链更新 torchao PT2E、PyTorch dynamo ONNX exporter 与 TensorRT 11 强类型 / Q-DQ。证据登记于 `docs/evidence/21.json` 至 `25.json`。
 

@@ -38,10 +38,10 @@
       "chapter": "01",
       "claim": "Mean IoU averages class-level IoU values over the classes included by an evaluation protocol",
       "kind": "metric-definition",
-      "source_url": "https://cocodataset.org/#detection-eval",
-      "locator": "Evaluation API and category-wise evaluation conventions",
+      "source_url": "https://scikit-learn.org/stable/modules/generated/sklearn.metrics.jaccard_score.html",
+      "locator": "jaccard_score: average='macro' and class-wise Jaccard aggregation",
       "status": "verified",
-      "notes": "Do not silently count absent classes as zero or one."
+      "notes": "Use the benchmark's valid-class policy for absent classes; sklearn is an API example, not the universal segmentation protocol."
     },
     {
       "id": "01-imagenet",

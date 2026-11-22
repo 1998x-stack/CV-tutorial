@@ -82,7 +82,7 @@ def check():
         if not claim.get("source_url","").startswith("https://"): bad("evidence: source URL missing "+str(claim.get("id")))
         if not claim.get("locator"): bad("evidence: source locator missing "+str(claim.get("id")))
     svgfiles=list((SITE/"assets/svg").glob("*.svg"))
-    if len(svgfiles)<100: bad("expected at least 100 SVGs (home + chapters 01–28)")
+    if len(svgfiles)<115: bad("expected at least 115 SVGs (home + chapters 01–28 after the foundation visual audit)")
     for f in svgfiles:
         try:
             node=ET.parse(f).getroot()

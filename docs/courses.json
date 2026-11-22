@@ -227,11 +227,12 @@
     },
     {
       "num": "19",
-      "title": "YOLO 与 SSD——单阶段检测",
+      "title": "YOLO、SSD、RetinaNet 与 DETR——密集检测与集合预测",
       "topics": [
         "YOLOv1 网格输出",
         "SSD 多尺度 Default Boxes",
-        "匹配与 Hard Negative Mining"
+        "RetinaNet Focal Loss",
+        "DETR Hungarian matching"
       ],
       "file": "chapters/19.html",
       "stage": "detection",

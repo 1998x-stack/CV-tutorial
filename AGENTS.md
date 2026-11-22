@@ -48,6 +48,6 @@
 - R-CNN：区分 proposal、检测框与回归框；Selective Search 是外部类别无关候选算法；约 2,000 proposals、227×227 warp、4096-D 特征属于论文具体配置，不是所有实现常数。
 - Fast R-CNN：整图共享 backbone 特征；RoI Pooling 对 feature-map 区域量化并 max-pool 到固定尺寸；分类含 background，框回归只对前景 RoI 激活。RoIAlign 是 Mask R-CNN 后续模块，不可倒填。
 - Faster R-CNN：原始 RPN 每位置 9 anchors（3 scales × 3 ratios）；正/负/ignore IoU 规则、256 anchor mini-batch、NMS 阈值须标明原论文上下文；objectness 不是具体类别概率。四步 alternating training 与 approximate joint training 要区分。
-- YOLO/SSD：本批明确讲 YOLOv1 与 SSD300。YOLOv1 的类别概率按 cell 共享，SSD 按 default box 输出；8732 只对应原始 SSD300 六层配置。不得把现代 YOLO anchor/multi-scale heads 当作 YOLOv1 原结构。
+- YOLO/SSD/RetinaNet/DETR：YOLOv1 的类别概率按 cell 共享，SSD 按 default box 输出；8732 只对应原始 SSD300 六层配置。RetinaNet 的 Focal Loss 通过调制因子压低 easy examples；DETR 通过 Hungarian 一对一集合匹配训练，原始版本不使用经典 NMS。不得把现代 YOLO anchor/multi-scale heads 当作 YOLOv1 原结构。
 - U-Net：原版 valid 3×3 conv，572 输入输出 388，skip 先 center-crop 再 concatenate；原始训练用 weighted pixel-wise softmax CE 与 elastic deformation。Dice loss 是常见后续选择，不是原论文主损失。医学图像数据划分要防患者/切片泄漏。
 - tests/test_cv_examples.py 执行 06–20 的正文 Python 代码块；新代码不得依赖外部权重、数据或下载。

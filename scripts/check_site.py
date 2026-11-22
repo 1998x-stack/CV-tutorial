@@ -50,7 +50,7 @@ def check():
             if not path: continue
             if not (file.parent/path).exists(): bad(f"{file.relative_to(ROOT)}: missing relative reference {link}")
     svgfiles=list((SITE/"assets/svg").glob("*.svg"))
-    if len(svgfiles)<60: bad("expected at least 60 SVGs (home + chapters 01–20)")
+    if len(svgfiles)<65: bad("expected at least 65 SVGs (home + chapters 01–20, including detection and segmentation diagrams)")
     for f in svgfiles:
         try:
             node=ET.parse(f).getroot()

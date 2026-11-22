@@ -24,14 +24,14 @@ CV-tutorial/
 ├── docs/                       # GitHub Pages 站点根目录（无需 Node 构建）
 │   ├── index.html              # 课程门户：静态章节卡片 + 可选搜索
 │   ├── courses.json            # 28 章单一课程清单
-│   ├── chapters/               # 01–28 章；01–25 已按深度教程范式精修
+│   ├── chapters/               # 01–28 章；01–28 已按深度教程范式精修
 │   └── assets/
 │       ├── css/site.css        # 站点级设计系统
 │       ├── css/article.css     # 长文版式、MathML、移动端和打印
 │       └── svg/                # 按知识问题组织的原创独立 SVG
-├── scripts/check_site.py       # 静态链接 / SVG / 章节一致性门禁
-├── scripts/check_browser.py    # Chromium 1440/768/390/360 响应式浏览器验收
-├── tests/test_cv_examples.py   # 06–25 章教学代码断言
+├── scripts/check_site.py       # 全 28 章静态链接 / SVG / MathML / 证据一致性门禁
+├── scripts/check_browser.py    # 全站 Chromium 1440/768/390/360 验收
+├── tests/test_cv_examples.py   # 06–28 章教学代码断言
 ├── .github/workflows/          # QA 与 GitHub Pages 部署
 ├── pdfs/                       # 历史论文资料（不参与本次迁移）
 ├── AGENTS.md                   # 事实核验和长期维护规范
@@ -66,7 +66,9 @@ python3 scripts/check_browser.py
 | 11–15 | ViT、ConvNeXt、训练策略、评估选型、检测基础 | 17 张 | 已深化 |
 | 16–20 | R-CNN、Fast/Faster R-CNN、YOLO、SSD、RetinaNet、DETR、分割基础与 U-Net | 21 张 | 已深化 |
 | 21–25 | Mask R-CNN、DeepLab、Mask2Former、SAM、数据增强、迁移学习、LoRA、量化、剪枝、蒸馏与部署 | 20 张 | 已深化 |
-| 26–28 | 自监督、视觉基础模型、多模态与综合项目 | 原课程内容保留 | 等待逐篇复审 |
+| 26–28 | 自监督表征 SimCLR/MoCo/DINOv2/MAE、CLIP/VLM/扩散/3DGS、端到端视觉工程 | 15 张 | 已深化 |
+
+26–28 章完成 SimCLR NT-Xent 与 2N 视图监督、MoCo EMA 队列、DINO 自蒸馏与 DINOv2 数据配方、MAE visible-only encoder；分离 CLIP 图文检索、BLIP/LLaVA 视觉语言生成、DDPM/LDM 与 NeRF/3DGS 的任务边界；最后以分组无泄漏数据划分、合成图像分类器、拒识阈值、可复现工件与部署回归门禁构建完整工程闭环。新增 15 张独立 SVG 和 `docs/evidence/26-28.json`，每章有独立 CPU Python/PyTorch 实验与断言。
 
 21–25 章进一步梳理 Mask R-CNN 的 RoIAlign 与正 RoI mask BCE；对照 DeepLabv3+、Mask2Former、SAM/SAM 2 的输出契约；推导 MixUp/CutMix 标签权重与 mask 最近邻插值；区分迁移学习策略和原始 LoRA 论文的语言模型范围；按 2026 年工具链更新 torchao PT2E、PyTorch dynamo ONNX exporter 与 TensorRT 11 强类型 / Q-DQ。证据登记于 `docs/evidence/21.json` 至 `25.json`。
 

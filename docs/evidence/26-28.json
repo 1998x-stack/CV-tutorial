@@ -1,0 +1,227 @@
+{
+  "title": "CV Tutorial: original-source checks for chapters 26–28",
+  "date": "2026-11-22",
+  "scope": "Original method mechanisms, code/documentation contracts and reproducible illustrative tests; experiments are not benchmark reproductions.",
+  "entries": [
+    {
+      "id": "26-simclr-2n",
+      "chapter": 26,
+      "claim": "SimCLR uses two independently augmented views per image, 2N views per batch, and NT-Xent with self-similarity excluded",
+      "kind": "training-objective",
+      "source_url": "https://proceedings.mlr.press/v119/chen20j.html",
+      "locator": "Sections 2.1–2.2; Figure 2",
+      "status": "verified",
+      "notes": "Positive denotes same image instance, not same semantic class."
+    },
+    {
+      "id": "26-simclr-projector",
+      "chapter": 26,
+      "claim": "Nonlinear projection head is applied between encoder representation and contrastive loss, while downstream evaluation often uses encoder features",
+      "kind": "architecture",
+      "source_url": "https://proceedings.mlr.press/v119/chen20j.html",
+      "locator": "Section 2.2; ablations",
+      "status": "verified",
+      "notes": "Do not compare projected features with unprojected pretrained features without noting this choice."
+    },
+    {
+      "id": "26-moco-dictionary",
+      "chapter": 26,
+      "claim": "MoCo uses a queue of negative keys and a momentum-updated key encoder to maintain a consistent large dictionary",
+      "kind": "architecture",
+      "source_url": "https://openaccess.thecvf.com/content_CVPR_2020/html/He_Momentum_Contrast_for_Unsupervised_Visual_Representation_Learning_CVPR_2020_paper.html",
+      "locator": "Section 3; Figure 2",
+      "status": "verified",
+      "notes": "Queue is the original MoCo variant; later versions change recipes."
+    },
+    {
+      "id": "26-dino-student",
+      "chapter": 26,
+      "claim": "DINO uses cross-view student/teacher self-distillation with EMA, centering and sharpening to prevent representation collapse",
+      "kind": "training-objective",
+      "source_url": "https://openaccess.thecvf.com/content/ICCV2021/html/Caron_Emerging_Properties_in_Self-Supervised_Vision_Transformers_ICCV_2021_paper.html",
+      "locator": "Sections 3.1–3.2",
+      "status": "verified",
+      "notes": "Teacher target is stopped-gradient; avoid characterizing as vanilla contrastive loss."
+    },
+    {
+      "id": "26-dinov2-dataset",
+      "chapter": 26,
+      "claim": "Original DINOv2 models were pretrained on approximately 142 million curated, unlabeled images",
+      "kind": "historical-scope",
+      "source_url": "https://github.com/facebookresearch/dinov2",
+      "locator": "Model README: Training details",
+      "status": "verified",
+      "notes": "Scale is a historical project property, not an SSL prerequisite."
+    },
+    {
+      "id": "26-dinov2-patches",
+      "chapter": 26,
+      "claim": "DINOv2 extends self-distillation with a recipe including image-level and patch-level objectives",
+      "kind": "architecture",
+      "source_url": "https://arxiv.org/abs/2304.07193",
+      "locator": "Method and ablations",
+      "status": "verified",
+      "notes": "Claim describes design family; code examples show only the core teacher-student relationship."
+    },
+    {
+      "id": "26-mae-visible",
+      "chapter": 26,
+      "claim": "MAE masks a high patch ratio (typically 75 percent) and feeds only visible patches to heavy encoder, inserting mask tokens in lightweight decoder",
+      "kind": "architecture",
+      "source_url": "https://openaccess.thecvf.com/content/CVPR2022/html/He_Masked_Autoencoders_Are_Scalable_Vision_Learners_CVPR_2022_paper.html",
+      "locator": "Abstract; Section 3.1",
+      "status": "verified",
+      "notes": "Toy experiment checks patch counts only, not image reconstruction benchmarks."
+    },
+    {
+      "id": "27-clip-bidirectional",
+      "chapter": 27,
+      "claim": "CLIP trains image and text encoders on paired data using a symmetric image-to-text and text-to-image contrastive objective",
+      "kind": "training-objective",
+      "source_url": "https://proceedings.mlr.press/v139/radford21a.html",
+      "locator": "Section 2.3; pseudocode",
+      "status": "verified",
+      "notes": "Zero-shot inference requires specifying class descriptions and prompt templates."
+    },
+    {
+      "id": "27-clip-data",
+      "chapter": 27,
+      "claim": "Original CLIP work describes training on 400 million internet image-text pairs",
+      "kind": "historical-scope",
+      "source_url": "https://proceedings.mlr.press/v139/radford21a.html",
+      "locator": "Abstract; Section 2",
+      "status": "verified",
+      "notes": "Historical data property; not a generic requirement."
+    },
+    {
+      "id": "27-blip-unified",
+      "chapter": 27,
+      "claim": "BLIP introduces caption filtering and multimodal understanding/generation pretraining",
+      "kind": "architecture",
+      "source_url": "https://proceedings.mlr.press/v162/li22n.html",
+      "locator": "Abstract; Section 3",
+      "status": "verified",
+      "notes": "Unlike CLIP, not merely a dual embedding similarity model."
+    },
+    {
+      "id": "27-llava",
+      "chapter": 27,
+      "claim": "LLaVA connects a visual encoder to a language model using a projector and visual instruction tuning",
+      "kind": "architecture",
+      "source_url": "https://proceedings.neurips.cc/paper/2023/hash/6dcf277ea32ce3288914faf369fe6de0-Abstract-Conference.html",
+      "locator": "Abstract; approach",
+      "status": "verified",
+      "notes": "Generates text responses rather than direct symmetric image-text similarities."
+    },
+    {
+      "id": "27-ddpm-forward",
+      "chapter": 27,
+      "claim": "DDPM uses Gaussian forward noising; x_t can be sampled directly using cumulative alpha and standard Gaussian epsilon",
+      "kind": "equation",
+      "source_url": "https://proceedings.neurips.cc/paper/2020/hash/4c5bcfec8584af0d967f1ab10179ca4b-Abstract.html",
+      "locator": "Methodology; forward process",
+      "status": "verified",
+      "notes": "Toy script verifies q(x_t|x_0) with a simple synthetic tensor."
+    },
+    {
+      "id": "27-ddpm-loss",
+      "chapter": 27,
+      "claim": "Simplified epsilon-prediction MSE is one common DDPM training objective, not the complete reverse sampling algorithm",
+      "kind": "objective",
+      "source_url": "https://proceedings.neurips.cc/paper/2020/hash/4c5bcfec8584af0d967f1ab10179ca4b-Abstract.html",
+      "locator": "Methodology; simplified objective",
+      "status": "verified",
+      "notes": "Sampling also depends on schedule and posterior parameterization."
+    },
+    {
+      "id": "27-ldm",
+      "chapter": 27,
+      "claim": "Latent Diffusion Models perform denoising in compressed autoencoder latent space and use cross-attention for conditioning",
+      "kind": "architecture",
+      "source_url": "https://openaccess.thecvf.com/content/CVPR2022/html/Rombach_High-Resolution_Image_Synthesis_With_Latent_Diffusion_Models_CVPR_2022_paper.html",
+      "locator": "Abstract; Sections 3–4",
+      "status": "verified",
+      "notes": "Latent autoencoder is lossy; cannot conflate with pixel-space DDPM."
+    },
+    {
+      "id": "27-nerf",
+      "chapter": 27,
+      "claim": "NeRF models a continuous view-dependent radiance field with volume rendering along camera rays",
+      "kind": "architecture",
+      "source_url": "https://www.ecva.net/papers/eccv_2020/papers_ECCV/html/1473_ECCV_2020_paper.php",
+      "locator": "Abstract; Sections 3–4",
+      "status": "verified",
+      "notes": "Original view synthesis uses calibrated multi-view input."
+    },
+    {
+      "id": "27-3dgs",
+      "chapter": 27,
+      "claim": "3D Gaussian Splatting optimizes explicit anisotropic Gaussians and visibility-aware rasterization for novel-view rendering",
+      "kind": "architecture",
+      "source_url": "https://repo-sam.inria.fr/fungraph/3d-gaussian-splatting/",
+      "locator": "Project abstract; method",
+      "status": "verified",
+      "notes": "Real-time claim is configuration-specific; no universal FPS is asserted."
+    },
+    {
+      "id": "28-group-split",
+      "chapter": 28,
+      "claim": "Group-aware data splitting prevents the same identified group appearing in both train and test folds",
+      "kind": "evaluation",
+      "source_url": "https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GroupShuffleSplit.html",
+      "locator": "GroupShuffleSplit API",
+      "status": "verified",
+      "notes": "User must identify the leakage group appropriate for their domain."
+    },
+    {
+      "id": "28-logits-ce",
+      "chapter": 28,
+      "claim": "PyTorch CrossEntropyLoss expects unnormalized logits and class-index targets for standard multiclass classification",
+      "kind": "api-contract",
+      "source_url": "https://docs.pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html",
+      "locator": "Input and Target shape specifications",
+      "status": "verified",
+      "notes": "Toy demo uses [N,2] and integer class indices."
+    },
+    {
+      "id": "28-reproducibility",
+      "chapter": 28,
+      "claim": "PyTorch seed settings and deterministic algorithms improve reproducibility but do not guarantee identical results across hardware and versions",
+      "kind": "reproducibility",
+      "source_url": "https://docs.pytorch.org/docs/stable/notes/randomness.html",
+      "locator": "Reproducibility limitations; CUDA convolution benchmarking",
+      "status": "verified",
+      "notes": "DataLoader worker-specific RNG handling also matters."
+    },
+    {
+      "id": "28-checkpoint",
+      "chapter": 28,
+      "claim": "Saving and loading state_dict via weights_only semantics is a safer portable model-weight workflow than loading untrusted full-object pickles",
+      "kind": "engineering",
+      "source_url": "https://docs.pytorch.org/tutorials/beginner/saving_loading_models.html",
+      "locator": "Saving and Loading Models; weights_only",
+      "status": "verified",
+      "notes": "Checkpoint still needs model architecture, preprocessing and label map."
+    },
+    {
+      "id": "28-macro-f1",
+      "chapter": 28,
+      "claim": "Macro F1 averages per-class F1 equally, while overall accuracy can hide minority class failures",
+      "kind": "evaluation",
+      "source_url": "https://scikit-learn.org/stable/modules/generated/sklearn.metrics.classification_report.html",
+      "locator": "classification_report API; macro average",
+      "status": "verified",
+      "notes": "Business threshold must come from measured costs and validation data."
+    },
+    {
+      "id": "28-risk-governance",
+      "chapter": 28,
+      "claim": "Operational AI requires governance and risk management beyond offline benchmark scores",
+      "kind": "governance",
+      "source_url": "https://www.nist.gov/itl/ai-risk-management-framework",
+      "locator": "AI RMF overview",
+      "status": "verified",
+      "notes": "This is risk management guidance, not proof of any deployment safety guarantee."
+    }
+  ]
+}

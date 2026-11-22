@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Execute the precise Python code blocks published in chapters 06–25.
+"""Execute the precise Python code blocks published in chapters 06–28.
 
 Optional dependency: pip install torch (CPU build is sufficient).
 The snippets are run in isolated namespaces; no external images or weights used.
@@ -32,7 +32,7 @@ class Snippets(HTMLParser):
 
 def main():
     count=0
-    for n in range(6,26):
+    for n in range(6,29):
         path=ROOT / "docs/chapters" / f"{n:02}.html"
         p=Snippets()
         p.feed(path.read_text(encoding="utf-8"))

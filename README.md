@@ -76,7 +76,7 @@ python3 scripts/check_browser.py
 
 11–15 章另增加 Vision Transformer token/attention 算术、ConvNeXt 深度卷积成本、AdamW 解耦衰减、Pareto 选型以及 IoU/COCO AP/NMS 的可运行样例。所有性能示例均独立标注为教学构造，并记录参考来源于 `docs/evidence/11-15.json`。
 
-本轮特别区分 AlexNet 2012 年原版与现代 torchvision，VGG-16 原配置与带 BN 变体，以及 ResNet v1、pre-activation v2 与 torchvision v1.5。历史指标只在指定论文/数据/协议下成立。
+第二轮复审优先重构 01–05：补齐 BGR/RGB 与 HWC 索引、空并集 IoU、Canny/形态学边界、SIFT/HOG 实际描述子、积分图闭区间索引、softmax/CE 和多通道卷积。复审记录见 [docs/reviews/2026-11-23-foundations-01-05.md](docs/reviews/2026-11-23-foundations-01-05.md)。\n\n本轮特别区分 AlexNet 2012 年原版与现代 torchvision，VGG-16 原配置与带 BN 变体，以及 ResNet v1、pre-activation v2 与 torchvision v1.5。历史指标只在指定论文/数据/协议下成立。
 
 ## 协作约定
 

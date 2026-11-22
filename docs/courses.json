@@ -126,63 +126,68 @@
     },
     {
       "num": "11",
-      "title": "ViT——视觉Transformer革命",
+      "title": "ViT——从图像分块到自注意力",
       "topics": [
-        "图像分块与位置编码",
-        "自注意力",
-        "多模态基础"
+        "Patch Embedding",
+        "CLS 与 QKV",
+        "Pre-LN 残差",
+        "复杂度"
       ],
       "file": "chapters/11.html",
       "stage": "backbones",
-      "refined": false
+      "refined": true
     },
     {
       "num": "12",
-      "title": "ConvNeXt——CNN现代化改造",
+      "title": "ConvNeXt——深度卷积与现代 CNN",
       "topics": [
-        "大核卷积",
-        "LayerNorm与GELU",
-        "CNN与ViT融合"
+        "7×7 Depthwise",
+        "LayerNorm / GELU",
+        "通道混合",
+        "分阶段结构"
       ],
       "file": "chapters/12.html",
       "stage": "backbones",
-      "refined": false
+      "refined": true
     },
     {
       "num": "13",
-      "title": "训练策略与调参实战",
+      "title": "训练策略与可复现优化",
       "topics": [
-        "学习率调度",
-        "正则化",
-        "优化器选择"
+        "Warmup 与 Cosine",
+        "AdamW",
+        "AMP 与增强",
+        "实验协议"
       ],
       "file": "chapters/13.html",
       "stage": "training",
-      "refined": false
+      "refined": true
     },
     {
       "num": "14",
-      "title": "模型评估与对比分析",
+      "title": "模型评估——精度、延迟与 Pareto",
       "topics": [
-        "FLOPs与参数量",
-        "主干网络对比",
-        "选型指南"
+        "校准与 Macro-F1",
+        "FLOPs / MACs",
+        "端到端延迟",
+        "Pareto 选型"
       ],
       "file": "chapters/14.html",
       "stage": "training",
-      "refined": false
+      "refined": true
     },
     {
       "num": "15",
-      "title": "目标检测基础",
+      "title": "目标检测——边界框、IoU、AP 与 NMS",
       "topics": [
-        "边界框与IoU",
-        "mAP评估",
+        "框坐标",
+        "IoU 与一对一匹配",
+        "COCO AP",
         "NMS"
       ],
       "file": "chapters/15.html",
       "stage": "detection",
-      "refined": false
+      "refined": true
     },
     {
       "num": "16",

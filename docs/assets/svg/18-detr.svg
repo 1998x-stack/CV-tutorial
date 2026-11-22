@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 420" role="img" aria-labelledby="dt-title dt-desc" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif">
+<title id="dt-title">DETR 的集合预测与匈牙利匹配</title>
+<desc id="dt-desc">CNN 骨干加位置编码进入 Transformer 编码器；100 个可学习查询经解码器输出 100 个预测，训练时用匈牙利算法与真值做一对一匹配，推理时不需要 NMS。</desc>
+<rect width="900" height="420" fill="#fffdf9"/>
+<text x="45" y="44" font-size="22" font-weight="700" fill="#203035">DETR：集合预测，无 NMS</text>
+<g font-size="17" text-anchor="middle" fill="#203035">
+<rect x="40" y="150" width="120" height="90" rx="10" fill="#d6f1eb" stroke="#147f80" stroke-width="2.5"/><text x="100" y="190">CNN 骨干</text><text x="100" y="214" font-size="14" fill="#53676d">+ 位置编码</text>
+<rect x="200" y="150" width="150" height="90" rx="10" fill="#ffecd9" stroke="#d06d4d" stroke-width="2.5"/><text x="275" y="190">Transformer</text><text x="275" y="214" font-size="14" fill="#8a4526">编码器</text>
+<rect x="390" y="150" width="160" height="90" rx="10" fill="#ffecd9" stroke="#d06d4d" stroke-width="2.5"/><text x="470" y="184">解码器</text><text x="470" y="210" font-size="14" fill="#8a4526">+ 查询</text>
+<rect x="590" y="150" width="130" height="90" rx="10" fill="#ebe5ff" stroke="#7461ba" stroke-width="2.5"/><text x="655" y="190">FFN 预测</text><text x="655" y="214" font-size="14" fill="#6b57a8">100 个预测</text>
+</g>
+<g stroke="#147f80" stroke-width="4" fill="none" marker-end="url(#dt-ah)">
+<path d="M160 195H196"/><path d="M350 195H386"/><path d="M550 195H586"/>
+</g>
+<rect x="590" y="300" width="130" height="70" rx="10" fill="#d6f1eb" stroke="#147f80" stroke-width="2.5"/>
+<text x="655" y="332" font-size="16" text-anchor="middle" fill="#203035">匈牙利匹配</text>
+<text x="655" y="355" font-size="14" text-anchor="middle" fill="#53676d">一对一 → 无需 NMS</text>
+<g stroke="#7461ba" stroke-width="4" fill="none" marker-end="url(#dt-hh)"><path d="M655 240V296"/></g>
+<rect x="390" y="300" width="160" height="70" rx="10" fill="#ebe5ff" stroke="#7461ba" stroke-width="2.5"/>
+<text x="470" y="342" font-size="16" text-anchor="middle" fill="#203035">100 个可学习查询</text>
+<g stroke="#7461ba" stroke-width="4" fill="none" marker-end="url(#dt-hh)"><path d="M470 296V240"/></g>
+<defs>
+<marker id="dt-ah" markerWidth="10" markerHeight="10" refX="7" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#147f80"/></marker>
+<marker id="dt-hh" markerWidth="10" markerHeight="10" refX="7" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#7461ba"/></marker>
+</defs>
+</svg>

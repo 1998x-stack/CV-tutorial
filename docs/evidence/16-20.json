@@ -38,6 +38,30 @@
       "claim": "The paper alternates RPN and Fast R-CNN training; modern frameworks use approximate joint training",
       "sources": ["https://arxiv.org/abs/1506.01497", "https://github.com/facebookresearch/detectron2"],
       "caveat": "RoIAlign comes from Mask R-CNN (2017), not from the 2015 faster R-CNN paper; numeric AP gains are not fixed here"
+    },
+    {
+      "chapter": "18",
+      "claim": "YOLOv1 divides the image into SxS (7x7) cells, each predicting B boxes and C class probabilities, output tensor SxSx(B*5+C)=7x7x30 on VOC; confidence = Pr(Object)*IoU",
+      "sources": ["https://arxiv.org/abs/1506.02640"],
+      "caveat": "45 FPS / 155 FPS figures are the paper's Titan X numbers and are hardware dependent"
+    },
+    {
+      "chapter": "18",
+      "claim": "SSD detects on six feature maps (38^2..1^2) with default boxes, uses hard negative mining ~1:3; SSD300 reports 74.3% VOC2007 mAP vs YOLOv1 63.4%",
+      "sources": ["https://arxiv.org/abs/1512.02325", "https://arxiv.org/abs/1506.02640"],
+      "caveat": "Both are the papers' reported VOC 2007 numbers; speed parity depends on implementation and hardware"
+    },
+    {
+      "chapter": "18",
+      "claim": "Focal Loss is FL(p_t) = -alpha_t (1-p_t)^gamma log(p_t), down-weighting easy examples to counter foreground/background imbalance",
+      "sources": ["https://arxiv.org/abs/1708.02002"],
+      "caveat": "The MathML states the loss form; gamma and alpha defaults come from the RetinaNet paper"
+    },
+    {
+      "chapter": "18",
+      "claim": "DETR predicts a set of N (100) objects with object queries and uses Hungarian matching, removing NMS and anchors",
+      "sources": ["https://arxiv.org/abs/2005.12872", "https://arxiv.org/abs/2010.04159"],
+      "caveat": "Deformable DETR is a distinct follow-up; convergence/speed remarks are qualitative, not fixed numbers"
     }
   ]
 }

@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 420" role="img" aria-labelledby="sm-title sm-desc" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif">
+<title id="sm-title">SSD 的多尺度特征图检测</title>
+<desc id="sm-desc">SSD 在六个分辨率递减的特征图上各放一个检测器：高分辨率层用小的默认框检测小物体，低分辨率层用大的默认框检测大物体，逐层输出预测并合并。</desc>
+<rect width="900" height="420" fill="#fffdf9"/>
+<text x="45" y="44" font-size="22" font-weight="700" fill="#203035">SSD：多尺度特征图检测</text>
+<g font-size="15" text-anchor="middle" fill="#203035">
+<rect x="45" y="90" width="130" height="120" rx="8" fill="#d6f1eb" stroke="#147f80" stroke-width="2.5"/><text x="110" y="235">conv4_3 38²</text>
+<rect x="185" y="110" width="110" height="100" rx="8" fill="#d6f1eb" stroke="#147f80" stroke-width="2.5"/><text x="240" y="235">conv7 19²</text>
+<rect x="305" y="130" width="90" height="80" rx="8" fill="#ffecd9" stroke="#d06d4d" stroke-width="2.5"/><text x="350" y="235">conv8_2 10²</text>
+<rect x="405" y="150" width="70" height="60" rx="8" fill="#ffecd9" stroke="#d06d4d" stroke-width="2.5"/><text x="440" y="235">conv9_2 5²</text>
+<rect x="485" y="165" width="52" height="45" rx="8" fill="#ebe5ff" stroke="#7461ba" stroke-width="2.5"/><text x="511" y="235">10_2 3²</text>
+<rect x="547" y="175" width="36" height="35" rx="8" fill="#ebe5ff" stroke="#7461ba" stroke-width="2.5"/><text x="565" y="235">11_2 1²</text>
+</g>
+<g font-size="16" fill="#203035">
+<text x="95" y="72">小物体</text><text x="540" y="72">大物体</text>
+</g>
+<g stroke="#147f80" stroke-width="3" fill="none" marker-end="url(#sm-ah)"><path d="M180 155H300"/></g>
+<defs><marker id="sm-ah" markerWidth="10" markerHeight="10" refX="7" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#147f80"/></marker></defs>
+<g font-size="17" fill="#53676d">
+<text x="640" y="140">高分辨率 → 小尺度的默认框</text>
+<text x="640" y="175">低分辨率 → 大尺度的默认框</text>
+<text x="640" y="240">每层都是“锚框 + 偏移回归”</text>
+<text x="640" y="275">难负样本挖掘约 1:3</text>
+</g>
+<text x="45" y="330" font-size="17" fill="#53676d">六个尺度共同覆盖从小到大的物体；默认框总数在这个配置下约 8700 个</text>
+</svg>

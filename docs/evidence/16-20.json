@@ -172,6 +172,26 @@
       "locator": "Figures 2; Sections 2 and 3.1",
       "status": "verified",
       "notes": "The tiling method uses a larger input context and predicts a smaller valid central region."
+    },
+    {
+      "id": "19-retinanet-focal",
+      "chapter": 19,
+      "claim": "RetinaNet combines a feature pyramid with dense classification and box regression subnetworks; Focal Loss modulates cross-entropy using alpha_t and gamma.",
+      "kind": "architecture-and-loss",
+      "source_url": "https://arxiv.org/abs/1708.02002",
+      "locator": "Abstract and Sections 2–3",
+      "status": "verified",
+      "notes": "The article's curve and scalar code are formula demonstrations, not benchmark measurements."
+    },
+    {
+      "id": "19-detr-set",
+      "chapter": 19,
+      "claim": "Original DETR uses a CNN backbone, Transformer encoder-decoder, learned object queries and Hungarian bipartite matching to train a fixed-size prediction set.",
+      "kind": "architecture-and-matching",
+      "source_url": "https://arxiv.org/abs/2005.12872",
+      "locator": "Abstract and Sections 1–3",
+      "status": "verified",
+      "notes": "Original DETR avoids hand-designed anchors and NMS, but has slower convergence and weaker small-object performance; Deformable DETR is a later variant."
     }
   ]
 }

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Headless browser contract for the static home and deep chapters 06–15.
+"""Headless browser contract for the static home and deep chapters 06–20.
 
 Run after: python3 -m pip install playwright
            python3 -m playwright install chromium
@@ -15,8 +15,8 @@ from playwright.sync_api import sync_playwright
 ROOT = Path(__file__).resolve().parents[1]
 SITE = ROOT / "docs"
 OUT = ROOT / "reports/browser"
-PATHS = ["index.html"] + [f"chapters/{i:02}.html" for i in range(6,16)]
-WIDTHS = [1440, 390, 360]
+PATHS = ["index.html"] + [f"chapters/{i:02}.html" for i in range(6,21)]
+WIDTHS = [1440, 768, 390, 360]
 
 def run():
     OUT.mkdir(parents=True, exist_ok=True)
@@ -34,6 +34,8 @@ def run():
                     page = browser.new_page(viewport={"width":width,"height":900}, device_scale_factor=1)
                     js_errors = []
                     page.on("pageerror", lambda err: js_errors.append(str(err)))
+                    # All assets must remain local; external requests are blocked for offline reading QA.
+                    page.route("https://**", lambda route: route.abort())
                     response = page.goto(f"{base}/{path}", wait_until="load")
                     page.locator("h1").first.wait_for()
                     page.evaluate("document.fonts.ready")
@@ -47,7 +49,7 @@ def run():
                     images = page.locator("img").evaluate_all(
                         "(els)=>els.map(x=>({src:x.getAttribute('src'),ok:x.complete&&x.naturalWidth>0}))")
                     math_geo = page.locator("math").evaluate_all(
-                        "(els)=>els.map(x=>({width:x.getBoundingClientRect().width,height:x.getBoundingClientRect().height}))")
+                        "(els)=>els.map(x=>({width:x.getBoundingClientRect().width,height:x.getBoundingClientRect().height,ns:x.namespaceURI}))")
                     target = OUT / (path.replace("/", "-").replace(".html", "")+f"-{width}.png")
                     page.screenshot(path=str(target), full_page=False)
                     label = f"{path}@{width}"
@@ -68,9 +70,16 @@ def run():
                         errors.append(f"{label}: broken images {images}")
                     if any(x["width"]<=0 or x["height"]<=0 for x in math_geo):
                         errors.append(f"{label}: MathML has zero geometry")
+                    if any(x["ns"] != "http://www.w3.org/1998/Math/MathML" for x in math_geo):
+                        errors.append(f"{label}: MathML namespace incorrect")
+                    if page.locator("svg math").count():
+                        errors.append(f"{label}: MathML nested inside SVG")
                     if js_errors:
                         errors.append(f"{label}: page errors {js_errors}")
                     if width==390 and path!="index.html":
+                        page.keyboard.press("Tab")
+                        if not page.evaluate("document.activeElement.classList.contains('skip')"):
+                            errors.append(f"{label}: skip link is not first keyboard target")
                         first = page.locator("figure").first
                         if first.count():
                             first.scroll_into_view_if_needed()
@@ -90,6 +99,15 @@ def run():
                             summary.click()
                             if not summary.evaluate("(el)=>el.parentElement.open"):
                                 errors.append(f"{label}: details failed to open")
+                    if width==1440:
+                        page.emulate_media(media="print")
+                        print_overflow = page.evaluate("document.documentElement.scrollWidth - window.innerWidth")
+                        if print_overflow > 1:
+                            errors.append(f"{label}: print layout overflows {print_overflow}px")
+                        page.emulate_media(media="screen", reduced_motion="reduce")
+                        if not page.evaluate("matchMedia('(prefers-reduced-motion: reduce)').matches"):
+                            errors.append(f"{label}: reduced-motion preference was not applied")
+                        page.emulate_media(media="screen", reduced_motion="no-preference")
                     page.close()
             browser.close()
     finally:

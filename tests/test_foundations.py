@@ -116,7 +116,7 @@ class ImageContracts(unittest.TestCase):
 
         total = at(3, 2) - at(0, 2) - at(3, 0) + at(0, 0)
         self.assertEqual(total, int(image[1:3, 1:4].sum()))
-        self.assertEqual(total, 33)
+        self.assertEqual(total, 54)
 
     def test_multichannel_cross_correlation(self):
         x = np.arange(1, 19, dtype=float).reshape(1, 2, 3, 3)

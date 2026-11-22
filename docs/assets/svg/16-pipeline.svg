@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 420" role="img" aria-labelledby="pl-title pl-desc" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif">
+<title id="pl-title">R-CNN 三段式推理流程</title>
+<desc id="pl-desc">输入图像经 Selective Search 得到约两千个候选框，每个框缩放为 227×227 后过 AlexNet 得到 4096 维特征，再分别进入每类 SVM 分类器与边界框回归器。</desc>
+<rect width="900" height="420" fill="#fffdf9"/>
+<g font-size="18" text-anchor="middle" fill="#203035">
+<rect x="30" y="160" width="120" height="100" rx="12" fill="#d6f1eb" stroke="#147f80" stroke-width="2.5"/>
+<text x="90" y="205">输入图像</text>
+<text x="90" y="230" font-size="15" fill="#53676d">H×W×3</text>
+
+<rect x="200" y="150" width="130" height="120" rx="12" fill="#ebe5ff" stroke="#7461ba" stroke-width="2.5"/>
+<text x="265" y="196">Selective</text>
+<text x="265" y="220">Search</text>
+<text x="265" y="248" font-size="15" fill="#53676d">约 2000 框</text>
+
+<rect x="380" y="160" width="130" height="100" rx="12" fill="#ffecd9" stroke="#d06d4d" stroke-width="2.5"/>
+<text x="445" y="198">warp</text>
+<text x="445" y="224" font-size="15" fill="#8a4526">227×227</text>
+
+<rect x="560" y="150" width="140" height="120" rx="12" fill="#ffecd9" stroke="#d06d4d" stroke-width="2.5"/>
+<text x="630" y="196">AlexNet</text>
+<text x="630" y="224" font-size="15" fill="#8a4526">4096 维/框</text>
+
+<rect x="750" y="90" width="120" height="90" rx="12" fill="#d6f1eb" stroke="#147f80" stroke-width="2.5"/>
+<text x="810" y="128">每类 SVM</text>
+<text x="810" y="152" font-size="15" fill="#53676d">类别得分</text>
+<rect x="750" y="240" width="120" height="90" rx="12" fill="#ebe5ff" stroke="#7461ba" stroke-width="2.5"/>
+<text x="810" y="278">框回归器</text>
+<text x="810" y="302" font-size="15" fill="#53676d">Δ 坐标</text>
+</g>
+<g stroke="#147f80" stroke-width="4" fill="none" marker-end="url(#pl-ah)">
+<path d="M150 210H196"/><path d="M330 210H376"/><path d="M510 210H556"/><path d="M700 200 L746 140"/><path d="M700 225 L746 275"/>
+</g>
+<defs><marker id="pl-ah" markerWidth="10" markerHeight="10" refX="7" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#147f80"/></marker></defs>
+<text x="450" y="395" font-size="18" text-anchor="middle" fill="#53676d">每个候选框独立走完 CNN —— 重叠区域被重复计算</text>
+</svg>

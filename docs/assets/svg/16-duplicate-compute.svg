@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 420" role="img" aria-labelledby="dc-title dc-desc" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif">
+<title id="dc-title">重叠候选导致卷积重复计算</title>
+<desc id="dc-desc">两个候选框在图像上大量重叠，R-CNN 对每个框各自跑一遍完整 CNN，重叠区域的特征被反复重算；先对整图前向一次再截取区域可直接复用。</desc>
+<rect width="900" height="420" fill="#fffdf9"/>
+<text x="45" y="46" font-size="22" font-weight="700" fill="#203035">重叠候选 → 重复卷积</text>
+<rect x="45" y="80" width="330" height="240" rx="12" fill="#eef3f2" stroke="#53676d"/>
+<g fill="none" stroke-width="3">
+<rect x="120" y="150" width="170" height="120" fill="#d6f1eb" stroke="#147f80"/>
+<rect x="190" y="180" width="170" height="120" fill="#ffecd9" stroke="#d06d4d"/>
+</g>
+<text x="205" y="230" font-size="17" fill="#0f5f60">候选 A</text>
+<text x="290" y="265" font-size="17" fill="#8a4526">候选 B</text>
+<text x="45" y="360" font-size="18" fill="#53676d">重叠区域被 A、B 各算一次</text>
+<g font-size="18" text-anchor="middle" fill="#203035">
+<rect x="500" y="120" width="150" height="80" rx="12" fill="#d6f1eb" stroke="#147f80" stroke-width="2.5"/>
+<text x="575" y="158">整图前向</text>
+<text x="575" y="182" font-size="15" fill="#53676d">一次特征图</text>
+<rect x="500" y="250" width="150" height="80" rx="12" fill="#ebe5ff" stroke="#7461ba" stroke-width="2.5"/>
+<text x="575" y="288">截取区域</text>
+<text x="575" y="312" font-size="15" fill="#53676d">RoI 池化</text>
+</g>
+<g stroke="#147f80" stroke-width="4" fill="none" marker-end="url(#dc-ah)">
+<path d="M505 160 H400"/><path d="M575 200 V246"/>
+</g>
+<defs><marker id="dc-ah" markerWidth="10" markerHeight="10" refX="7" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#147f80"/></marker></defs>
+<text x="450" y="395" font-size="18" text-anchor="middle" fill="#53676d">Fast R-CNN 的思路：卷积只跑一次，区域在特征图上取</text>
+</svg>

@@ -1,0 +1,25 @@
+{
+  "title": "CV Tutorial chapters 16–20 — claim/source register",
+  "date": "2026-11-24",
+  "scope": "Primary papers and official APIs; figures, pointer examples and runnable samples are illustrative, not benchmarks.",
+  "entries": [
+    {
+      "chapter": "16",
+      "claim": "R-CNN replaces hand-crafted features with CNN features on bottom-up region proposals and reaches 53.3% mAP on PASCAL VOC 2012, a >30% relative gain over the previous best",
+      "sources": ["https://arxiv.org/abs/1311.2524"],
+      "caveat": "Figure taken from the paper abstract; VOC 2007 numbers and per-backbone comparisons live in the paper tables and are not restated here"
+    },
+    {
+      "chapter": "16",
+      "claim": "Box regression targets are t_x=(G_x-P_x)/P_w, t_y=(G_y-P_y)/P_h, t_w=log(G_w/P_w), t_h=log(G_h/P_h) with Smooth L1 loss",
+      "sources": ["https://arxiv.org/abs/1311.2524"],
+      "caveat": "MathML states the four targets and the inverse decode; P_w,P_h>0 required"
+    },
+    {
+      "chapter": "16",
+      "claim": "Selective Search oversegments, greedily merges regions by color/texture/size/shape and needs no training data",
+      "sources": ["https://link.springer.com/article/10.1007/s11263-013-0620-5"],
+      "caveat": "The ~2000-box budget and recall percentage are paper-specific and not reproduced numerically here"
+    }
+  ]
+}

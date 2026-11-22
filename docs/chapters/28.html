@@ -1,248 +1,91 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
-    <title>第28章 综合实战项目</title>
-    <link rel="stylesheet" href="theme.css">
-</head>
-<body>
-<div class="double-border">
-<div class="container">
-    <div class="sidebar">
-        <h3>🖼️ 课程目录</h3>
-        <ul class="chapter-list">
-            <li><a href="01.html">第1章 计算机视觉概述与发展简史</a></li>
-            <li><a href="02.html">第2章 数字图像处理基础</a></li>
-            <li><a href="03.html">第3章 传统特征提取方法</a></li>
-            <li><a href="04.html">第4章 神经网络与反向传播</a></li>
-            <li><a href="05.html">第5章 卷积神经网络原理</a></li>
-            <li><a href="06.html">第6章 深度学习框架入门</a></li>
-            <li><a href="07.html">第7章 图像分类任务与数据集</a></li>
-            <li><a href="08.html">第8章 AlexNet——深度学习视觉起点</a></li>
-            <li><a href="09.html">第9章 VGG——小卷积堆叠的简洁哲学</a></li>
-            <li><a href="10.html">第10章 ResNet——残差学习突破深度瓶颈</a></li>
-            <li><a href="11.html">第11章 ViT——视觉Transformer革命</a></li>
-            <li><a href="12.html">第12章 ConvNeXt——CNN现代化改造</a></li>
-            <li><a href="13.html">第13章 训练策略与调参实战</a></li>
-            <li><a href="14.html">第14章 模型评估与对比分析</a></li>
-            <li><a href="15.html">第15章 目标检测基础</a></li>
-            <li><a href="16.html">第16章 R-CNN——两阶段检测开山</a></li>
-            <li><a href="17.html">第17章 Faster R-CNN与区域提议网络</a></li>
-            <li><a href="18.html">第18章 单阶段检测概述与对比</a></li>
-            <li><a href="19.html">第19章 图像分割基础与分类</a></li>
-            <li><a href="20.html">第20章 U-Net——医学图像分割标配</a></li>
-            <li><a href="21.html">第21章 Mask R-CNN——检测+分割统一</a></li>
-            <li><a href="22.html">第22章 语义分割前沿与全景分割</a></li>
-            <li><a href="23.html">第23章 数据增强与预处理实战</a></li>
-            <li><a href="24.html">第24章 迁移学习与模型微调</a></li>
-            <li><a href="25.html">第25章 模型优化与部署</a></li>
-            <li><a href="26.html">第26章 自监督学习与基础模型</a></li>
-            <li><a href="27.html">第27章 多模态与生成模型概览</a></li>
-            <li><a href="28.html" class="active">第28章 综合实战项目</a></li>
-        </ul>
-    </div>
-    <div class="main-content">
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="完整视觉项目实例：任务目标、数据防泄漏、CPU 可复现分类器、宏平均指标、拒识门禁、checkpoint 与监控闭环。"><title>第 28 章 · 从数据到上线：一个可复现的视觉项目 | CV Tutorial</title><link rel="stylesheet" href="../assets/css/article.css"></head><body><a class="skip" href="#content">跳转正文</a><div class="chapter-shell"><nav class="toc" aria-label="文章目录"><h2>28 · 项目与复现</h2><div class="toc-items"><a href="../index.html">← 全部课程</a><a href="#s-brief">项目契约：定义错误成本与验收指标</a><a href="#s-data">数据清单与分组切分</a><a href="#s-model">建立最小能复现的分类基线</a><a href="#s-metrics">混淆矩阵、宏平均与拒识策略</a><a href="#s-artifact">序列化模型需要保存哪些信息</a><a href="#s-release">上线门禁：数值一致性与监控</a><a href="#s-experiments">四个独立可运行实验</a><a href="#s-next">把玩具实验迁移到真实项目</a><a href="#references">参考资料与工程规范</a></div></nav><main class="reading" id="content"><article><header><div class="chapter-top"><a href="../index.html">CV TUTORIAL</a><span>综合实战 / 28</span></div><p class="chapter-kicker">CHAPTER 28 · END-TO-END VISION ENGINEERING</p><h1>从数据到上线：一个可复现的视觉项目</h1><p class="dek">从一个明确的质量检测任务出发，建立组级数据划分、最小训练循环、可解释的指标、置信度拒识和可回滚模型工件。所有教学实验在 CPU 上运行，方便把理念迁移到真实视觉工程。</p></header><section id="s-brief"><h2>项目契约：定义错误成本与验收指标</h2><p>假设要在一条产线上用摄像头对产品照片做质量分流，类别包括 <code>normal</code>（正常）、<code>scratch</code>（划痕）和 <code>dent</code>（凹陷）。真正需要的是一个可回归验证的系统，不只是运行一次 <code>model.predict</code>。误报可能浪费人工质检时间；漏报则可能让缺陷产品流出，因此应先给出任务约束、错误成本和人工复核流程。</p><p>在数据集规模足够之前，暂时用<strong>两类别的合成 8×8 灰度图像</strong>构造端到端演示：横线/竖线，验证训练循环、损失、指标和发布契约。该玩具例子不等同于真实产品缺陷识别，更不代表任何生产质量指标。由实验过渡到真实项目时，要改用经授权的真实样本和领域一致的标注规范。</p><figure><img src="../assets/svg/28-problem.svg" width="900" height="440" alt="训练系统从可检验的任务契约出发，依次明确数据、模型、决策阈值和上线运维；并非只比较神经网络结构。" loading="lazy"><figcaption>训练系统从可检验的任务契约出发，依次明确数据、模型、决策阈值和上线运维；并非只比较神经网络结构。</figcaption></figure><p>定义线上通过标准，例如：固定测试集 macro-F1 不低于业务阈值、缺陷漏检率在可接受范围、P95 端到端延迟符合设备预算，且每一笔拒识样本都有可追溯的人工复核流程。这里不预设具体 SLA 数字，因为真实门槛必须来自现场成本、数据与硬件测量。</p></section><section id="s-data"><h2>数据清单与分组切分</h2><p>一批数据不能只包含图片文件。每条记录至少需要 image_id、采集设备/产线、时间或批次、目标标签、原始图像哈希和标注版本。对于视频帧、同一件产品多角度照片或同一病人的多张切片，样本之间高度相关：随机逐图切分会让训练、验证和测试共享同源视觉细节。</p><p>正确策略是先按 <code>group_id</code> 将数据拆分成 train/validation/test，再只对训练集合做随机增强。Validation 用于超参数与阈值选择，Test 用于最终独立验收。类别数、组数很少时需要调整验证协议、增加组或做交叉验证，不能伪造足够大的独立测试集。</p><figure><img src="../assets/svg/28-split.svg" width="900" height="440" alt="同一设备、视频、病人或同源产品组不能跨训练与测试；验证与测试都应只执行确定性预处理。" loading="lazy"><figcaption>同一设备、视频、病人或同源产品组不能跨训练与测试；验证与测试都应只执行确定性预处理。</figcaption></figure><div class="note"><strong>分组优先级：</strong>真实生产数据应根据最可能导致泄漏的实体（产品 ID、采集 session、设备、场景或病人）组织划分；如果模型最终要适应新设备，测试集还应显式包含未见过的设备域。</div></section><section id="s-model"><h2>建立最小能复现的分类基线</h2><p>在选择复杂 backbone 之前，先确认数据张量和训练循环都正确。约定输入为 <code>[N, 1, 8, 8]</code> 的浮点 tensor，像素区间在本 toy generator 中由随机噪声与二值线条构造；标签为 <code>[N]</code> 的整数索引。模型由 Flatten 和 Linear(64→2) 组成，输出两个未归一化 logits，而不是提前调用 softmax。<code>torch.nn.CrossEntropyLoss</code> 内部包含 log-softmax 与负对数似然。</p><p>训练时执行 <code>zero_grad()</code>、前向、计算 loss、<code>backward()</code>、<code>optimizer.step()</code>；验证与推理切换 <code>model.eval()</code> 并使用 <code>torch.no_grad()</code>。复杂 CNN 的 batch normalization 和 dropout 对 train/eval 的区别尤其敏感。所有训练实验至少记录随机种子、依赖版本、数据哈希、split manifest、模型参数与优化器配置。</p><figure><img src="../assets/svg/28-pipeline.svg" width="900" height="440" alt="训练管线与验证管线必须共享输入契约；模型权重只是发布工件的一部分，预处理与类别顺序同样需要版本化。" loading="lazy"><figcaption>训练管线与验证管线必须共享输入契约；模型权重只是发布工件的一部分，预处理与类别顺序同样需要版本化。</figcaption></figure><p>固定随机种子能够改善复现性，但不能保证跨 PyTorch release、CPU/GPU 或不同硬件完全逐位相同。遇到非确定性算子时，可启用 <code>torch.use_deterministic_algorithms</code> 检查或限制算子；对多进程 DataLoader 还需要配置 worker seed 与 generator。</p></section><section id="s-metrics"><h2>混淆矩阵、宏平均与拒识策略</h2><p>总体 accuracy 会受到正常样本占比影响。若 98% 产品正常，一个永远预测 normal 的分类器也可能得到非常高的总体 accuracy，却完全漏掉缺陷。必须查看每类 precision、recall、F1、混淆矩阵和业务关键类别的漏检率。对 K 个类别，macro-F1 对每类 F1 等权平均，因此在小类上失败会被清楚显示。</p><div class="equation" role="group" tabindex="0" aria-label="每类 precision 是 TP 除以 TP 加 FP，recall 是 TP 除以 TP 加 FN。"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block" aria-label="每类 precision 是 TP 除以 TP 加 FP，recall 是 TP 除以 TP 加 FN。"><msub><mi>P</mi><mi>c</mi></msub><mo>=</mo><mfrac><msub><mi>TP</mi><mi>c</mi></msub><mrow><msub><mi>TP</mi><mi>c</mi></msub><mo>+</mo><msub><mi>FP</mi><mi>c</mi></msub></mrow></mfrac><mo>,</mo><mspace width="1em"/><msub><mi>R</mi><mi>c</mi></msub><mo>=</mo><mfrac><msub><mi>TP</mi><mi>c</mi></msub><mrow><msub><mi>TP</mi><mi>c</mi></msub><mo>+</mo><msub><mi>FN</mi><mi>c</mi></msub></mrow></mfrac></math><p class="eq-caption">TP、FP、FN 都按“以类别 c 为正例，其它类别为负例”的 one-vs-rest 口径统计。</p></div><div class="equation" role="group" tabindex="0" aria-label="每类别 F1 是 precision 与 recall 的调和平均；macro-F1 是 K 个类别的 F1 的等权平均。"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block" aria-label="每类别 F1 是 precision 与 recall 的调和平均；macro-F1 是 K 个类别的 F1 的等权平均。"><msub><mi>F1</mi><mi>c</mi></msub><mo>=</mo><mfrac><mrow><mn>2</mn><msub><mi>P</mi><mi>c</mi></msub><msub><mi>R</mi><mi>c</mi></msub></mrow><mrow><msub><mi>P</mi><mi>c</mi></msub><mo>+</mo><msub><mi>R</mi><mi>c</mi></msub></mrow></mfrac><mo>,</mo><mspace width=".7em"/><msub><mi>F1</mi><mi>macro</mi></msub><mo>=</mo><mfrac><mn>1</mn><mi>K</mi></mfrac><munder><mo>∑</mo><mi>c</mi></munder><msub><mi>F1</mi><mi>c</mi></msub></math><p class="eq-caption">分母为 0 的类别应按预先声明的 zero_division 协议处理；公式默认分母非零。</p></div><p>一个工程上有用的策略是拒识（abstention）：若模型 softmax 最大值低于阈值 τ，则不自动给出最终类别，而交给人工复核。阈值提高通常降低自动处理覆盖率，但被接受样本的准确率变化必须在验证集上实际测量，不能只靠直觉保证。</p><figure><img src="../assets/svg/28-threshold.svg" width="900" height="440" alt="模型把最高概率与拒识阈值比较，分别走自动决策或人工复核；softmax 分数不应未经校准就被当作真实正确概率。" loading="lazy"><figcaption>模型把最高概率与拒识阈值比较，分别走自动决策或人工复核；softmax 分数不应未经校准就被当作真实正确概率。</figcaption></figure><p>可以采用温度缩放、可靠性图、ECE（Expected Calibration Error）等方法分析校准，但它们要求明确验证集、分箱方案与任务条件。真实业务应按设备、产线、光照和缺陷类别切片评估错误，以免总体指标掩盖某个风险子群。</p></section><section id="s-artifact"><h2>序列化模型需要保存哪些信息</h2><p>模型文件应该包含或关联以下信息：结构与权重版本、label_map（类别 ID 顺序）、图像解码/颜色空间、resize/crop/normalize 参数、输入 dtype 与 shape、训练数据与划分清单哈希、关键依赖与评估记录。PyTorch 推荐保存 <code>state_dict</code>，加载时在受控模型结构上恢复，避免把任意外部 pickle 对象直接作为可信代码执行。</p><p>离线的最小工件可以是一个装有 <code>state_dict</code>、类别映射和预处理字典的 checkpoint，并结合 manifest 写入 SHA-256。生产环境通常还要附上部署格式（例如 ONNX）、签名/来源信息、数值回归测试和回滚工件。每次更换 preprocess、label ID 或模型权重，应视为新版本，而不只是覆盖旧文件。</p><figure><img src="../assets/svg/28-release.svg" width="900" height="440" alt="模型发布需要明确权重、预处理、类别映射、版本与回滚；上线后监控模型输入分布和端到端延迟。" loading="lazy"><figcaption>模型发布需要明确权重、预处理、类别映射、版本与回滚；上线后监控模型输入分布和端到端延迟。</figcaption></figure></section><section id="s-release"><h2>上线门禁：数值一致性与监控</h2><p>导出 ONNX、构建 TensorRT 或部署到边缘端时应做模型输入输出一致性测试：固定测试向量在训练侧与部署侧的输出 shape、数值容差和最终类别要可对照。对动态输入形状，还应验证合法范围内的 min/opt/max 和错误输入处理。不同硬件/算子精度可能存在数值差异，因此容差需要按 dtype 和任务需求确定。</p><p>线上服务除了 P50 延迟还应报告 P95/P99、吞吐与峰值内存；监控分布漂移、拒识率和人工复核后的错误类型。真实标签可能延迟抵达，应保存预测版本、采集时间和真实结果的关联机制，才能构建再训练闭环。</p><p>发布前设立失败即阻断的质量门禁：缺失 label_map、预处理不匹配、分组泄漏、关键类别召回过低、数值回归超阈值或设备内存不足，都应该拒绝上线。日志必须处理好敏感数据和留存周期，不能把原始图像无限期上传作为默认设置。</p></section><section id="s-experiments"><h2>四个独立可运行实验</h2><p>以下脚本均在 CPU 上执行，不依赖外部下载、真实图片或预训练权重。它们证明的是<strong>工程契约可验证</strong>，不是一套真实工业视觉系统的性能报告。每段代码都可单独复制、运行并使用断言检查预期。</p><h3>1. Group-aware split：保证数据源不跨集合</h3><pre><code>import random
 
-        <h2>28.1 项目概述 — 构建完整的图像识别系统</h2>
+records = [(group, i) for group in &quot;ABCDEF&quot; for i in range(3)]
+groups = list(&quot;ABCDEF&quot;)
+random.Random(7).shuffle(groups)
+train, val, test = set(groups[:4]), set(groups[4:5]), set(groups[5:])
+splits = {
+    &quot;train&quot;: [r for r in records if r[0] in train],
+    &quot;val&quot;: [r for r in records if r[0] in val],
+    &quot;test&quot;: [r for r in records if r[0] in test],
+}
+train_groups = {g for g,_ in splits[&quot;train&quot;]}
+val_groups = {g for g,_ in splits[&quot;val&quot;]}
+test_groups = {g for g,_ in splits[&quot;test&quot;]}
+assert not train_groups &amp; val_groups
+assert not train_groups &amp; test_groups
+assert not val_groups &amp; test_groups
+assert sum(len(x) for x in splits.values()) == 18
+print(&quot;group-aware samples:&quot;, {k: len(v) for k,v in splits.items()})</code></pre><h3>2. 合成 8×8 图像分类器：训练、验证与张量契约</h3><pre><code>import torch
+from torch import nn
 
-        <p>欢迎来到第28章，本课程的最后一章。在前面的27章中，我们从数字图像处理的像素基础一路学到了自监督学习、多模态模型和AIGC前沿。每一章的知识点就像散落在工具箱里的零件。这一章的目标只有一句话：<strong>用所有零件，组装一台完整的机器</strong>。</p>
+torch.manual_seed(5)
+N = 80
+images = 0.1*torch.randn(N,1,8,8)
+labels = (torch.arange(N)%2).long()
+for i in range(N):
+    if labels[i] == 0:
+        images[i,0,3:5,:] += 1.0  # horizontal stripe
+    else:
+        images[i,0,:,3:5] += 1.0  # vertical stripe
 
-        <p>本章的实战项目是构建一个<strong>"智能仓储分拣辅助系统"</strong>。假设你是一家物流公司的算法工程师，公司每日处理数十万件包裹，需要自动识别包裹上的运单信息、包裹类型（纸箱/泡沫箱/文件袋）以及是否存在破损渗漏。你的任务是从零搭建一个完整的CV系统来完成这个目标——包括需求分析、数据采集、模型训练、评估迭代和最终部署。</p>
+model = nn.Sequential(nn.Flatten(), nn.Linear(64,2))
+optimizer = torch.optim.Adam(model.parameters(),lr=0.03)
+for step in range(35):
+    optimizer.zero_grad()
+    logits = model(images[:60])
+    loss = nn.functional.cross_entropy(logits,labels[:60])
+    loss.backward()
+    optimizer.step()
 
-        <p>这个项目并非虚构。我在2021年参与过一个类似的物流分拣项目。当时最大的挑战不是技术本身——我们选了YOLOv5做检测、ResNet做分类，这都是成熟方案——而是<strong>数据与场景的匹配</strong>。实验室里跑得飞快的模型，到了传送带现场，面对不同光照（仓库的日光灯vs出入口的自然光）、不同角度（固定相机vs人工放置）、不同背景（传送带vs操作台），性能直接打七折。这个项目教会我一个深刻的道理：<strong>CV系统90%的工作不在模型训练，而在理解问题、处理数据和适配场景</strong>。我们也就在这样"边做边踩坑"的节奏中，一步一步完成了整个系统。</p>
+model.eval()
+with torch.no_grad():
+    pred = model(images[60:]).argmax(dim=1)
+    accuracy = (pred==labels[60:]).float().mean().item()
+assert logits.shape == (60,2)
+assert accuracy &gt;= 0.95
+print(&quot;toy held-out accuracy:&quot;,accuracy)</code></pre><h3>3. 分类置信度拒识：coverage 与 conditional accuracy</h3><pre><code>import torch
 
-        <h2>28.2 需求分析与技术选型</h2>
+# Probability rows are illustrative: prediction class is argmax.
+p = torch.tensor([[.95,.05],[.54,.46],[.15,.85],[.32,.68],[.88,.12]])
+truth = torch.tensor([0,1,1,0,0])
+prediction = p.argmax(1)
+confidence = p.max(1).values
+accepted = confidence &gt;= 0.7
+correct = prediction==truth
+coverage = accepted.float().mean()
+accepted_accuracy = correct[accepted].float().mean()
+confusion = torch.zeros(2,2,dtype=torch.long)
+for t,pr in zip(truth,prediction):
+    confusion[t,pr] += 1
 
-        <p>任何成功的CV项目都始于清晰的需求分析。不要一上来就想着"用哪个SOTA模型"，而是先回答几个根本问题：</p>
+assert confusion.sum() == len(truth)
+assert accepted.tolist() == [True,False,True,False,True]
+assert abs(float(coverage)-0.6) &lt; 1e-6
+assert abs(float(accepted_accuracy)-1.0) &lt; 1e-6
+print(&quot;coverage:&quot;,float(coverage),&quot;accepted accuracy:&quot;,float(accepted_accuracy))</code></pre><h3>4. 可信工件：state_dict、label map、预处理与哈希</h3><pre><code>import hashlib
+import tempfile
+from pathlib import Path
+import torch
+from torch import nn
 
-        <ul>
-            <li><strong>业务目标：</strong>系统要解决什么具体问题？我们的目标是自动识别包裹类型、读取运单号、检测破损——三个子任务。</li>
-            <li><strong>性能要求：</strong>准确率、速度（FPS）、延迟（ms）分别要达到什么水平？传送带速度决定了每件包裹只有500ms的检测窗口。</li>
-            <li><strong>运行环境：</strong>在服务器端、边缘设备还是云端？工业场景通常在Jetson等边缘设备上运行。</li>
-            <li><strong>数据条件：</strong>有多少标注数据？能否持续收集？是否有领域迁移问题？</li>
-            <li><strong>约束条件：</strong>算力预算、开发周期、维护成本等。</li>
-        </ul>
-
-        <table>
-            <tr><th>子任务</th><th>算法选型</th><th>选型理由</th></tr>
-            <tr><td>包裹目标检测</td><td>YOLOv8</td><td>单阶段检测中最快最稳的选择，mAP高，NMS/TTA等工具链完善</td></tr>
-            <tr><td>包裹分类（纸箱/泡沫/文件袋）</td><td>ResNet-18 + 迁移学习</td><td>类别少（3类），轻量级网络足够，迁移学习降低数据需求</td></tr>
-            <tr><td>破损检测</td><td>EfficientNet-B3</td><td>需要捕捉"撕裂""渗漏"等细微异常特征</td></tr>
-            <tr><td>运单号OCR</td><td>PP-OCR v4</td><td>轻量级OCR方案，百度PaddleOCR工具链成熟且开源</td></tr>
-        </table>
-
-        <div class="highlight">
-            <strong>💡 选型原则：</strong>不要为"炫技"选择过于复杂的模型。我们的选型原则是"够用就好，留有余量"。YOLOv8的推理延迟在我们的Jetson Orin上约35ms，留有大量余量应对未来的功能扩展。选型和架构设计中最关键的能力其实是"预判"——你需要预判未来可能的业务变化，为系统留出扩展空间。
-        </div>
-
-        <h2>28.3 数据处理与增强</h2>
-
-        <p>数据处理是一个CV项目中最容易被轻视、却实际消耗最多时间的环节。在分拣系统的开发中，数据工作占了整个项目周期的60%以上。下面是我们完整的数据处理Pipeline：</p>
-
-        <p><strong>第一步：数据采集。</strong>在仓库现场部署临时拍摄设备，采集不同时段（早/中/夜班）、不同光照条件、不同包裹类型的原始视频。我们连续采集了一周，获得了600GB的视频数据。</p>
-
-        <p><strong>第二步：数据清洗。</strong>从视频中抽取关键帧（每秒1帧），去重（背景几乎不变的帧跳过），剔除模糊帧（Laplacian算子检测，方差<100的作为模糊丢弃），最终得到约15000张有效图像。</p>
-
-        <p><strong>第三步：数据标注。</strong>使用Label Studio工具进行标注。包裹检测标注边界框，包裹分类标注类别标签，破损区域标注多边形掩码，运单号标注文本bounding box。三个标注员花了约2周完成。</p>
-
-        <p><strong>第四步：数据增强。</strong>这是提高模型泛化能力的关键环节。我们应用了以下增强策略：</p>
-
-        <pre><code># 数据增强Pipeline（基于Albumentations库）
-        import albumentations as A
-        from albumentations.pytorch import ToTensorV2
-
-        # 训练增强：强数据增强
-        train_transform = A.Compose([
-            A.RandomResizedCrop(height=640, width=640, scale=(0.6, 1.0)),
-            A.HorizontalFlip(p=0.5),
-            A.ColorJitter(
-                brightness=0.3, contrast=0.3,
-                saturation=0.2, hue=0.1, p=0.8
-            ),
-            A.GaussNoise(var_limit=(10, 50), p=0.3),
-            A.GaussianBlur(blur_limit=(3, 7), p=0.2),
-            # 模拟传送带运动模糊
-            A.MotionBlur(blur_limit=9, p=0.3),
-            A.RandomBrightnessContrast(brightness_limit=0.2, p=0.5),
-            # 模拟仓库不同光照色温
-            A.RandomToneCurve(scale=0.3, p=0.3),
-            A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-            ToTensorV2()
-        ])
-
-        # 验证增强：只做必要的预处理
-        val_transform = A.Compose([
-            A.Resize(height=640, width=640),
-            A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-            ToTensorV2()
-        ])</code></pre>
-
-        <p>这里有一个血泪教训：我们最初把增强策略复制粘贴自一个公开的Coco检测示例，模型在测试集上mAP达到0.89，但部署到真实仓库后的mAP骤降到0.52。排查后发现原因是：真实的包裹图像中大量存在传送带运动导致的<strong>定向运动模糊</strong>，而我们的增强中没有MotionBlur；仓库的日光灯有50Hz频闪导致的色温变化，我们的增强中没有模拟。这个经历验证了第23章的核心观点——<strong>数据增强必须建模真实部署场景中的退化模式</strong>，而不是盲目堆叠常见的增强操作。</p>
-
-        <h2>28.4 模型训练与调优</h2>
-
-        <p>数据准备好了，进入模型训练阶段。这是一个需要耐心和系统性的过程，绝非一次训练就能搞定。</p>
-
-        <p><strong>第一阶段：基线建立。</strong>直接用YOLOv8提供的默认超参数训练一个模型作为基线。这个模型可能不是最好的，但它给你提供了一个<strong>比较的锚点</strong>——后续所有改进都可以对照这个基线来量化。</p>
-
-        <p><strong>第二阶段：迁移学习与微调。</strong>对于包裹分类和破损检测这两个分类任务，我们使用在ImageNet上预训练的ResNet-18和EfficientNet-B3进行微调。关键技巧是<strong>分层解冻</strong>：先冻结backbone只训练分类头（10个epoch），然后解冻最后两个block（10个epoch），最后全模型微调（5个epoch）。这种渐进式训练策略可以有效防止灾难性遗忘。</p>
-
-        <p><strong>第三阶段：超参数调优。</strong>使用Ray Tune对关键超参数进行网格搜索，重点关注学习率、batch size、权重衰减和Mosaic增强的开关。我们在YOLOv8上发现：学习率1e-3、weight decay 5e-4、关闭Mosaic增强（因为包裹图像中的尺度变化不大）是最优组合。对比没调参的基线，mAP提升了2.3%。</p>
-
-        <p><strong>第四阶段：训练监控。</strong>使用WandB（Weights & Biases）或TensorBoard实时监控训练过程。以下是我们关注的几个核心指标：training loss（是否下降）、validation mAP（是否持续上升）、gradient norm（是否存在梯度爆炸）、learning rate schedule（是否合理）。</p>
-
-        <div class="tip">
-            <strong>💡 训练心法：</strong>CV模型训练有一个重要原则——"先让你的模型过拟合，再考虑正则化"。如果一个模型连训练集都无法完美拟合（即训练loss高），说明模型容量不够或学习有问题，这时候加Dropout、Weight Decay等正则化只会让情况更糟。正确的步骤是：先让模型在训练集上过拟合 → 再观察验证集上的差距 → 逐步增加正则化缩小这个差距。
-        </div>
-
-        <h2>28.5 模型评估与迭代</h2>
-
-        <p>训练完成后，全面评估模型性能是部署前不可跳过的环节。我们的评估过程分为三个层面：</p>
-
-        <p><strong>标准指标评估：</strong>在测试集上计算mAP@0.5、mAP@0.5:0.95、Precision、Recall、F1-score。对于分类任务额外关注混淆矩阵——了解模型在哪些类别之间容易混淆。我们的模型在"纸箱"和"泡沫箱"之间存在约8%的误检率，原因是两者在视觉上确实高度相似（都是棕色方形）。</p>
-
-        <p><strong>错误分析（Error Analysis）：</strong>手动查看所有False Positive和False Negative样本，将错误归类：标注错误（数据问题）、遮挡严重（场景问题）、模糊抖动（采集问题）、类间相似（模型问题）。我们发现约30%的"模型错误"其实是标注错误——标注员漏标了或标错边界框。修正后mAP提升了4.1%。</p>
-
-        <p><strong>场景覆盖测试：</strong>在不同光照条件、不同包裹摆放角度、不同传送带速度下分别评估。我们的模型在夜间（荧光灯）场景下的准确率比白天低了12%，原因是训练数据中夜间样本只占15%。解决方法是补充夜间数据并做色彩对齐增强。</p>
-
-        <table>
-            <tr><th>场景</th><th>原始mAP</th><th>错误类型</th><th>改进措施</th><th>改进后mAP</th></tr>
-            <tr><td>白天/午班</td><td>0.89</td><td>轻微遮挡漏检</td><td>增加遮挡增强</td><td>0.91</td></tr>
-            <tr><td>黄昏/晚班</td><td>0.78</td><td>光照不足</td><td>补充傍晚数据</td><td>0.86</td></tr>
-            <tr><td>夜间/夜班</td><td>0.75</td><td>荧光灯频闪</td><td>色彩对齐+更多夜班数据</td><td>0.87</td></tr>
-            <tr><td>包裹堆叠</td><td>0.62</td><td>严重遮挡</td><td>改进NMS策略+堆叠数据</td><td>0.79</td></tr>
-        </table>
-
-        <p>这个迭代过程持续了大约三周。每一次迭代，我们都选择一个具体的短板（如夜间性能、堆叠检测），针对性地改进数据或模型，然后重新评估。一个很好的衡量标准是：<strong>当连续两次迭代在所有场景上的提升都低于1%时，模型成熟度就足够了</strong>。</p>
-
-        <div class="warning">
-            <strong>⚠️ 踩坑提醒：</strong>千万不要陷入"无休止的模型迭代"中。有一个著名的"模型迭代死亡螺旋"：工程师不断尝试新的模型架构、调参技巧来提升0.5%的mAP，但真正的瓶颈可能在数据质量、标注一致性或推理部署上。设定明确的迭代终止标准（如所有场景>0.85 mAP），达到后立即转向部署阶段。
-        </div>
-
-        <h2>28.6 模型部署与推理</h2>
-
-        <p>模型在实验室里跑得好并不算完，真正的考验是部署到生产环境中稳定运行。我们的部署流程如下：</p>
-
-        <p><strong>第一步：ONNX导出。</strong>将PyTorch模型导出为ONNX格式。ONNX是一个开放的模型交换格式，几乎支持所有主流推理后端。</p>
-
-        <pre><code># 将YOLOv8模型导出为ONNX并验证
-        from ultralytics import YOLO
-
-        # 加载训练好的模型
-        model = YOLO("best.pt")
-
-        # 导出为ONNX格式
-        model.export(format="onnx", imgsz=640, dynamic=True)
-        # 输出: best.onnx
-        # 可使用 onnxruntime 或 TensorRT 进行推理
-
-        # 使用ONNX Runtime推理
-        import onnxruntime as ort
-        import numpy as np
-
-        session = ort.InferenceSession("best.onnx")
-        input_name = session.get_inputs()[0].name
-
-        # 预处理图像
-        image = cv2.imread("packet.jpg")
-        image_resized = cv2.resize(image, (640, 640))
-        image_normalized = image_resized.astype(np.float32) / 255.0
-        input_tensor = np.transpose(image_normalized, (2, 0, 1))[None, ...]
-
-        # 推理
-        outputs = session.run(None, {input_name: input_tensor})
-        detections = postprocess_yolo_outputs(outputs)</code></pre>
-
-        <p><strong>第二步：TensorRT优化。</strong>ONNX模型在NVIDIA GPU上还没有发挥全部潜力。通过在Jetson Orin上使用TensorRT对模型做FP16量化、算子融合和内存优化，推理延迟从35ms降到了12ms，吞吐量提升了近3倍。对于边缘设备部署来说，TensorRT几乎是必选项。</p>
-
-        <p><strong>第三步：REST API封装。</strong>使用FastAPI将推理逻辑封装成RESTful API。API的设计考虑了：并发请求处理（使用异步IO）、请求超时控制（防止一个坏图拖垮整个服务）、批处理推理（可配置batch size提高吞吐量）。</p>
-
-        <p><strong>第四步：端到端测试。</strong>在仓库实地部署后，连续运行48小时收集性能数据。我们不只测了平均延迟，还测了P99延迟（99%的请求在多少ms内完成）、最大延迟、以及内存泄漏情况。P99延迟从第一次测试的850ms优化到了180ms——关键优化是移除了推理过程中的一些冗余日志和图像保存操作。</p>
-
-        <div class="tip">
-            <strong>🔮 部署箴言：</strong>部署中最常见的坑是"环境不一致"。开发环境的PyTorch版本、CUDA版本、甚至是opencv的编译选项，都可能与生产环境不同，导致推理结果出现微小差异。解决方案是<strong>容器化</strong>——用Docker将整个环境打包，确保从开发到部署的无缝迁移。我们在项目中用了NVIDIA推荐的jetpack容器镜像，一次性解决了环境不一致的问题。
-        </div>
-
-        <h2>28.7 课程回顾与学习路径展望</h2>
-
-        <p>到这里，我们28章的旅程就要结束了。在最后这个部分，我想帮你回顾整个课程的知识体系，并为你的后续学习提供一张"地图"。</p>
-
-        <p>这28章可以划分为六个知识模块，回顾每一个模块，你走过的每一步都清晰可见：</p>
-
-        <table>
-            <tr><th>模块</th><th>章节</th><th>核心主题</th><th>给你的</th></tr>
-            <tr><td>基础篇</td><td>1-6</td><td>CV发展史、图像处理、特征提取、神经网络、CNN框架</td><td>打下坚实的理论和工具基础</td></tr>
-            <tr><td>图像分类</td><td>7-12</td><td>分类任务、AlexNet/VGG/ResNet/ViT/ConvNeXt</td><td>理解架构演进的逻辑和规律</td></tr>
-            <tr><td>训练与评估</td><td>13-14</td><td>训练策略、调参、模型评估与对比</td><td>掌握CV实验的方法论</td></tr>
-            <tr><td>检测与分割</td><td>15-22</td><td>目标检测、R-CNN系列、YOLO、语义/实例/全景分割</td><td>覆盖CV最核心的两大任务</td></tr>
-            <tr><td>工程实战</td><td>23-25</td><td>数据增强、迁移学习、模型优化部署</td><td>掌握将模型落地的全流程</td></tr>
-            <tr><td>前沿与综合</td><td>26-28</td><td>自监督、多模态生成、综合实战项目</td><td>了解前沿方向并融会贯通</td></tr>
-        </table>
-
-        <p>28章的课程只是你的起点。如果你希望继续深入CV领域，以下几个方向是值得投入的进阶路径：</p>
-
-        <ul>
-            <li><strong>学术研究路径：</strong>深入阅读CV顶会论文（CVPR/ICCV/ECCV/NeurIPS），选择自监督学习、多模态、3D视觉或具身智能中的一个方向深耕。建议每周精读2-3篇论文，并复现核心实验。</li>
-            <li><strong>工业落地路径：</strong>专注于模型部署、MCM（Model Capacity Management）、数据闭环和MLOps。CV工程师不仅要会训练模型，更要能搭建从数据采集到模型监控的完整Pipeline。</li>
-            <li><strong>全栈创业路径：</strong>结合硬件（摄像头、边缘设备）、软件（后端、前端、App）和AI模型，构建完整的解决方案。最成功的CV创业公司往往不是模型最强的，而是产品最懂用户需求的。</li>
-            <li><strong>跨界融合路径：</strong>将CV与其他领域结合——CV+NLP（多模态）、CV+机器人（具身智能）、CV+医疗（医学影像分析）、CV+自动驾驶（环境感知）——在交叉点上往往能找到最大的创新空间。</li>
-        </ul>
-
-        <p>最后，我想分享一句话，是我开始学习CV时一位导师告诉我的：<strong>"计算机视觉不是关于像素的学问，而是关于如何从光中提取意义的学问"</strong>。从1966年MIT那个雄心勃勃的"暑期项目"开始，这个领域已经走过了近60年。你手中的这28章课程，是这个漫长旅程的一个精炼缩影。作为你们的讲师，我最大的期望不是让你记住每一个模型的参数量或每一个Loss的公式，而是希望你建立了这样一种能力：<strong>遇到一个视觉问题，你知道应该从什么角度去思考、用什么方法去解决、在什么地方可能遇到坑——以及，最重要的是，不惧怕去踩坑和解决问题。</strong></p>
-
-        <p>感谢你一路走到这里。从第1章到第28章，我们共同完成了一段漫长而充实的旅程。CV的世界还在飞速演进——今天的前沿，明天可能就成为基础。但你已经拥有了最核心的能力：<strong>持续学习和独立解决问题的能力</strong>。这28章的结束，正是你独立探索的开始。</p>
-
-        <p>祝你在计算机视觉的旅程中走得更远、飞得更高。我们下一门课再见！</p>
-
-        <div class="footer-nav">
-            <a href="27.html">← 上一章</a>
-            <a href="index.html">📖 返回目录</a>
-            <a href="javascript:void(0)">下一章 →</a>
-        </div>
-
-    </div>
-</div>
-</div>
-</body>
-</html>
+torch.manual_seed(12)
+original = nn.Linear(4,2)
+spec = {
+    &quot;model&quot;: original.state_dict(),
+    &quot;labels&quot;: {0:&quot;normal&quot;,1:&quot;defect&quot;},
+    &quot;preprocess&quot;: {&quot;channels&quot;:&quot;grayscale&quot;,&quot;flat_dim&quot;:4},
+}
+sample = torch.randn(3,4)
+with tempfile.TemporaryDirectory() as tmp:
+    path = Path(tmp)/&quot;checkpoint.pt&quot;
+    torch.save(spec,path)
+    loaded = torch.load(path, map_location=&quot;cpu&quot;, weights_only=True)
+    restored = nn.Linear(4,2)
+    restored.load_state_dict(loaded[&quot;model&quot;])
+    digest = hashlib.sha256(path.read_bytes()).hexdigest()
+    assert torch.allclose(original(sample),restored(sample))
+    assert loaded[&quot;labels&quot;][1] == &quot;defect&quot;
+    assert loaded[&quot;preprocess&quot;][&quot;flat_dim&quot;] == 4
+    assert len(digest) == 64
+print(&quot;state_dict parity and manifest verified&quot;)</code></pre></section><section id="s-next"><h2>把玩具实验迁移到真实项目</h2><p>真正落地时，先从组织拥有使用权限的数据中选取一个狭窄、可明确定义的视觉问题，并让标注团队建立可复审的标签规范。按 group 划分样本后，先训练最简单的线性或小型 CNN 基线，记录每个 group 的错误。确认没有数据泄漏和预处理偏差，再尝试预训练 backbone、冻结/解冻或参数高效适配。</p><p>选择目标检测或分割而非分类时，输出契约需要相应变化：检测器输出 boxes/classes/scores，必须定义 IoU 与 AP 协议；分割器输出 masks，必须对 mask 与 image 同步增强；视频模型还需考虑时序一致性和多帧关联。</p><p>这套项目工作流的终点不是“模型成功保存”，而是：任何贡献者能够从 data manifest、代码、配置与工件版本重现一项数值结果；在上线前验证关键业务约束；上线后能够发现退化、归因、回滚并重新审计。</p><details class="mini-test"><summary>理解检查：只保存模型 weights，为什么不能保证线上输出一致？</summary><p>因为输入颜色空间、归一化、resize/crop、类别 ID 顺序和推理阈值都会改变实际预测。必须将这些契约与权重绑定版本并做端到端回归测试。</p></details></section><section id="references"><h2>参考资料与工程规范</h2><ol class="refs"><li><a href="https://docs.pytorch.org/docs/stable/notes/randomness.html">PyTorch: Reproducibility（随机数、算法确定性、DataLoader workers）</a></li><li><a href="https://docs.pytorch.org/tutorials/beginner/saving_loading_models.html">PyTorch: Saving and Loading Models（state_dict / weights_only）</a></li><li><a href="https://docs.pytorch.org/tutorials/beginner/transfer_learning_tutorial.html">PyTorch: Transfer Learning for Computer Vision</a></li><li><a href="https://docs.pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html">PyTorch: CrossEntropyLoss（logits、target 与 reduction）</a></li><li><a href="https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GroupShuffleSplit.html">scikit-learn: GroupShuffleSplit（分组划分）</a></li><li><a href="https://scikit-learn.org/stable/modules/generated/sklearn.metrics.classification_report.html">scikit-learn: classification_report（precision / recall / F1）</a></li><li><a href="https://www.nist.gov/itl/ai-risk-management-framework">NIST AI Risk Management Framework（应用风险治理）</a></li></ol></section><nav class="pager" aria-label="前后章节"><a href="27.html">← 27 章</a><a href="../index.html">返回 28 章课程总览 →</a></nav></article></main></div></body></html>

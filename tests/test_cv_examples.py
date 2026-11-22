@@ -32,7 +32,7 @@ class Snippets(HTMLParser):
 
 def main():
     count=0
-    for n in range(6,21):
+    for n in range(6,22):
         path=ROOT / "docs/chapters" / f"{n:02}.html"
         p=Snippets()
         p.feed(path.read_text(encoding="utf-8"))

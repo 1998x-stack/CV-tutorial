@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 420" role="img" aria-labelledby="ma-title ma-desc" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif">
+<title id="ma-title">Mask R-CNN 的三头并行结构</title>
+<desc id="ma-desc">图像经骨干网络与 RPN 得到候选，候选经 RoIAlign 提取固定尺寸特征，再同时送入分类头、框回归头与新增的掩码头，三个损失联合反向传播。</desc>
+<rect width="900" height="420" fill="#fffdf9"/>
+<text x="45" y="44" font-size="22" font-weight="700" fill="#203035">在 Faster R-CNN 上加一个掩码头</text>
+<g font-size="17" text-anchor="middle" fill="#203035">
+<rect x="30" y="170" width="110" height="80" rx="10" fill="#d6f1eb" stroke="#147f80" stroke-width="2.5"/><text x="85" y="216">骨干+FPN</text>
+<rect x="180" y="170" width="120" height="80" rx="10" fill="#ebe5ff" stroke="#7461ba" stroke-width="2.5"/><text x="240" y="206">RPN</text><text x="240" y="230" font-size="14" fill="#6b57a8">候选区域</text>
+<rect x="340" y="170" width="130" height="80" rx="10" fill="#ffecd9" stroke="#d06d4d" stroke-width="2.5"/><text x="405" y="206">RoIAlign</text><text x="405" y="230" font-size="14" fill="#8a4526">14×14 特征</text>
+<rect x="580" y="80" width="160" height="66" rx="10" fill="#d6f1eb" stroke="#147f80" stroke-width="2.5"/><text x="660" y="120">分类头</text>
+<rect x="580" y="176" width="160" height="66" rx="10" fill="#d6f1eb" stroke="#147f80" stroke-width="2.5"/><text x="660" y="216">框回归头</text>
+<rect x="580" y="272" width="160" height="66" rx="10" fill="#ffecd9" stroke="#d06d4d" stroke-width="2.5"/><text x="660" y="312">掩码头（新增）</text>
+</g>
+<g stroke="#147f80" stroke-width="4" fill="none" marker-end="url(#ma-ah)">
+<path d="M140 210H176"/><path d="M300 210H336"/><path d="M470 200 L576 118"/><path d="M470 210H576"/><path d="M470 222 L576 300"/>
+</g>
+<defs><marker id="ma-ah" markerWidth="10" markerHeight="10" refX="7" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#147f80"/></marker></defs>
+<text x="450" y="386" font-size="16" text-anchor="middle" fill="#53676d">三个头共享同一份 RoI 特征，损失联合反向传播</text>
+</svg>

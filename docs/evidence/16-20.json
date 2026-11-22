@@ -98,6 +98,24 @@
       "claim": "Variants include 3D U-Net, Attention U-Net, U-Net++ and nnU-Net (an auto-configuration framework, not a new architecture)",
       "sources": ["https://arxiv.org/abs/1606.06650", "https://arxiv.org/abs/1804.03999", "https://arxiv.org/abs/1807.10165", "https://arxiv.org/abs/1809.10486"],
       "caveat": "Citation counts are not fixed here; overlap-tile and elastic deformation are from the original paper"
+    },
+    {
+      "chapter": "21",
+      "claim": "Mask R-CNN adds a parallel mask branch to Faster R-CNN and replaces RoI Pooling with quantization-free RoIAlign using bilinear sampling",
+      "sources": ["https://arxiv.org/abs/1703.06870"],
+      "caveat": "RoIAlign removes two rounding steps of RoI Pooling; the runnable snippet is a 2D bilinear sampler, not the full op"
+    },
+    {
+      "chapter": "21",
+      "claim": "Total loss is L = L_cls + L_box + L_mask with equal weights; box and mask losses apply only to positive RoIs",
+      "sources": ["https://arxiv.org/abs/1703.06870"],
+      "caveat": "MathML states the sum; sampling ratios, IoU thresholds and proposal counts are the paper's defaults and are not fixed here"
+    },
+    {
+      "chapter": "21",
+      "claim": "The mask branch predicts a per-class binary mask (K x m x m, e.g. 28x28) with per-pixel sigmoid, decoupled from classification; a keypoint branch extends the same idea",
+      "sources": ["https://arxiv.org/abs/1703.06870"],
+      "caveat": "COCO mask/box AP and FPS depend on backbone, schedule and hardware and are deliberately not pinned to a single value"
     }
   ]
 }

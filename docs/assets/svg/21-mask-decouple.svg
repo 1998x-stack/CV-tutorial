@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 420" role="img" aria-labelledby="md-title md-desc" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif">
+<title id="md-title">逐类二值掩码与按预测类别选择</title>
+<desc id="md-desc">掩码头对 K 个类别各输出一张二值掩码，每张用 sigmoid 逐像素独立判断；训练时只对真实类别那一张算损失，推理时由分类结果 c 选中第 c 张掩码。</desc>
+<rect width="900" height="420" fill="#fffdf9"/>
+<text x="45" y="44" font-size="22" font-weight="700" fill="#203035">逐类掩码 + 按预测类别选择</text>
+<g font-size="16" text-anchor="middle" fill="#203035">
+<rect x="40" y="150" width="140" height="90" rx="10" fill="#ffecd9" stroke="#d06d4d" stroke-width="2.5"/><text x="110" y="190">掩码头</text><text x="110" y="214" font-size="14" fill="#8a4526">输出 K×m×m</text>
+
+<rect x="250" y="80" width="110" height="80" rx="8" fill="#d6f1eb" stroke="#147f80" stroke-width="2.5"/><text x="305" y="126">掩码 1</text>
+<rect x="250" y="180" width="110" height="80" rx="8" fill="#ffecd9" stroke="#d06d4d" stroke-width="3"/><text x="305" y="226">掩码 c</text>
+<rect x="250" y="280" width="110" height="80" rx="8" fill="#d6f1eb" stroke="#147f80" stroke-width="2.5"/><text x="305" y="326">掩码 K</text>
+
+<rect x="440" y="180" width="150" height="80" rx="8" fill="#ebe5ff" stroke="#7461ba" stroke-width="2.5"/><text x="515" y="216">按类别选择</text><text x="515" y="240" font-size="14" fill="#6b57a8">取第 c 张</text>
+<rect x="660" y="180" width="180" height="80" rx="8" fill="#d6f1eb" stroke="#147f80" stroke-width="2.5"/><text x="750" y="212">该实例掩码</text><text x="750" y="236" font-size="14" fill="#0f5f60">逐像素 sigmoid</text>
+</g>
+<g stroke="#147f80" stroke-width="4" fill="none" marker-end="url(#md-ah)">
+<path d="M180 190 L246 122"/><path d="M180 200H246"/><path d="M180 210 L246 318"/>
+<path d="M360 220H436"/><path d="M590 220H656"/>
+</g>
+<defs><marker id="md-ah" markerWidth="10" markerHeight="10" refX="7" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#147f80"/></marker></defs>
+<text x="450" y="392" font-size="16" text-anchor="middle" fill="#53676d">训练只对真实类别那张算损失：掩码分支不与分类共享梯度</text>
+</svg>

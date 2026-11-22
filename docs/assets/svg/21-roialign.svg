@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 420" role="img" aria-labelledby="ra-title ra-desc" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif">
+<title id="ra-title">RoI Pooling 两次量化与 RoIAlign 双线性插值的对比</title>
+<desc id="ra-desc">左：RoI Pooling 先把浮点候选框坐标取整到特征图网格，再把子区域边界取整，累积两次量化误差；右：RoIAlign 在连续坐标上用四邻域双线性插值采样，不做任何取整。</desc>
+<rect width="900" height="420" fill="#fffdf9"/>
+<text x="45" y="42" font-size="21" font-weight="700" fill="#203035">RoI Pooling：两次量化</text>
+<text x="500" y="42" font-size="21" font-weight="700" fill="#203035">RoIAlign：双线性插值</text>
+<rect x="55" y="66" width="340" height="290" rx="12" fill="#eef3f2" stroke="#c9d8d3"/>
+<rect x="490" y="66" width="355" height="290" rx="12" fill="#eef3f2" stroke="#c9d8d3"/>
+<g stroke="#b9c9c4" stroke-width="1.5">
+<path d="M100 110h230M100 160h230M100 210h230M100 260h230M100 310h230"/>
+<path d="M100 110v200M157 110v200M214 110v200M271 110v200M328 110v200"/>
+</g>
+<rect x="120.7" y="140.3" width="150" height="130" fill="none" stroke="#d06d4d" stroke-width="3"/>
+<rect x="121" y="140" width="150" height="130" fill="#ffecd9" opacity="0.35"/>
+<circle cx="121" cy="140" r="4" fill="#8a4526"/>
+<text x="135" y="134" font-size="14" fill="#8a4526">(23.7,45.3) → 取整</text>
+<text x="225" y="335" font-size="15" text-anchor="middle" fill="#53676d">先取整坐标，再取整子区域边界</text>
+
+<g stroke="#b9c9c4" stroke-width="1.5">
+<path d="M535 110h230M535 160h230M535 210h230M535 260h230M535 310h230"/>
+<path d="M535 110v200M592 110v200M649 110v200M706 110v200M763 110v200"/>
+</g>
+<rect x="556" y="140" width="150" height="130" fill="#d6f1eb" opacity="0.4" stroke="#147f80" stroke-width="3"/>
+<g fill="#7461ba">
+<circle cx="592" cy="186" r="5"/><circle cx="649" cy="186" r="5"/>
+<circle cx="592" cy="243" r="5"/><circle cx="649" cy="243" r="5"/>
+</g>
+<circle cx="620.5" cy="214.5" r="6" fill="#d06d4d"/>
+<text x="640" y="134" font-size="14" fill="#0f5f60">连续坐标，不取整</text>
+<text x="667" y="335" font-size="15" text-anchor="middle" fill="#53676d">四邻域加权（紫点），中心点插值（橙点）</text>
+<text x="450" y="392" font-size="16" text-anchor="middle" fill="#53676d">掩码是逐像素任务，量化误差会直接错位边界，所以 RoIAlign 的收益在这里更大</text>
+</svg>

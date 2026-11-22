@@ -37,7 +37,12 @@ def run():
                     response = page.goto(f"{base}/{path}", wait_until="load")
                     page.locator("h1").first.wait_for()
                     page.evaluate("document.fonts.ready")
-                    page.wait_for_timeout(150)
+                    page.locator("img").evaluate_all("(els)=>els.forEach(img=>img.loading='eager')")
+                    page.wait_for_function(
+                        "()=>Array.from(document.images).every(img=>img.complete&&img.naturalWidth>0)",
+                        timeout=10000
+                    )
+                    page.evaluate("window.scrollTo(0,0)")
                     overflow = page.evaluate("document.documentElement.scrollWidth - window.innerWidth")
                     images = page.locator("img").evaluate_all(
                         "(els)=>els.map(x=>({src:x.getAttribute('src'),ok:x.complete&&x.naturalWidth>0}))")
@@ -51,7 +56,12 @@ def run():
                     if response is None or response.status != 200:
                         errors.append(f"{label}: HTTP {response.status if response else 'none'}")
                     if overflow > 1:
-                        errors.append(f"{label}: horizontal document overflow {overflow}px")
+                        offenders=page.evaluate("""() => Array.from(document.querySelectorAll('body *'))
+                          .map(x=>({tag:x.tagName,cls:x.className?.baseVal||x.className||'',
+                            right:Math.round(x.getBoundingClientRect().right),
+                            width:Math.round(x.getBoundingClientRect().width)}))
+                          .filter(x=>x.right>innerWidth+1).slice(0,6)""")
+                        errors.append(f"{label}: horizontal document overflow {overflow}px; offenders={offenders}")
                     if page.locator("h1").count() != 1:
                         errors.append(f"{label}: exactly one H1 required")
                     if any(not x["ok"] for x in images):

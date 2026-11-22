@@ -1,59 +1,267 @@
 {
-  "purpose": "首批 01–05 章主张与证据登记。所有教学 SVG 和合成数据均为原创，不是论文实验复刻。",
+  "title": "CV Tutorial — source verification for chapters 01–05",
+  "date": "2026-11-23",
+  "scope": "Original method definitions, official API contracts and deterministic toy experiments. All synthetic examples are illustrative, not benchmark reproductions.",
   "entries": [
     {
+      "id": "01-hwc-layout",
       "chapter": "01",
-      "claim": "ImageNet 论文介绍分层的大规模标注图像数据库",
-      "source": "https://www.image-net.org/static_files/papers/imagenet_cvpr09.pdf",
-      "scope": "Deng et al. CVPR 2009，数据库与组织方式；不以此直接论证现代模型性能"
+      "claim": "OpenCV image matrices use row/column/channel indexing and default BGR order for common color reads",
+      "kind": "representation",
+      "source_url": "https://docs.opencv.org/4.x/d5/d98/tutorial_mat_operations.html",
+      "locator": "Operations with images: BGR ordering and img[y,x]",
+      "status": "verified",
+      "notes": "RGB is a generic image convention; OpenCV BGR must be called out separately."
     },
     {
+      "id": "01-task-output",
       "chapter": "01",
-      "claim": "AlexNet 的 2012 年工作利用深度卷积网络与 GPU 训练推进大规模视觉分类",
-      "source": "https://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks",
-      "scope": "论文中的任务、训练条件；未在本章复现报告数值"
+      "claim": "Classification, object detection and semantic segmentation have different output spaces and annotation granularity",
+      "kind": "task-definition",
+      "source_url": "https://arxiv.org/abs/1704.06857",
+      "locator": "Mask R-CNN introduction and task distinctions",
+      "status": "derived",
+      "notes": "This is a conceptual task taxonomy, not a model leaderboard."
     },
     {
+      "id": "01-iou",
+      "chapter": "01",
+      "claim": "Intersection over Union is intersection area divided by union area",
+      "kind": "metric-definition",
+      "source_url": "https://scikit-learn.org/stable/modules/generated/sklearn.metrics.jaccard_score.html",
+      "locator": "Jaccard similarity coefficient",
+      "status": "verified",
+      "notes": "Empty-union handling depends on the evaluation protocol."
+    },
+    {
+      "id": "01-miou",
+      "chapter": "01",
+      "claim": "Mean IoU averages class-level IoU values over the classes included by an evaluation protocol",
+      "kind": "metric-definition",
+      "source_url": "https://scikit-learn.org/stable/modules/generated/sklearn.metrics.jaccard_score.html",
+      "locator": "jaccard_score: average='macro' and class-wise Jaccard aggregation",
+      "status": "verified",
+      "notes": "Use the benchmark's valid-class policy for absent classes; sklearn is an API example, not the universal segmentation protocol."
+    },
+    {
+      "id": "01-imagenet",
+      "chapter": "01",
+      "claim": "ImageNet introduced a large-scale hierarchical labeled image database",
+      "kind": "historical",
+      "source_url": "https://www.image-net.org/static_files/papers/imagenet_cvpr09.pdf",
+      "locator": "Deng et al., CVPR 2009, dataset construction",
+      "status": "verified",
+      "notes": "Historical dataset contribution; not a current model benchmark."
+    },
+    {
+      "id": "01-alexnet",
+      "chapter": "01",
+      "claim": "AlexNet combined a deep convolutional network, large labeled data and GPU training for ImageNet classification",
+      "kind": "historical",
+      "source_url": "https://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks",
+      "locator": "Krizhevsky et al. 2012, architecture and experiments",
+      "status": "verified",
+      "notes": "No paper metric is copied into the toy code."
+    },
+    {
+      "id": "01-vit",
+      "chapter": "01",
+      "claim": "The Vision Transformer applies a Transformer encoder to patch-tokenized image inputs",
+      "kind": "historical",
+      "source_url": "https://arxiv.org/abs/2010.11929",
+      "locator": "Dosovitskiy et al., abstract and Section 3",
+      "status": "verified",
+      "notes": "The original preprint date and later conference publication should not be conflated."
+    },
+    {
+      "id": "02-bgr",
       "chapter": "02",
-      "claim": "GaussianBlur 等为平滑操作；Canny 包含抑制、双阈值与连接",
-      "source": "https://docs.opencv.org/4.x/da/d22/tutorial_py_canny.html",
-      "scope": "OpenCV 4.x tutorial；阈值对输入编码与噪声敏感"
+      "claim": "OpenCV imread with color mode returns a BGR color image; channel order matters for conversion",
+      "kind": "api-contract",
+      "source_url": "https://docs.opencv.org/4.x/d5/d98/tutorial_mat_operations.html",
+      "locator": "Operations with images: BGR channel order",
+      "status": "verified",
+      "notes": "A channel-order mistake changes colors and any color-dependent preprocessing."
     },
     {
+      "id": "02-gray",
+      "chapter": "02",
+      "claim": "OpenCV provides explicit BGR-to-gray conversion through cvtColor",
+      "kind": "api-contract",
+      "source_url": "https://docs.opencv.org/4.x/d8/d01/group__imgproc__color__conversions.html",
+      "locator": "Color conversion codes: COLOR_BGR2GRAY",
+      "status": "verified",
+      "notes": "Displayed coefficients are explanatory; use the library conversion routine."
+    },
+    {
+      "id": "02-filter",
+      "chapter": "02",
+      "claim": "Gaussian and other low-pass filters smooth local image variations; border handling is part of the operator contract",
+      "kind": "api-contract",
+      "source_url": "https://docs.opencv.org/4.10.0/d4/d13/tutorial_py_filtering.html",
+      "locator": "Smoothing Images; filter2D and borderType",
+      "status": "verified",
+      "notes": "Synthetic output counts are not asserted across every OpenCV build."
+    },
+    {
+      "id": "02-canny",
+      "chapter": "02",
+      "claim": "Canny includes noise smoothing, gradient estimation, non-maximum suppression and hysteresis thresholding",
+      "kind": "algorithm",
+      "source_url": "https://docs.opencv.org/4.8.0/da/d22/tutorial_py_canny.html",
+      "locator": "Canny theory steps 1–5",
+      "status": "verified",
+      "notes": "The OpenCV L2gradient flag changes gradient magnitude convention."
+    },
+    {
+      "id": "02-morphology",
+      "chapter": "02",
+      "claim": "Opening is erosion followed by dilation; closing is dilation followed by erosion",
+      "kind": "algorithm",
+      "source_url": "https://docs.opencv.org/4.8.0/d9/d61/tutorial_py_morphological_ops.html",
+      "locator": "Morphological transformations: opening and closing",
+      "status": "verified",
+      "notes": "Effect depends on foreground polarity and structuring element."
+    },
+    {
+      "id": "02-gradient",
+      "chapter": "02",
+      "claim": "NumPy gradient returns derivatives in axis order and uses central differences internally with one-sided boundary differences",
+      "kind": "api-contract",
+      "source_url": "https://numpy.org/doc/stable/reference/generated/numpy.gradient.html",
+      "locator": "numpy.gradient: return order and finite-difference scheme",
+      "status": "verified",
+      "notes": "For a 2D array, first output is row-axis derivative, second is column-axis derivative."
+    },
+    {
+      "id": "03-sift",
       "chapter": "03",
-      "claim": "SIFT 包括 DoG 尺度极值、方向分配以及常见 128 维描述子",
-      "source": "https://doi.org/10.1023/B:VISI.0000029664.99615.94",
-      "scope": "Lowe 2004 的经典 SIFT，不声称任意透视完全不变"
+      "claim": "SIFT uses scale-space extrema, keypoint localization, orientation assignment and local gradient descriptors",
+      "kind": "algorithm",
+      "source_url": "https://doi.org/10.1023/B:VISI.0000029664.99615.94",
+      "locator": "Lowe 2004, Sections 3–6",
+      "status": "verified",
+      "notes": "Rotation and scale normalization do not imply invariance to arbitrary viewpoint or occlusion."
     },
     {
+      "id": "03-sift-api",
       "chapter": "03",
-      "claim": "HOG 由 cell 方向直方图和 block 归一化组成",
-      "source": "https://mlanthology.org/cvpr/2005/dalal2005cvpr-histograms/",
-      "scope": "Dalal–Triggs 2005，窗口与规范会改变最终特征维数"
+      "claim": "OpenCV SIFT exposes create/detectAndCompute and the default descriptor uses 128 dimensions",
+      "kind": "api-contract",
+      "source_url": "https://docs.opencv.org/4.12.0/d7/d60/classcv_1_1SIFT.html",
+      "locator": "cv::SIFT class reference; Python create overloads",
+      "status": "verified",
+      "notes": "The deterministic synthetic test checks non-empty descriptors and shape, not detection quality."
     },
     {
+      "id": "03-hog",
       "chapter": "03",
-      "claim": "Viola–Jones 利用积分图、特征选择和分类器级联加速检测",
-      "source": "https://mlanthology.org/cvpr/2001/viola2001cvpr-rapid/",
-      "scope": "原始框架的检测策略，不对应所有现代级联模型"
+      "claim": "HOG aggregates gradient-orientation histograms in cells, normalizes overlapping blocks and concatenates a window descriptor",
+      "kind": "algorithm",
+      "source_url": "https://mlanthology.org/cvpr/2005/dalal2005cvpr-histograms/",
+      "locator": "Dalal and Triggs, CVPR 2005, descriptor and detector",
+      "status": "verified",
+      "notes": "The 36-dimensional block is only a 2×2-cell, 9-bin example."
     },
     {
+      "id": "03-integral",
+      "chapter": "03",
+      "claim": "An integral image permits an axis-aligned rectangle sum from four prefix-sum values",
+      "kind": "algorithm",
+      "source_url": "https://mlanthology.org/cvpr/2001/viola2001cvpr-rapid/",
+      "locator": "Viola and Jones, CVPR 2001, integral image",
+      "status": "verified",
+      "notes": "This chapter uses inclusive coordinates and defines out-of-range prefix values as zero."
+    },
+    {
+      "id": "03-cascade",
+      "chapter": "03",
+      "claim": "Viola–Jones combines Haar-like features, feature selection and a cascade to reject easy negative windows early",
+      "kind": "historical",
+      "source_url": "https://mlanthology.org/cvpr/2001/viola2001cvpr-rapid/",
+      "locator": "Viola and Jones, CVPR 2001, cascade classifier",
+      "status": "verified",
+      "notes": "This is the original face detection framework, not every modern cascade."
+    },
+    {
+      "id": "04-autograd",
       "chapter": "04",
-      "claim": "反向传播通过链式法则沿计算图传递梯度，并在汇合处累加",
-      "source": "https://cs231n.github.io/optimization-2/",
-      "scope": "基础自动微分直觉；单神经元演示不是实际神经网络训练结果"
+      "claim": "Reverse-mode automatic differentiation records executed operations and applies the chain rule backward through the graph",
+      "kind": "api-contract",
+      "source_url": "https://docs.pytorch.org/docs/stable/notes/autograd.html",
+      "locator": "Autograd mechanics: how autograd encodes history",
+      "status": "verified",
+      "notes": "The scalar example is an analytical toy, not a neural-network training benchmark."
     },
     {
-      "chapter": "05",
-      "claim": "常见 Conv2d 实现使用相关形式与指定权重布局",
-      "source": "https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html",
-      "scope": "PyTorch NCHW、groups=1 等条件明确；具体库的 layout 和 padding 可能不同"
+      "id": "04-accumulation",
+      "chapter": "04",
+      "claim": "Gradient contributions from multiple uses of a shared intermediate are accumulated during backpropagation",
+      "kind": "api-contract",
+      "source_url": "https://docs.pytorch.org/docs/main/notes/autograd.html",
+      "locator": "Autograd mechanics: disallowing implicit gradient accumulation",
+      "status": "verified",
+      "notes": "The graph figure illustrates a general reverse-mode dependency rule."
     },
     {
+      "id": "04-crossentropy",
+      "chapter": "04",
+      "claim": "PyTorch CrossEntropyLoss accepts unnormalized logits and class-index targets for the standard multiclass case",
+      "kind": "api-contract",
+      "source_url": "https://docs.pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html",
+      "locator": "Input and Target shape / class-index formulation",
+      "status": "verified",
+      "notes": "The stable NumPy example subtracts max(logits) before exponentiation."
+    },
+    {
+      "id": "04-relu",
+      "chapter": "04",
+      "claim": "ReLU is non-differentiable at zero and automatic differentiation frameworks define a usable subgradient convention",
+      "kind": "mathematics",
+      "source_url": "https://docs.pytorch.org/docs/stable/notes/autograd.html",
+      "locator": "Autograd mechanics: gradients for non-differentiable functions",
+      "status": "verified",
+      "notes": "The article's slider uses a zero derivative at the kink as its declared convention."
+    },
+    {
+      "id": "05-cross-correlation",
       "chapter": "05",
-      "claim": "标准卷积输出空间长度与 kernel/stride/padding/dilation 相关",
-      "source": "https://arxiv.org/abs/1603.07285",
-      "scope": "Dumoulin–Visin 2016；公式仅适用于注明的离散卷积约定"
+      "claim": "PyTorch Conv2d computes valid 2D cross-correlation over NCHW input with a weight tensor organized by output and input channels",
+      "kind": "api-contract",
+      "source_url": "https://docs.pytorch.org/docs/stable/generated/torch.nn.Conv2d.html",
+      "locator": "Conv2d description and input/weight/output shapes",
+      "status": "verified",
+      "notes": "The word convolution is retained as the common framework layer name."
+    },
+    {
+      "id": "05-output-shape",
+      "chapter": "05",
+      "claim": "Conv2d output dimensions depend on input size, kernel, stride, padding and dilation with integer floor behavior",
+      "kind": "equation",
+      "source_url": "https://arxiv.org/abs/1603.07285",
+      "locator": "Dumoulin and Visin, convolution arithmetic output-size formulas",
+      "status": "verified",
+      "notes": "The simple formula assumes explicit symmetric numeric padding."
+    },
+    {
+      "id": "05-parameter-count",
+      "chapter": "05",
+      "claim": "A standard groups=1 Conv2d weight tensor has Cout×Cin×Kh×Kw weights and optional Cout biases",
+      "kind": "api-contract",
+      "source_url": "https://docs.pytorch.org/docs/stable/generated/torch.nn.Conv2d.html",
+      "locator": "Conv2d weight and bias shapes",
+      "status": "verified",
+      "notes": "Parameter count does not equal FLOPs or end-to-end latency."
+    },
+    {
+      "id": "05-receptive-field",
+      "chapter": "05",
+      "claim": "The theoretical receptive field grows recursively with kernel size and cumulative stride",
+      "kind": "derived",
+      "source_url": "https://cs231n.github.io/convolutional-networks/",
+      "locator": "CS231n convolution arithmetic and receptive field discussion",
+      "status": "verified",
+      "notes": "Theoretical support does not imply uniform effective influence."
     }
   ]
 }

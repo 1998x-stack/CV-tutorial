@@ -19,6 +19,17 @@ jobs:
           test -f _site/index.html
           test -f _site/01.html
           test -f _site/chapters/28.html
+  foundations:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned NumPy and headless OpenCV
+        run: python3 -m pip install -r requirements-vision-tests.txt
+      - name: Execute chapters 01–05 and focused vision contracts
+        run: python3 tests/test_foundations.py
   examples:
     runs-on: ubuntu-latest
     steps:

@@ -1,187 +1,20 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
-    <title>第19章 图像分割基础与分类</title>
-    <link rel="stylesheet" href="theme.css">
-</head>
-<body>
-<div class="double-border">
-<div class="container">
-    <div class="sidebar">
-        <h3>🖼️ 课程目录</h3>
-        <ul class="chapter-list">
-            <li><a href="01.html">第1章 计算机视觉概述与发展简史</a></li>
-            <li><a href="02.html">第2章 数字图像处理基础</a></li>
-            <li><a href="03.html">第3章 传统特征提取方法</a></li>
-            <li><a href="04.html">第4章 神经网络与反向传播</a></li>
-            <li><a href="05.html">第5章 卷积神经网络原理</a></li>
-            <li><a href="06.html">第6章 深度学习框架入门</a></li>
-            <li><a href="07.html">第7章 图像分类任务与数据集</a></li>
-            <li><a href="08.html">第8章 AlexNet——深度学习视觉起点</a></li>
-            <li><a href="09.html">第9章 VGG——小卷积堆叠的简洁哲学</a></li>
-            <li><a href="10.html">第10章 ResNet——残差学习突破深度瓶颈</a></li>
-            <li><a href="11.html">第11章 ViT——视觉Transformer革命</a></li>
-            <li><a href="12.html">第12章 ConvNeXt——CNN现代化改造</a></li>
-            <li><a href="13.html">第13章 训练策略与调参实战</a></li>
-            <li><a href="14.html">第14章 模型评估与对比分析</a></li>
-            <li><a href="15.html">第15章 目标检测基础</a></li>
-            <li><a href="16.html">第16章 R-CNN——两阶段检测开山</a></li>
-            <li><a href="17.html">第17章 Faster R-CNN与区域提议网络</a></li>
-            <li><a href="18.html">第18章 单阶段检测概述与对比</a></li>
-            <li><a href="19.html" class="active">第19章 图像分割基础与分类</a></li>
-            <li><a href="20.html">第20章 U-Net——医学图像分割标配</a></li>
-            <li><a href="21.html">第21章 Mask R-CNN——检测+分割统一</a></li>
-            <li><a href="22.html">第22章 语义分割前沿与全景分割</a></li>
-            <li><a href="23.html">第23章 数据增强与预处理实战</a></li>
-            <li><a href="24.html">第24章 迁移学习与模型微调</a></li>
-            <li><a href="25.html">第25章 模型优化与部署</a></li>
-            <li><a href="26.html">第26章 自监督学习与基础模型</a></li>
-            <li><a href="27.html">第27章 多模态与生成模型概览</a></li>
-            <li><a href="28.html">第28章 综合实战项目</a></li>
-        </ul>
-    </div>
-    <div class="main-content">
-
-        <h2>什么是图像分割</h2>
-
-        <p>同学们大家好。从第15章到第18章，我们花了四章的篇幅深入探讨了目标检测——从两阶段的R-CNN家族到单阶段的YOLO和SSD。目标检测告诉我们图像中"有什么、在哪里"，输出的是物体周围的边界框。但有时候，边界框远远不够。想象一下：你正在做医学影像分析，需要精确圈出肿瘤的轮廓；或者你在做自动驾驶，需要区分路面、人行道和车道线——边界框这种"矩形框"过于粗糙，它会把不属于物体的背景也包含进来。这时候，我们就需要进入一个更精细的领域：<strong>图像分割（Image Segmentation）</strong>。</p>
-
-        <p>图像分割的本质是<strong>像素级分类</strong>。翻译成大白话：对于图像中的每一个像素，我们都给它分配一个类别标签。如果把目标检测比作"在照片上用马克笔画矩形框"，那图像分割就是"沿着物体的边缘，用最细的笔把每个物体精确地涂上颜色"——每一个像素都要被归类。这种精细程度带来的直接好处是：你可以获得物体的精确形状、轮廓和面积，而不只是它的位置范围。</p>
-
-        <p>先分享一个亲身踩坑的故事。几年前我参与一个自动驾驶感知项目，初期方案采用的是目标检测模型（YOLOv3）来识别可行驶区域。我们天真地认为，只要检测到前方的障碍物车辆，剩下的路面就是可行驶区域。结果第一次封闭道路测试就出了笑话：检测模型正确识别了前方的车辆，但路中间有一块井盖凸起——它没有被检测为"车辆"或"行人"，系统默认它是路面的一部分，直接规划了一条碾压井盖的路径。虽然测试车速很慢没有出事，但这个教训很深刻：<strong>对于需要精细空间理解的场景，边界框太粗了。你需要知道每一个像素到底属于"路面""路沿"还是"障碍物"。</strong>从那以后，我们对道路感知的方案全面转向了图像分割。</p>
-
-        <h2>三大分割任务</h2>
-
-        <p>你可能经常听到"语义分割""实例分割""全景分割"这些术语乱飞。它们到底有什么区别？我们用一个具体的场景来说清楚。</p>
-
-        <p>假设图中有三个人、两辆车和一条狗。不同分割任务的输出截然不同：</p>
-
-        <table>
-            <tr><th>分割类型</th><th>英文名称</th><th>输出内容</th><th>是否区分个体</th><th>覆盖所有像素</th></tr>
-            <tr><td>语义分割</td><td>Semantic Segmentation</td><td>每个像素的类别（人、车、狗、背景）</td><td>否（所有人都是"人"类）</td><td>通常不考虑"东西"类</td></tr>
-            <tr><td>实例分割</td><td>Instance Segmentation</td><td>每个物体实例的掩码（人1、人2、人3、车1、车2、狗1）</td><td>是</td><td>通常只覆盖"东西"类</td></tr>
-            <tr><td>全景分割</td><td>Panoptic Segmentation</td><td>每个像素的类别+实例ID</td><td>是（对"东西"类）</td><td>是（覆盖所有像素）</td></tr>
-        </table>
-
-        <p><strong>语义分割</strong>是最基础的形式。它把图像分成不同语义区域：所有"人"像素涂成红色、所有"车"涂成蓝色、所有"路面"涂成灰色。但注意，语义分割不区分个体——如果图中有三个人，他们的像素都会标记为"人"，而不是"人1"、"人2"、"人3"。语义分割就像油漆工：每个类别一种颜色，刷过去完事，不管哪里有多少个实例。</p>
-
-        <p><strong>实例分割</strong>在语义分割的基础上更进一步：它不仅要告诉你是"人"，还要区分出"第一个人""第二个人""第三个人"。实例分割只处理 countable objects（有明确数量的物体，通常称为"things"，如人、车、动物），而不处理 amorphous stuff（无定形区域，如天空、草地、路面，通常称为"stuff"）。Mask R-CNN就是实例分割的代表作。</p>
-
-        <p><strong>全景分割</strong>由Facebook AI Research在2018年提出，目标是统一语义分割和实例分割——它要求模型同时处理"things"和"stuff"，为图像中的每一个像素都分配一个标签，对于"things"还要附加实例ID。全景分割的完整程度最高，但从实现角度看也最具挑战性。</p>
-
-        <div class="tip">
-            <strong>💡 直观理解：</strong>如果图像是一条街道——语义分割告诉你"这个区域是路面，那个区域是人行道，这几个像素是车"；实例分割告诉你"这里有三辆车，这是第一辆的精确轮廓，那是第二辆的"；全景分割在此基础上还要告诉你"天空、建筑墙面、路牌这些区域都是什么"——它想把整个画面全部解释清楚，不留一个未分类的像素。
-        </div>
-
-        <h2>分割评价指标</h2>
-
-        <p>做分割和做检测一样，首先需要一把"尺子"来衡量模型的好坏。最核心的指标是<strong>IoU（Intersection over Union，交并比）</strong>——你可能在检测章节已经见过它了。在分割任务中，IoU的计算方式完全一样：模型预测的像素掩码和真实标注之间的交集面积除以并集面积。</p>
-
-        <pre><code># IoU 的计算伪代码
-def compute_iou(pred_mask, gt_mask):
-    """计算单个类别的 IoU"""
-    intersection = (pred_mask & gt_mask).sum()
-    union = (pred_mask | gt_mask).sum()
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="图像分割基础：语义/实例/全景分割的区别，mask IoU、mIoU 与 Dice 指标，经典数据集，以及从 FCN 到 U-Net、DeepLab、Mask R-CNN、Transformer 的发展脉络。"><title>第 19 章 · 图像分割基础与三大任务 | CV Tutorial</title><link rel="stylesheet" href="../assets/css/article.css"></head><body><a class="skip" href="#content">跳转正文</a><div class="chapter-shell"><nav class="toc" aria-label="文章目录"><h2>19 · 图像分割基础</h2><div class="toc-items"><a href="../index.html">← 课程目录</a><a href="#s-what">分割是逐像素分类，而不是画框</a><a href="#s-taxonomy">语义、实例、全景分割三者的边界</a><a href="#s-metrics">mask IoU、mIoU 与 Dice</a><a href="#s-datasets">分割数据集与评估口径</a><a href="#s-challenges">贯穿所有方法的五个难点</a><a href="#s-lineage">从 FCN 到 SAM 的发展脉络</a><a href="#references">原始资料</a></div></nav><main class="reading" id="content"><article><header><div class="chapter-top"><a href="../index.html">CV TUTORIAL</a><span>图像分割 / 19</span></div><p class="chapter-kicker">CHAPTER 19 · IMAGE SEGMENTATION</p><h1>图像分割基础：从框到每一个像素</h1><p class="dek">检测只给出矩形框，框内仍混入背景。分割要回答“每个像素属于哪个类别”，并区分语义、实例与全景三种任务。理解它们的输出定义与评价指标，是读懂 U-Net、Mask R-CNN 等模型的前提。</p></header><section id="s-what"><h2>分割是逐像素分类，而不是画框</h2><p>目标检测输出的是物体周围的矩形框。但框会包含大量不属于物体的背景像素，也拿不到物体的精确形状、轮廓和面积。当任务需要精细的空间理解时，矩形框就不够用：自动驾驶需要区分路面、路沿与障碍物；医学影像需要圈出胿瘤的轮廓；图像编辑需要“只把这个人抠出来”。</p><p><strong>图像分割（image segmentation）</strong>把这些需求统一为<strong>逐像素分类</strong>：对图像中每个像素分配一个类别标签，输出一张与输入同尺寸的标签图（<code>H×W</code>，或 <code>H×W×1</code> 的类别索引）。相对检测的 <code>(框, 类别)</code>，分割的输出是密集的像素级预测，因此天然保留形状与边界信息，也对分辨率与评价口径更敏感。</p><figure><img src="../assets/svg/19-tasks.svg" width="900" height="420" alt="同一张街景图分三种任务：语义分割只涂类别颜色不区分个体，实例分割为每个可数物体给出独立掩码，全景分割同时覆盖 things 与 stuff 并给 things 附实例 ID。" loading="lazy"><figcaption>同一张图在三种分割任务下的输出不同：语义分割给每个像素一个类别；实例分割把可数物体分开；全景分割覆盖全部像素并给物体附加实例 ID。</figcaption></figure></section><section id="s-taxonomy"><h2>语义、实例、全景分割三者的边界</h2><p>假设图中有三个人、两辆车和一条狗，三种任务的输出完全不同：</p><table><tr><th>任务</th><th>英文</th><th>每个像素得到什么</th><th>区分个体</th><th>覆盖“无定形”区域</th></tr><tr><td>语义分割</td><td>semantic segmentation</td><td>一个类别标签</td><td>否（三个人都标为“人”）</td><td>是（天空/路面也可作为类别）</td></tr><tr><td>实例分割</td><td>instance segmentation</td><td>每个物体实例一个掩码</td><td>是（人1、人2、人3）</td><td>通常只处理可数物体</td></tr><tr><td>全景分割</td><td>panoptic segmentation</td><td>类别 + 实例 ID</td><td>是（仅对可数物体）</td><td>是（覆盖所有像素）</td></tr></table><p>这里的关键区分是 <strong>things 与 stuff</strong>：things 是可数的物体（人、车、动物），有明确边界和数量；stuff 是无定形的区域（天空、草地、路面），只有类别、没有“第几个”的概念。语义分割不区分个体，实例分割通常只管 things，<strong>全景分割</strong>（FAIR，2018）则把两者统一：给每个像素一个语义标签，并对 things 再附上实例 ID，力求不留下未分类的像素。</p><p>三种任务的输出定义不同，因此评价指标不可直接互相比较：语义分割常用 mIoU；实例分割用 COCO mask AP；全景分割用 PQ（panoptic quality）。看到“分割精度”时，必须先问是哪个任务、哪个指标。</p></section><section id="s-metrics"><h2>mask IoU、mIoU 与 Dice</h2><p>分割最核心的度量是掩码交并比（mask IoU）：预测掩码与标注掩码的交集面积除以并集面积，定义与检测的框 IoU 形式上一致，只是对象从矩形换成了像素集合。</p><div class="equation math-scroll" role="region" tabindex="0" aria-label="掩码 IoU 与 mIoU 定义；mIoU 对 K 个类别取平均。"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block" aria-label="mask IoU 与 mIoU"><mi>IoU</mi><mo>=</mo><mfrac><mrow><mo>|</mo><mi>P</mi><mo>∩</mo><mi>G</mi><mo>|</mo></mrow><mrow><mo>|</mo><mi>P</mi><mo>∪</mo><mi>G</mi><mo>|</mo></mrow></mfrac><mo>,</mo><mspace width="1em"/><mi>mIoU</mi><mo>=</mo><mfrac><mn>1</mn><mi>K</mi></mfrac><munder><mo>∑</mo><mrow><mi>c</mi><mo>=</mo><mn>1</mn></mrow></munder><msub><mi>IoU</mi><mi>c</mi></msub></math><p class="eq-caption">mask IoU 用像素计数代替面积；mIoU 先按类别算 IoU 再平均，因此比整体像素精度更少受类别不平衡影响。</p></div><figure><img src="../assets/svg/19-iou-mask.svg" width="900" height="420" alt="两个掩码叠加，紫色为交集、两色合计为并集；mask IoU 为交集像素数除以并集像素数，mIoU 再对各类别取平均。" loading="lazy"><figcaption>掩码 IoU：交集像素数除以并集像素数。它是逐类别计算的，因此对整体像素分布不平衡不像像素精度那样敏感。</figcaption></figure><p><strong>像素精度（pixel accuracy, PA）</strong>看似直观：正确像素数除以总像素数。但它在类别极不平衡时严重误导——若背景占 95%，模型全部预测背景就能拿到 95% PA。因此 PA 常与 mIoU 并列报告，但选型时看 mIoU。</p><p><strong>Dice 系数</strong>是 IoU 的“平滑版”，常用于类别高度不平衡的医学分割，可写成两个集合的关系：</p><div class="equation math-scroll" role="region" tabindex="0" aria-label="Dice 系数与 IoU 的关系。"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block" aria-label="Dice 系数"><mi>Dice</mi><mo>=</mo><mfrac><mrow><mn>2</mn><mo>|</mo><mi>P</mi><mo>∩</mo><mi>G</mi><mo>|</mo></mrow><mrow><mo>|</mo><mi>P</mi><mo>|</mo><mo>+</mo><mo>|</mo><mi>G</mi><mo>|</mo></mrow></mfrac><mo>=</mo><mfrac><mrow><mn>2</mn><mi>IoU</mi></mrow><mrow><mn>1</mn><mo>+</mo><mi>IoU</mi></mrow></mfrac></math><p class="eq-caption">Dice 与 IoU 单调对应：IoU=1 时 Dice=1，IoU=0 时 Dice=0。它是 Dice Loss = 1 − Dice 的基础。</p></div><p><strong>口径陷阱。</strong>mIoU 的数值依赖两个往往不写明的约定：是否包含背景类；某类在图中完全未出现时，它的 IoU 计 0 还是忽略。这两点会让同一个模型在不同实现下相差数个百分点，跨论文比较前必须先对齐口径。</p><pre><code>def mask_iou(pred, gt):
+    # pred, gt 为等长的一维像素标签序列（1=前景, 0=背景）
+    assert len(pred) == len(gt)
+    inter = sum(1 for p, g in zip(pred, gt) if p == 1 and g == 1)
+    union = sum(1 for p, g in zip(pred, gt) if p == 1 or g == 1)
     if union == 0:
-        return 1.0  # 真值和预测都为空的特殊情况
-    return intersection / union
+        return 1.0  # 预测与真值都为空：按约定返回 1.0，需在评估中显式说明
+    return inter / union
 
-# mIoU：所有类别 IoU 的均值
-def compute_miou(pred_masks, gt_masks, num_classes):
-    ious = []
-    for c in range(num_classes):
-        iou = compute_iou(pred_masks[c], gt_masks[c])
-        ious.append(iou)
-    return sum(ious) / len(ious)
+def dice(pred, gt):
+    iou = mask_iou(pred, gt)
+    return 2 * iou / (1 + iou)
 
-# Pixel Accuracy：正确分类的像素数占总像素数的比例
-def pixel_accuracy(pred, gt):
-    correct = (pred == gt).sum()
-    total = pred.numel()
-    return correct / total</code></pre>
-
-        <p>图像分割中几个关键指标：</p>
-
-        <ul>
-            <li><strong>Pixel Accuracy（PA，像素精度）</strong>：最直观的指标——正确分类的像素数除以总像素数。但它有一个严重缺陷：当类别严重不平衡时（比如背景占95%、目标只占5%），模型什么都不做只预测背景就能拿到95%的PA，这显然没有意义。</li>
-            <li><strong>Mean IoU（mIoU，平均交并比）</strong>：计算每个类别的IoU，然后对所有类别取平均。这是分割领域最主流、最可靠的指标。mIoU不受类别不平衡的过度影响，因为每个类别在计算IoU时都是独立计算的。</li>
-            <li><strong>Frequency Weighted IoU</strong>：在mIoU的基础上加入类别频率权重，让出现频率高的类别贡献更大。在某些场景下更有实际意义。</li>
-        </ul>
-
-        <p>在实际竞赛和论文中，mIoU几乎是唯一的"标准答案"。如果你看到一个分割论文说"我们的方法达到了78.5%"，通常指的就是mIoU。</p>
-
-        <div class="warning">
-            <strong>⚠️ 踩坑提醒：</strong>mIoU的计算有一些"潜规则"需要注意。第一个是在评估时要不要包含背景类——这在不同的数据集和论文中习惯不一致，直接比较数值时要先确认。第二个是当某个类别在图像中没有出现时，这一类的IoU是算0还是忽略——建议在代码中明确处理。我在早期对比不同模型结果时就吃过这个亏，两个模型相差3个点，最后发现是其中一个把未出现类的IoU当0算，另一个直接忽略了——心态直接崩了。
-        </div>
-
-        <h2>经典分割数据集</h2>
-
-        <p>数据集的演进史几乎就是分割技术的进步史。早期的PASCAL VOC为分割打下了基础，COCO把任务标准化到新的高度，Cityscapes聚焦于自动驾驶场景，ADE20K挑战模型的细粒度理解能力。</p>
-
-        <table>
-            <tr><th>数据集</th><th>任务</th><th>图像数</th><th>类别数</th><th>特点</th></tr>
-            <tr><td>PASCAL VOC 2012</td><td>语义分割</td><td>2,913</td><td>21（含背景）</td><td>最早的标准化分割基准，规模小但标注质量高</td></tr>
-            <tr><td>MS COCO</td><td>实例分割 / 全景分割</td><td>~330K</td><td>80（things）</td><td>大规模、多任务、每图平均7.7个实例</td></tr>
-            <tr><td>Cityscapes</td><td>语义分割 / 实例分割</td><td>~25K</td><td>30（19用于评估）</td><td>街景驾驶场景、高分辨率、精细标注</td></tr>
-            <tr><td>ADE20K</td><td>语义分割 / 全景分割</td><td>~27K</td><td>150（things+stuff）</td><td>场景理解、细粒度、密集标注</td></tr>
-            <tr><td>BDD100K</td><td>语义分割</td><td>~100K</td><td>40</td><td>自动驾驶、多样化天气和光照</td></tr>
-        </table>
-
-        <p>在这些数据集中，<strong>MS COCO</strong>是实例分割最重要的基准——几乎每一篇实例分割论文都会报告COCO的mAP（mask AP）。<strong>Cityscapes</strong>则是自动驾驶场景分割的事实标准，它提供了5000张精细标注图像和20000张粗略标注图像，覆盖了德国多个城市的街道场景。<strong>ADE20K</strong>由MIT CSAIL发布，以高度多样性和密集标注著称——每张图像平均包含19.5个实例和13.7个语义类别，覆盖了日常生活的方方面面。</p>
-
-        <h2>分割的难点与挑战</h2>
-
-        <p>图像分割远不止是"把分类网络改成按像素分类"那么简单。以下几个挑战贯穿了所有分割方法：</p>
-
-        <p><strong>边界模糊性。</strong>物体之间的边界往往不是清晰的黑白分界线。想一想：一只橘猫趴在橙色地毯上——猫和地毯的边界在哪里？像素级别的标注本身就存在标注者之间的主观差异。这也是为什么分割标注如此昂贵的原因——高质量的标注需要对每一个边界像素仔细确认。</p>
-
-        <p><strong>小目标分割。</strong>在COCO数据集中，面积小于32×32像素的物体占了约41%的标注实例。对这些小目标做精确分割极其困难，因为随着下采样，小目标的信息在深层特征图中几乎消失殆尽。这也是为什么像U-Net这样的编码-解码结构通过跳跃连接来保留高分辨率细节。</p>
-
-        <p><strong>类别不平衡。</strong>在一张自然图像中，大面积的背景（天空、地面、墙面）占据了绝大多数像素，而小物体（远处的行人、交通标志）只占极少的像素。如果不做特殊处理，模型会倾向于"忽略"小物体和罕见类，因为反正大多数像素都是背景。常用的解决方案包括加权损失函数（Weighted Cross-Entropy）、Dice Loss、以及Focal Loss（最初为检测设计，但在分割中同样有效）。</p>
-
-        <p><strong>尺度多样性。</strong>同一个类别在不同图像中可能有完全不同的尺度。比如，一辆近处的大卡车可能占据半幅图像，而远处同一辆车可能只有几十个像素。模型需要同时处理好这两种情况，这对感受野的设计提出了很高要求。</p>
-
-        <p><strong>遮挡与截断。</strong>现实场景中物体互相遮挡是常态。比如街拍中行人被车辆遮挡了半边身体——分割模型需要"脑补"出被遮挡的部分，这需要很强的上下文推理能力。</p>
-
-        <pre><code># Dice Loss —— 分割中最常用的损失函数之一
-# Dice 系数本质上是 IoU 的平滑版本
-def dice_loss(pred, target, smooth=1e-6):
-    """pred 和 target 都是形状为 [B, C, H, W] 的张量"""
-    intersection = (pred * target).sum(dim=(2, 3))
-    union = pred.sum(dim=(2, 3)) + target.sum(dim=(2, 3))
-    dice = (2.0 * intersection + smooth) / (union + smooth)
-    return 1.0 - dice.mean()</code></pre>
-
-        <h2>分割模型发展脉络</h2>
-
-        <p>从2015年至今，分割模型的发展大概经历了五代演变。理解这条脉络，能帮助你明白今天的主流方法为什么长这样。</p>
-
-        <p><strong>第一代：FCN（Fully Convolutional Network, 2015）</strong>。Jonathan Long等人第一次证明了全卷积网络可以做端到端的像素级预测。他们用转置卷积（transposed convolution）代替全连接层进行上采样，并通过跳跃连接融合浅层和深层特征。FCN的意义是开创性的——在此之前，分割通常采用patch-based的方法（滑动窗口+分类器），效率低下且感受野有限。虽然FCN在今天看来很粗糙（上采样结果不够精细），但它是所有后续工作的基石。</p>
-
-        <p><strong>第二代：编码-解码结构（2015-2016）</strong>。U-Net（2015）和SegNet（2016）将FCN发展为对称的编码-解码结构。编码器逐步提取语义信息并下采样，解码器逐步恢复空间分辨率。U-Net的跳跃连接将编码器每一层的细节特征直接拼接到对应的解码器层，极大地提升了边界精细度。这个设计在医学图像分割中尤其成功，至今仍是许多任务的默认选择。</p>
-
-        <p><strong>第三代：空洞卷积与多尺度融合（2016-2018）</strong>。DeepLab系列（v1/v2/v3/v3+）引入了空洞卷积（Atrous/Dilated Convolution）和空洞空间金字塔池化（ASPP），在不增加参数量的情况下指数级扩大感受野，解决了下采样导致空间分辨率降低的问题。与此同时，PSPNet（2017）提出了金字塔池化模块（PPM），通过多尺度池化聚合不同区域的上下文信息。</p>
-
-        <p><strong>第四代：检测+分割统一（2017-2019）</strong>。Mask R-CNN将Faster R-CNN扩展为检测+分割的统一框架，通过RoIAlign解决RoI Pooling的量化误差问题，成为实例分割的事实标准。随后的YOLACT、SOLO等单阶段实例分割方法则在速度上做出了突破。</p>
-
-        <p><strong>第五代：Transformer时代（2020-至今）</strong>。SETR首次将纯Transformer用于语义分割。SegFormer提出了分层的Transformer编码器+轻量级MLP解码器。DETR中的Transformer架构催生了MaskFormer和Mask2Former，将语义分割、实例分割和全景分割统一在同一个框架之下。而Meta的SAM（Segment Anything）更是开启了分割基础模型的新纪元——用一个模型分割一切。</p>
-
-        <div class="highlight">
-            <strong>🔮 趋势观察：</strong>从FCN到SAM，分割模型的发展呈现出三条清晰的脉络：一是从粗到精（边界质量不断提升），二是从特定到统一（不同分割任务正在被同一个架构覆盖），三是从监督到通用（从依赖大量标注数据到zero-shot泛化）。理解这些趋势，能帮助你在选择分割方案时做出更有前瞻性的判断。
-        </div>
-
-        <p>从本章开始，我们将正式进入分割技术的深度讲解。下一章我们先聚焦一个经典中的经典——<strong>U-Net</strong>。你可能已经听说过它的大名：一篇结构极其简单、却被引用超过六万次的论文。它凭什么这么成功？我们下一章见！</p>
-
-        <div class="footer-nav">
-            <a href="18.html">← 上一章</a>
-            <a href="index.html">📖 返回目录</a>
-            <a href="20.html">下一章 →</a>
-        </div>
-
-    </div>
-</div>
-</div>
-</body>
-</html>
+pred = [1, 1, 1, 0, 0, 0, 0, 0]
+gt   = [1, 1, 0, 0, 0, 0, 0, 0]
+assert abs(mask_iou(pred, gt) - 2/3) &lt; 1e-9
+assert abs(dice(pred, gt) - 0.8) &lt; 1e-9
+# 全背景预测在 PA 下看似完美，但在前景类上 IoU 为 0
+bg_pred = [0] * 8
+print("IoU:", round(mask_iou(pred, gt), 4), "Dice:", round(dice(pred, gt), 4), "fg IoU of all-bg:", mask_iou(bg_pred, gt))</code></pre></section><section id="s-datasets"><h2>分割数据集与评估口径</h2><p>数据集的选择直接决定了任务定义与评价口径。下面是几个常见基准，规模数字为大致数量级，引用时应以各自官方页面为准。</p><table><tr><th>数据集</th><th>主要任务</th><th>规模（约）</th><th>类别</th><th>特点</th></tr><tr><td>PASCAL VOC 2012</td><td>语义分割</td><td>数千张</td><td>21（含背景）</td><td>最早的标准化分割基准之一</td></tr><tr><td>MS COCO</td><td>实例 / 全景分割</td><td>数十万张</td><td>80（things）</td><td>实例分割的主流基准，报告 mask AP</td></tr><tr><td>Cityscapes</td><td>语义 / 实例分割</td><td>5000 精标 + 20000 粗标</td><td>30（19 用于评估）</td><td>街景、高分辨率、像素级精细标注</td></tr><tr><td>ADE20K</td><td>语义 / 全景分割</td><td>约两万七千张</td><td>150（things+stuff）</td><td>场景多样、密集标注、细粒度</td></tr><tr><td>BDD100K</td><td>语义分割</td><td>约十万张</td><td>数十类</td><td>自动驾驶、天气与光照多样</td></tr></table><p><strong>口径提醒：</strong>COCO 实例分割报告的是 mask AP（与检测的 bbox AP 是两套指标）；Cityscapes 的 30 类中只有 19 类参与 mIoU 评估，其余被忽略或视为 void。把不同基准的数值直接并列比较，会得到错误结论。此外，评估时通常需将预测上采样回原始分辨率再算指标，否则高分辨率小物体上的差异会被抹平。</p></section><section id="s-challenges"><h2>贯穿所有方法的五个难点</h2><ul><li><strong>边界模糊</strong>：物体边界往往不清晰（橘猫趴在橙色地毯上），像素级标注本身就带主观差异，这也是高质量分割标注昂贵的原因。</li><li><strong>小物体</strong>：小目标在下采样后信息几乎消失。据 COCO 的统计口径，面积很小的物体在标注实例中占比很高（具体比例以官方分析为准），这促使 U-Net 类方法用跳跃连接保留高分辨率细节。</li><li><strong>类别不平衡</strong>：大面积背景像素远多于小目标，模型倾向于“忽略”小物体与罕见类。常用对策是加权交叉熵、Dice Loss，以及从检测借来的 Focal Loss。</li><li><strong>尺度多样</strong>：同一类物体在不同图里可能占据半幅图或只有几十像素，对感受野与多尺度设计提出要求。</li><li><strong>遮挡与截断</strong>：物体相互遮挡是常态，模型需要上下文“脑补”被遮挡部分，这与检测同源但要求更精细的空间推理。</li></ul><p>这五个难点不是各自的孤立问题，它们共同解释了分割模型为何普遍采用编码-解码与多尺度结构：既要深层的语义，又要浅层的高分辨率细节。</p></section><section id="s-lineage"><h2>从 FCN 到 SAM 的发展脉络</h2><figure><img src="../assets/svg/19-lineage.svg" width="900" height="420" alt="分割模型五代脉络：FCN 全卷积，U-Net/SegNet 编码-解码，DeepLab/PSPNet 空洞卷积与多尺度，Mask R-CNN 检测分割统一，Transformer 与 SAM 基础模型。" loading="lazy"><figcaption>五代演化并非替代关系：每一代都在上一层基础上补一个具体短板——分辨率、感受野、实例区分或多任务统一。</figcaption></figure><p>分割模型大致经历了五代演变，看清脉络比背单个模型更有用：</p><ul><li><strong>FCN（2015）</strong>：第一个全卷积、端到端的像素级预测网络，用转置卷积上采样并融合浅层特征，取代了滑窗式的 patch 分类，是后续所有工作的基石。</li><li><strong>编码-解码（2015–2016）</strong>：U-Net、SegNet 把 FCN 发展为对称结构，编码器提语义、解码器恢复分辨率，跳跃连接把细节拼回来。该设计在医学分割中尤其成功。</li><li><strong>空洞卷积与多尺度（2016–2018）</strong>：DeepLab 系列用空洞卷积与 ASPP 在不增加参数的情况下扩大感受野；PSPNet 用金字塔池化聚合多尺度上下文。</li><li><strong>检测+分割统一（2017–2019）</strong>：Mask R-CNN 用 RoIAlign 把 Faster R-CNN 扩展为实例分割的事实标准；YOLACT、SOLO 等单阶段实例分割则在速度上突破。</li><li><strong>Transformer 与基础模型（2020 至今）</strong>：SETR、SegFormer 引入 Transformer 编码器；MaskFormer/Mask2Former 统一了语义/实例/全景分割；SAM（Segment Anything）把分割推向可提示的通用模型。</li></ul><p>三条趋势贯穿始终：<strong>从粗到精</strong>（边界质量提升）、<strong>从特定到统一</strong>（不同任务被同一架构覆盖）、<strong>从监督到通用</strong>（从依赖大量标注到支持提示式、zero-shot 泛化）。</p><details class="mini-test"><summary>检查理解：为什么像素精度（PA）单独看会误导？</summary><p>当背景类占绝大多数像素时，模型只要全部预测背景就能得到很高的 PA，但在前景类上的 IoU 为 0。mIoU 先按类别计算再平均，能暴露这种“只预测多数类”的退化。</p></details></section><section id="references"><h2>原始资料与评估口径</h2><p>本页的任务定义、指标公式与脉络叙述依据下列原始论文与官方基准页面；数据集规模为大致数量级，引用前应以官方为准。</p><ol class="refs"><li><a href="https://arxiv.org/abs/1411.4038">Fully Convolutional Networks for Semantic Segmentation (FCN, arXiv:1411.4038)</a></li><li><a href="https://arxiv.org/abs/1505.04597">U-Net: Convolutional Networks for Biomedical Image Segmentation (arXiv:1505.04597)</a></li><li><a href="https://arxiv.org/abs/1801.00868">Panoptic Segmentation (arXiv:1801.00868)</a></li><li><a href="https://cocodataset.org/#detection-eval">COCO 官方评估（mask AP 口径）</a></li><li><a href="https://www.cityscapes-dataset.com/">Cityscapes 数据集官方页面</a></li><li><a href="https://arxiv.org/abs/2304.02643">Segment Anything (SAM, arXiv:2304.02643)</a></li></ol></section><nav class="pager" aria-label="章节导航"><a href="18.html">← 第 18 章</a><a href="20.html">第 20 章 U-Net →</a></nav></article></main></div></body></html>

@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 420" role="img" aria-labelledby="tk-title tk-desc" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif">
+<title id="tk-title">语义、实例与全景分割在同一场景下的输出</title>
+<desc id="tk-desc">同一张街景图：语义分割只给像素涂类别颜色、不区分个体；实例分割为每个可数物体给出独立掩码；全景分割覆盖全部像素并给可数物体附加实例 ID。</desc>
+<rect width="900" height="420" fill="#fffdf9"/>
+<g font-size="18" text-anchor="middle" fill="#203035">
+<text x="160" y="40" font-weight="700">语义分割</text>
+<text x="450" y="40" font-weight="700">实例分割</text>
+<text x="740" y="40" font-weight="700">全景分割</text>
+
+<rect x="55" y="60" width="210" height="180" rx="10" fill="#eef3f2" stroke="#53676d"/>
+<rect x="55" y="60" width="210" height="110" rx="10" fill="#d6f1eb" stroke="none"/>
+<rect x="90" y="120" width="40" height="90" fill="#d06d4d" opacity="0.75"/>
+<rect x="150" y="120" width="40" height="90" fill="#d06d4d" opacity="0.75"/>
+<text x="160" y="300" font-size="15" fill="#53676d">同类像素同色，不区分个体</text>
+
+<rect x="345" y="60" width="210" height="180" rx="10" fill="#eef3f2" stroke="#53676d"/>
+<rect x="380" y="120" width="40" height="90" fill="#d06d4d"/>
+<rect x="440" y="120" width="40" height="90" fill="#147f80"/>
+<text x="400" y="106" font-size="14" fill="#8a4526">人1</text>
+<text x="460" y="106" font-size="14" fill="#0f5f60">人2</text>
+<text x="450" y="300" font-size="15" fill="#53676d">每个可数物体一个掩码</text>
+
+<rect x="635" y="60" width="210" height="180" rx="10" fill="#eef3f2" stroke="#53676d"/>
+<rect x="635" y="60" width="210" height="95" rx="10" fill="#ebe5ff" stroke="none"/>
+<rect x="670" y="120" width="40" height="90" fill="#d06d4d"/>
+<rect x="730" y="120" width="40" height="90" fill="#147f80"/>
+<text x="740" y="300" font-size="15" fill="#53676d">覆盖所有像素 + 实例 ID</text>
+</g>
+<text x="450" y="350" font-size="17" text-anchor="middle" fill="#203035">things = 可数物体（人、车）； stuff = 无定形区域（天空、路面）</text>
+<text x="450" y="386" font-size="16" text-anchor="middle" fill="#53676d">语义不管个体；实例只管 things；全景两者都管且不留空像素</text>
+</svg>

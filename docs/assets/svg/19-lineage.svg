@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 420" role="img" aria-labelledby="ln-title ln-desc" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif">
+<title id="ln-title">分割模型的五代演化</title>
+<desc id="ln-desc">时间轴从 2015 到 2020 之后：FCN 全卷积开创像素级端到端预测；U-Net/SegNet 编码-解码；DeepLab/PSPNet 空洞卷积与多尺度；Mask R-CNN 检测分割统一；Transformer 与 SAM 走向基础模型。</desc>
+<rect width="900" height="420" fill="#fffdf9"/>
+<line x1="60" y1="210" x2="860" y2="210" stroke="#53676d" stroke-width="3"/>
+<g font-size="15" text-anchor="middle" fill="#203035">
+<circle cx="120" cy="210" r="7" fill="#147f80"/>
+<circle cx="300" cy="210" r="7" fill="#d06d4d"/>
+<circle cx="470" cy="210" r="7" fill="#7461ba"/>
+<circle cx="630" cy="210" r="7" fill="#d06d4d"/>
+<circle cx="800" cy="210" r="7" fill="#147f80"/>
+<text x="120" y="190" font-weight="700">FCN</text><text x="120" y="172" font-size="13" fill="#53676d">2015</text>
+<text x="120" y="245">全卷积</text><text x="120" y="268" font-size="13" fill="#53676d">端到端像素预测</text>
+<text x="300" y="190" font-weight="700">U-Net / SegNet</text><text x="300" y="172" font-size="13" fill="#53676d">2015–16</text>
+<text x="300" y="245">编码-解码</text><text x="300" y="268" font-size="13" fill="#53676d">跳跃连接保细节</text>
+<text x="470" y="190" font-weight="700">DeepLab / PSPNet</text><text x="470" y="172" font-size="13" fill="#53676d">2016–18</text>
+<text x="470" y="245">空洞卷积</text><text x="470" y="268" font-size="13" fill="#53676d">多尺度上下文</text>
+<text x="630" y="190" font-weight="700">Mask R-CNN</text><text x="630" y="172" font-size="13" fill="#53676d">2017–19</text>
+<text x="630" y="245">检测+分割</text><text x="630" y="268" font-size="13" fill="#53676d">RoIAlign 实例掩码</text>
+<text x="800" y="190" font-weight="700">Transformer / SAM</text><text x="800" y="172" font-size="13" fill="#53676d">2020 至今</text>
+<text x="800" y="245">统一 / 基础模型</text><text x="800" y="268" font-size="13" fill="#53676d">可提示、通用</text>
+</g>
+<g stroke="#b9c9c4" stroke-width="2" fill="none">
+<path d="M120 130V118M300 130V118M470 130V118M630 130V118M800 130V118"/>
+</g>
+<text x="60" y="360" font-size="17" fill="#53676d">三条趋势：从粗到精（边界）、从特定到统一（任务）、从监督到通用（标注依赖）</text>
+</svg>

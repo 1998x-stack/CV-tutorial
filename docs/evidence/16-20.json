@@ -62,6 +62,24 @@
       "claim": "DETR predicts a set of N (100) objects with object queries and uses Hungarian matching, removing NMS and anchors",
       "sources": ["https://arxiv.org/abs/2005.12872", "https://arxiv.org/abs/2010.04159"],
       "caveat": "Deformable DETR is a distinct follow-up; convergence/speed remarks are qualitative, not fixed numbers"
+    },
+    {
+      "chapter": "19",
+      "claim": "Semantic segmentation assigns a class per pixel but not instance ids; instance segmentation separates countable things; panoptic segmentation unifies things+stuff over all pixels",
+      "sources": ["https://arxiv.org/abs/1801.00868"],
+      "caveat": "Task outputs and metrics differ; mask AP (COCO) and mIoU (Cityscapes) are not interchangeable"
+    },
+    {
+      "chapter": "19",
+      "claim": "mask IoU = |P∩G|/|P∪G|; mIoU averages per-class IoU; Dice = 2|P∩G|/(|P|+|G|) = 2*IoU/(1+IoU)",
+      "sources": ["https://arxiv.org/abs/1505.04597"],
+      "caveat": "Whether background counts and whether to ignore absent classes are conventions that change reported mIoU"
+    },
+    {
+      "chapter": "19",
+      "claim": "Dataset lineage and scale: VOC2012, COCO, Cityscapes (5000 fine + 20000 coarse, 19 eval classes), ADE20K, BDD100K",
+      "sources": ["https://cocodataset.org/#detection-eval", "https://www.cityscapes-dataset.com/"],
+      "caveat": "Sizes are stated as approximate orders of magnitude and must be checked against official pages"
     }
   ]
 }

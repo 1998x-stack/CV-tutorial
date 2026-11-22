@@ -199,7 +199,7 @@
       ],
       "file": "chapters/16.html",
       "stage": "detection",
-      "refined": false
+      "refined": true
     },
     {
       "num": "17",
@@ -211,7 +211,7 @@
       ],
       "file": "chapters/17.html",
       "stage": "detection",
-      "refined": false
+      "refined": true
     },
     {
       "num": "18",
@@ -223,7 +223,7 @@
       ],
       "file": "chapters/18.html",
       "stage": "detection",
-      "refined": false
+      "refined": true
     },
     {
       "num": "19",
@@ -235,7 +235,7 @@
       ],
       "file": "chapters/19.html",
       "stage": "segmentation",
-      "refined": false
+      "refined": true
     },
     {
       "num": "20",
@@ -247,7 +247,7 @@
       ],
       "file": "chapters/20.html",
       "stage": "segmentation",
-      "refined": false
+      "refined": true
     },
     {
       "num": "21",

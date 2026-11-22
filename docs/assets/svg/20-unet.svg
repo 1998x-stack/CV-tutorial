@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 420" role="img" aria-labelledby="un-title un-desc" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif">
+<title id="un-title">U-Net 的对称编码-解码结构与跳跃连接</title>
+<desc id="un-desc">左侧编码路径每层两次 3×3 卷积加池化，通道数 64、128、256、512 逐层翻倍；右侧解码路径上采样后与左侧同分辨率层拼接，再双卷积；轴线为跳跃连接，连接两侧对应层。</desc>
+<rect width="900" height="420" fill="#fffdf9"/>
+<text x="45" y="40" font-size="21" font-weight="700" fill="#203035">U-Net：编码-解码 + 跳跃连接</text>
+<g font-size="14" text-anchor="middle" fill="#203035">
+<rect x="70" y="80" width="120" height="52" rx="7" fill="#d6f1eb" stroke="#147f80" stroke-width="2.5"/><text x="130" y="104">双卷积</text><text x="130" y="122">64</text>
+<rect x="70" y="160" width="120" height="52" rx="7" fill="#d6f1eb" stroke="#147f80" stroke-width="2.5"/><text x="130" y="184">双卷积</text><text x="130" y="202">128</text>
+<rect x="70" y="240" width="120" height="52" rx="7" fill="#d6f1eb" stroke="#147f80" stroke-width="2.5"/><text x="130" y="264">双卷积</text><text x="130" y="282">256</text>
+<rect x="70" y="320" width="120" height="52" rx="7" fill="#d6f1eb" stroke="#147f80" stroke-width="2.5"/><text x="130" y="344">双卷积</text><text x="130" y="362">512</text>
+<rect x="390" y="320" width="120" height="52" rx="7" fill="#ebe5ff" stroke="#7461ba" stroke-width="2.5"/><text x="450" y="344">底部</text><text x="450" y="362">1024</text>
+<rect x="650" y="320" width="120" height="52" rx="7" fill="#ffecd9" stroke="#d06d4d" stroke-width="2.5"/><text x="710" y="344">上采样+拼接</text><text x="710" y="362">512</text>
+<rect x="650" y="240" width="120" height="52" rx="7" fill="#ffecd9" stroke="#d06d4d" stroke-width="2.5"/><text x="710" y="264">上采样+拼接</text><text x="710" y="282">256</text>
+<rect x="650" y="160" width="120" height="52" rx="7" fill="#ffecd9" stroke="#d06d4d" stroke-width="2.5"/><text x="710" y="184">上采样+拼接</text><text x="710" y="202">128</text>
+<rect x="650" y="80" width="120" height="52" rx="7" fill="#ffecd9" stroke="#d06d4d" stroke-width="2.5"/><text x="710" y="104">上采样+拼接</text><text x="710" y="122">64</text>
+</g>
+<g stroke="#147f80" stroke-width="3.5" fill="none" marker-end="url(#un-ah)">
+<path d="M130 132V156"/><path d="M130 212V236"/><path d="M130 292V316"/>
+<path d="M450 320V240"/>
+</g>
+<g stroke="#7461ba" stroke-width="4" fill="none" stroke-dasharray="9 6" marker-end="url(#un-sh)">
+<path d="M196 106H646"/><path d="M196 186H646"/><path d="M196 266H646"/><path d="M196 346H646"/>
+</g>
+<defs>
+<marker id="un-ah" markerWidth="10" markerHeight="10" refX="7" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#147f80"/></marker>
+<marker id="un-sh" markerWidth="10" markerHeight="10" refX="7" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#7461ba"/></marker>
+</defs>
+<text x="420" y="66" font-size="14" fill="#6b57a8">紫色虚线：跳跃连接（同分辨率特征拼接）</text>
+<text x="200" y="400" font-size="15" fill="#0f5f60">编码器：语义、通道翻倍</text>
+<text x="640" y="400" font-size="15" fill="#8a4526">解码器：恢复分辨率</text>
+</svg>

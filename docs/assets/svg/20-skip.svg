@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 420" role="img" aria-labelledby="sk-title sk-desc" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif">
+<title id="sk-title">U-Net 拼接与 ResNet 残差相加的区别</title>
+<desc id="sk-desc">左：U-Net 跳跃连接把编码器同分辨率特征与解码器上采样结果在通道维拼接，通道数相加、信息分通道保留；右：ResNet 残差把输入与变换结果逐元素相加，通道数不变、用于缓解优化退化。</desc>
+<rect width="900" height="420" fill="#fffdf9"/>
+<text x="45" y="42" font-size="21" font-weight="700" fill="#203035">拼接（concat）</text>
+<text x="500" y="42" font-size="21" font-weight="700" fill="#203035">相加（add）</text>
+<rect x="60" y="70" width="330" height="300" rx="12" fill="#eef3f2" stroke="#c9d8d3"/>
+<rect x="480" y="70" width="360" height="300" rx="12" fill="#eef3f2" stroke="#c9d8d3"/>
+<g font-size="16" text-anchor="middle" fill="#203035">
+<rect x="100" y="110" width="110" height="60" rx="8" fill="#d6f1eb" stroke="#147f80" stroke-width="2.5"/><text x="155" y="146">编码器特征</text>
+<rect x="100" y="210" width="110" height="60" rx="8" fill="#ffecd9" stroke="#d06d4d" stroke-width="2.5"/><text x="155" y="246">解码器特征</text>
+<rect x="260" y="160" width="100" height="60" rx="8" fill="#ebe5ff" stroke="#7461ba" stroke-width="2.5"/><text x="310" y="196">通道拼接</text>
+<text x="200" y="320" font-size="15" fill="#53676d">通道数：C + C = 2C</text>
+<rect x="620" y="150" width="110" height="80" rx="8" fill="#d6f1eb" stroke="#147f80" stroke-width="2.5"/><text x="675" y="196">残差块 F(x)</text>
+<rect x="520" y="300" width="90" height="50" rx="8" fill="#ffecd9" stroke="#d06d4d" stroke-width="2.5"/><text x="565" y="330">+ x</text>
+<text x="660" y="320" font-size="15" fill="#53676d">通道数：C 不变</text>
+</g>
+<g stroke="#147f80" stroke-width="4" fill="none" marker-end="url(#sk-ah)">
+<path d="M210 140 L256 175"/><path d="M210 240 L256 205"/>
+<path d="M675 150 V120"/><path d="M590 190 L640 190"/>
+</g>
+<defs><marker id="sk-ah" markerWidth="10" markerHeight="10" refX="7" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#147f80"/></marker></defs>
+<text x="225" y="400" font-size="15" text-anchor="middle" fill="#6b57a8">补空间细节，语义各异则分通道</text>
+<text x="660" y="400" font-size="15" text-anchor="middle" fill="#6b57a8">同一阶段内，助优化</text>
+</svg>

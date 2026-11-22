@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 420" role="img" aria-labelledby="ot-title ot-desc" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif">
+<title id="ot-title">U-Net 的 overlap-tile 推理策略</title>
+<desc id="ot-desc">由于无填充卷积使输出小于输入，U-Net 每次只对大输入 tile 前向，仅信任输出中心的区域；重叠的 tile 各自贡献中心区域，拼接后无缝覆盖任意大的图像。</desc>
+<rect width="900" height="420" fill="#fffdf9"/>
+<text x="45" y="44" font-size="22" font-weight="700" fill="#203035">overlap-tile：输入大，只信中间</text>
+<rect x="60" y="80" width="300" height="260" rx="10" fill="#eef3f2" stroke="#53676d"/>
+<rect x="60" y="80" width="300" height="260" rx="10" fill="none" stroke="#b9c9c4" stroke-dasharray="6 5"/>
+<rect x="130" y="150" width="150" height="120" fill="#ffecd9" stroke="#d06d4d" stroke-width="3"/>
+<text x="205" y="215" font-size="17" text-anchor="middle" fill="#8a4526">输入 tile</text>
+<rect x="165" y="180" width="80" height="60" fill="#d6f1eb" stroke="#147f80" stroke-width="3"/>
+<text x="205" y="216" font-size="15" text-anchor="middle" fill="#0f5f60">有效输出</text>
+<text x="210" y="370" font-size="16" text-anchor="middle" fill="#53676d">边缘只提供上下文，丢弃不输出</text>
+<g font-size="18" text-anchor="middle" fill="#203035">
+<rect x="470" y="90" width="150" height="100" rx="10" fill="#d6f1eb" stroke="#147f80" stroke-width="2.5"/>
+<text x="545" y="146">tile 中心</text>
+<rect x="640" y="140" width="150" height="100" rx="10" fill="#d6f1eb" stroke="#147f80" stroke-width="2.5"/>
+<text x="715" y="196">tile 中心</text>
+<rect x="470" y="250" width="150" height="100" rx="10" fill="#ebe5ff" stroke="#7461ba" stroke-width="2.5"/>
+<text x="545" y="306">拼接</text>
+</g>
+<g stroke="#147f80" stroke-width="4" fill="none" marker-end="url(#ot-ah)">
+<path d="M622 150 L637 175"/><path d="M545 242 L545 246"/><path d="M620 305H636"/>
+</g>
+<rect x="640" y="250" width="150" height="100" rx="10" fill="#ebe5ff" stroke="#7461ba" stroke-width="2.5"/>
+<text x="715" y="306" font-size="17" text-anchor="middle" fill="#203035">整图分割</text>
+<defs><marker id="ot-ah" markerWidth="10" markerHeight="10" refX="7" refY="5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#147f80"/></marker></defs>
+<text x="450" y="398" font-size="16" text-anchor="middle" fill="#53676d">现代滑动窗口推理沿用这个思路：重叠切块、只拼中心</text>
+</svg>

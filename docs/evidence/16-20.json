@@ -80,6 +80,24 @@
       "claim": "Dataset lineage and scale: VOC2012, COCO, Cityscapes (5000 fine + 20000 coarse, 19 eval classes), ADE20K, BDD100K",
       "sources": ["https://cocodataset.org/#detection-eval", "https://www.cityscapes-dataset.com/"],
       "caveat": "Sizes are stated as approximate orders of magnitude and must be checked against official pages"
+    },
+    {
+      "chapter": "20",
+      "claim": "U-Net is a symmetric encoder-decoder with contracting channels 64-128-256-512-1024, 2x3x3 conv + ReLU + 2x2 max-pool, transposed-conv upsampling and feature concatenation from the encoder",
+      "sources": ["https://arxiv.org/abs/1505.04597"],
+      "caveat": "Original uses valid (unpadded) convolutions so 572x572 input yields 388x388 output with cropping; the runnable snippet assumes this valid-conv topology, while many modern reimplementations use same-padding"
+    },
+    {
+      "chapter": "20",
+      "claim": "Boundary-weighted cross-entropy uses w(x)=w_c(x)+w_0*exp(-(d1+d2)^2/(2 sigma^2))",
+      "sources": ["https://arxiv.org/abs/1505.04597"],
+      "caveat": "d1,d2 are distances to nearest and second-nearest cell borders; w_0 and sigma are paper hyperparameters not restated numerically"
+    },
+    {
+      "chapter": "20",
+      "claim": "Variants include 3D U-Net, Attention U-Net, U-Net++ and nnU-Net (an auto-configuration framework, not a new architecture)",
+      "sources": ["https://arxiv.org/abs/1606.06650", "https://arxiv.org/abs/1804.03999", "https://arxiv.org/abs/1807.10165", "https://arxiv.org/abs/1809.10486"],
+      "caveat": "Citation counts are not fixed here; overlap-tile and elastic deformation are from the original paper"
     }
   ]
 }

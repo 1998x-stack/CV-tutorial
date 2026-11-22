@@ -43,6 +43,9 @@ def check():
             if "<math " not in html: bad(f"{file.name}: MathML equation missing")
             if html.count('class="equation" role="region" tabindex="0"') < html.count("<math "):
                 bad(f"{file.name}: every display equation needs a focusable named region")
+            for math_tag in re.findall(r"<math\\b[^>]*>", html):
+                if "aria-label=" not in math_tag:
+                    bad(f"{file.name}: MathML expression lacks an accessible description")
             for image in p.images:
                 if not image.get("alt"): bad(f"{file.name}: figure image missing meaningful alt")
             if html.count("<figcaption>") < html.count("<figure>"):
@@ -66,7 +69,10 @@ def check():
             if not (file.parent/path).exists(): bad(f"{file.relative_to(ROOT)}: missing relative reference {link}")
     foundation_evidence=json.loads((SITE/"evidence/01-05.json").read_text(encoding="utf-8"))["entries"]
     if len(foundation_evidence) < 25: bad("evidence: chapters 01–05 require at least 25 claim/source records")
+    foundation_ids=set()
     for claim in foundation_evidence:
+        if not claim.get("id") or claim.get("id") in foundation_ids: bad("foundation evidence: missing or duplicate ID "+str(claim.get("id")))
+        foundation_ids.add(claim.get("id"))
         if claim.get("chapter") not in ("01","02","03","04","05"): bad("foundation evidence: invalid chapter "+str(claim.get("id")))
         if not claim.get("source_url","").startswith("https://"): bad("foundation evidence: source URL missing "+str(claim.get("id")))
         if not claim.get("locator"): bad("foundation evidence: locator missing "+str(claim.get("id")))

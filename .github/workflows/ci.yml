@@ -12,5 +12,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Check course structure, links and SVG
-        run: python3 scripts/check_site.py
+      - name: Verify structure, local references, source SVG and build output
+        run: |
+          python3 scripts/check_site.py
+          python3 scripts/build_pages.py
+          test -f _site/index.html
+          test -f _site/01.html
+          test -f _site/chapters/28.html

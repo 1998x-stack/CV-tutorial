@@ -26,7 +26,7 @@ def check():
     for c in chapters:
         if not (SITE/c["file"]).is_file(): bad("missing chapter: "+c["file"])
     home_html=(SITE/"index.html").read_text(encoding="utf-8")
-    if home_html.count('class="state"') != 25: bad("home: exactly 20 chapters should be visibly refined")
+    if home_html.count('class="state"') != 25: bad("home: exactly 25 chapters should be visibly refined")
     files=[SITE/"index.html"]+sorted((SITE/"chapters").glob("*.html"))
     for file in files:
         html=file.read_text(encoding="utf-8")
@@ -41,7 +41,7 @@ def check():
             for image in p.images:
                 if not image.get("alt"): bad(f"{file.name}: figure image missing meaningful alt")
         if len(p.ids)!=len(set(p.ids)): bad(str(file.relative_to(ROOT))+": duplicate element IDs")
-        if file.parent.name=="chapters" and file.name in {f"{i:02}.html" for i in range(1,21)}:
+        if file.parent.name=="chapters" and file.name in {f"{i:02}.html" for i in range(1,26)}:
             for link in p.links:
                 if link.startswith("#") and link[1:] not in p.ids: bad(f"{file.name}: broken local anchor {link}")
         for link in p.links:
@@ -50,7 +50,7 @@ def check():
             if not path: continue
             if not (file.parent/path).exists(): bad(f"{file.relative_to(ROOT)}: missing relative reference {link}")
     svgfiles=list((SITE/"assets/svg").glob("*.svg"))
-    if len(svgfiles)<85: bad("expected at least 65 SVGs (home + chapters 01–25, including detection and segmentation diagrams)")
+    if len(svgfiles)<85: bad("expected at least 85 SVGs (home + chapters 01–25, including detection, segmentation and deployment diagrams)")
     for f in svgfiles:
         try:
             node=ET.parse(f).getroot()

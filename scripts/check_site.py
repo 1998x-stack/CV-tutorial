@@ -43,7 +43,7 @@ def check():
             if "<math " not in html: bad(f"{file.name}: MathML equation missing")
             if html.count('class="equation" role="region" tabindex="0"') < html.count("<math "):
                 bad(f"{file.name}: every display equation needs a focusable named region")
-            for math_tag in re.findall(r"<math\\b[^>]*>", html):
+            for math_tag in re.findall(r"<math\b[^>]*>", html):
                 if "aria-label=" not in math_tag:
                     bad(f"{file.name}: MathML expression lacks an accessible description")
             for image in p.images:

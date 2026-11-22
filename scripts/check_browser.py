@@ -99,6 +99,25 @@ def run():
                             summary.click()
                             if not summary.evaluate("(el)=>el.parentElement.open"):
                                 errors.append(f"{label}: details failed to open")
+                    if width==390 and path=="chapters/04.html":
+                        slider=page.locator("#weight")
+                        label=page.locator("#weight-label")
+                        stats=page.locator("#weight-stats")
+                        initial=stats.inner_text()
+                        slider.focus()
+                        page.keyboard.press("ArrowRight")
+                        changed=stats.inner_text()
+                        if changed==initial or "0.55" not in label.input_value() and "0.55" not in label.get_attribute("value"):
+                            errors.append(f"{label}: gradient slider did not change weight")
+                        if "1.100" not in changed or "0.605" not in changed or "2.200" not in changed:
+                            errors.append(f"{label}: expected w=.55, a=1.1, L=.605, grad=2.2; got {changed}")
+                        page.keyboard.press("ArrowLeft")
+                        restored=stats.inner_text()
+                        if restored!=initial:
+                            errors.append(f"{label}: gradient slider did not restore default state")
+                        if stats.get_attribute("aria-live")!="polite":
+                            errors.append(f"{label}: gradient output lacks aria-live")
+                        checks.append({"page":path,"width":width,"interaction":"weight-slider-change-and-restore","passed":restored==initial})
                     if width==390 and path=="chapters/26.html":
                         slider=page.locator("#mask-ratio")
                         before=page.locator("#mask-output").inner_text()
@@ -114,6 +133,19 @@ def run():
                         aria=page.locator("#mask-output").get_attribute("aria-live")
                         if aria!="polite":
                             errors.append(f"{label}: MAE interaction lacks live output")
+                    if width==360:
+                        scroll_index=page.locator(".equation").evaluate_all(
+                            "(els)=>els.findIndex(el=>el.scrollWidth>el.clientWidth+2)")
+                        if scroll_index>=0:
+                            region=page.locator(".equation").nth(scroll_index)
+                            region.evaluate("(el)=>{el.scrollLeft=0}")
+                            region.focus()
+                            before_scroll=region.evaluate("(el)=>el.scrollLeft")
+                            page.keyboard.press("ArrowRight")
+                            after_scroll=region.evaluate("(el)=>el.scrollLeft")
+                            if after_scroll<=before_scroll:
+                                errors.append(f"{label}: wide MathML region is not keyboard-scrollable")
+                            checks.append({"page":path,"width":width,"interaction":"math-keyboard-scroll","passed":after_scroll>before_scroll})
                     if width==1440:
                         page.emulate_media(media="print")
                         print_overflow = page.evaluate("document.documentElement.scrollWidth - window.innerWidth")
@@ -128,7 +160,7 @@ def run():
     finally:
         server.shutdown()
         server.server_close()
-    result={"pages":len(PATHS),"viewports":WIDTHS,"checks":checks,"failures":errors}
+    result={"pages":len(PATHS),"viewports":WIDTHS,"checks":checks,"failures":errors,"interactive_contracts":["chapter 04 weight slider changes loss/gradient and restores","chapter 26 MAE mask slider changes visible tokens and restores","wide MathML regions keyboard-scroll when overflowing"]}
     (OUT/"summary.json").write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding="utf8")
     print(f"Browser QA: {len(checks)} checks; {len(errors)} failures")
     if errors:raise SystemExit("\n".join(errors))

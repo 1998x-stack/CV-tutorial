@@ -69,3 +69,14 @@
 - 第 01–28 章必须各有一个 H1、语义导航与可达资源，章节名/链接通过 courses.json 与首页卡片保持一致；全站至少 100 张带 title/desc 的 SVG，正文通过 4 种视口和离线模式检查。
 - 浏览器必须实际测试第 26 章 mask ratio 输入改变 token 状态、恢复默认，并检查 aria-live 输出；不能只截图静态默认状态就声称交互可用。
 - 新文章至少 5 张高信息量 SVG 与 4 个独立可运行的 CPU 代码片段，全面验证 MathML / 参考来源；对未来新增变体，应先更新证据清单，再更新正文和 AGENTS.md。
+
+
+## 第二轮基础章节复审（01–05）
+- 01：区分 HWC RGB 与 OpenCV BGR；数组索引按 row/y、column/x、channel；IoU 的空并集不可静默除零，必须说明 benchmark 的空类别策略。分类 accuracy、检测 AP 与分割 mIoU 不可脱离输出空间和匹配协议比较。
+- 02：OpenCV imread 的默认彩色顺序是 BGR；BGR2GRAY 的加权值是 gamma 编码通道的转换约定，不是线性光强。NumPy gradient 的 2D 返回顺序是 axis=0 的行导数、axis=1 的列导数。Canny 的 L2gradient 开关、边界条件和阈值范围必须说明。开运算 = erosion→dilation，闭运算 = dilation→erosion。
+- 03：SIFT 默认 128D 描述子来自 4×4 空间子区 × 8 方向桶；测试必须断言描述子非空，不得用 `None or shape==128` 让算法未运行也通过。HOG 的单 block 维数按 cells×bins 算，整窗由多个重叠 block 拼接。积分图矩形和公式必须注明闭区间或半开区间坐标约定。
+- 04：写明线性层输入/权重/偏置/输出形状；共享节点梯度必须累加。Softmax 沿类别轴归一化；多类 CrossEntropyLoss 输入 logits 和整数类索引。ReLU 在 0 处不可微，交互示例必须明确使用的次梯度约定。Playwright 要实测 slider 改变数值并恢复默认。
+- 05：PyTorch Conv2d 输入 NCHW、权重 [Cout,Cin/groups,Kh,Kw]；卷积层通常计算 cross-correlation。空间输出公式考虑 effective kernel、stride、padding、dilation；参数量不是 FLOPs。至少一个 NumPy 实验需跨输入通道累加。
+- 第 01–05 章代码必须通过 `python3 tests/test_foundations.py`；依赖锁定在 `requirements-vision-tests.txt`，CI 使用 headless OpenCV，不能依赖 GUI 或下载图片。
+- 01–05 章每篇至少 5 个具有独立解释目的的原创 SVG；每张图有 title/desc、caption、alt，文字标注 >=13px。显示公式使用可聚焦、命名、可横向滚动的 region；移动端不得把页面级 overflow hidden 当修复。
+- 新增跨章节链接必须指向实际章节锚点/文件；每章仍要自包含，不得用“去上一章学习定义”代替解释。

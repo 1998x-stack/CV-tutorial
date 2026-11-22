@@ -101,14 +101,15 @@ def run():
                                 errors.append(f"{label}: details failed to open")
                     if width==390 and path=="chapters/04.html":
                         slider=page.locator("#weight")
-                        label=page.locator("#weight-label")
+                        weight_label=page.locator("#weight-label")
                         stats=page.locator("#weight-stats")
                         initial=stats.inner_text()
                         slider.focus()
                         page.keyboard.press("ArrowRight")
                         changed=stats.inner_text()
-                        if changed==initial or "0.55" not in label.input_value() and "0.55" not in label.get_attribute("value"):
-                            errors.append(f"{label}: gradient slider did not change weight")
+                        value=weight_label.evaluate("(el)=>el.value")
+                        if changed==initial or value!="0.55":
+                            errors.append(f"{label}: gradient slider did not change weight (value={value})")
                         if "1.100" not in changed or "0.605" not in changed or "2.200" not in changed:
                             errors.append(f"{label}: expected w=.55, a=1.1, L=.605, grad=2.2; got {changed}")
                         page.keyboard.press("ArrowLeft")

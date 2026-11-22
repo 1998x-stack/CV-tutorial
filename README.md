@@ -30,7 +30,7 @@ CV-tutorial/
 │       ├── css/article.css     # 长文版式、MathML、移动端和打印
 │       └── svg/                # 按知识问题组织的原创独立 SVG
 ├── scripts/check_site.py       # 静态链接 / SVG / 章节一致性门禁
-├── scripts/check_browser.py    # Chromium 1440/390/360 响应式浏览器验收
+├── scripts/check_browser.py    # Chromium 1440/768/390/360 响应式浏览器验收
 ├── tests/test_cv_examples.py   # 06–20 章教学代码断言
 ├── .github/workflows/          # QA 与 GitHub Pages 部署
 ├── pdfs/                       # 历史论文资料（不参与本次迁移）
@@ -69,7 +69,7 @@ python3 scripts/check_browser.py
 
 16–20 章进一步梳理 R-CNN→Fast R-CNN→Faster R-CNN 的共享计算演进，严格区分 RoI Pooling 与后来的 RoIAlign、原始 Faster R-CNN 与 FPN；单阶段部分分开说明 YOLOv1 的 7×7×30 输出与 SSD300 的 8,732 个 default boxes；U-Net 复核 572→388 valid-convolution 几何、中心裁剪、overlap-tile 与原论文加权 softmax loss。证据登记于 docs/evidence/16-20.json。
 
-11–15 章另增加 Vision Transformer token/attention 算术、ConvNeXt 深度卷积成本、AdamW 解耦衰减、Pareto 选型以及 IoU/COCO AP/NMS 的可运行样例。所有性能示例均独立标注为教学构造，并记录参考来源于 `docs/evidence/11-20.json`。
+11–15 章另增加 Vision Transformer token/attention 算术、ConvNeXt 深度卷积成本、AdamW 解耦衰减、Pareto 选型以及 IoU/COCO AP/NMS 的可运行样例。所有性能示例均独立标注为教学构造，并记录参考来源于 `docs/evidence/11-15.json`。
 
 本轮特别区分 AlexNet 2012 年原版与现代 torchvision，VGG-16 原配置与带 BN 变体，以及 ResNet v1、pre-activation v2 与 torchvision v1.5。历史指标只在指定论文/数据/协议下成立。
 

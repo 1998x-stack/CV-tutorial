@@ -28,7 +28,7 @@ jobs:
           python-version: '3.12'
       - name: Install CPU PyTorch
         run: python3 -m pip install torch --index-url https://download.pytorch.org/whl/cpu
-      - name: Execute original 06–15 article code blocks
+      - name: Execute original 06–20 article code blocks
         run: python3 tests/test_cv_examples.py
   browser:
     runs-on: ubuntu-latest
@@ -41,7 +41,7 @@ jobs:
         run: |
           python3 -m pip install playwright
           python3 -m playwright install --with-deps chromium
-      - name: Audit home and chapters 06–15 at desktop and mobile widths
+      - name: Audit home and chapters 06–20 at desktop and mobile widths
         run: python3 scripts/check_browser.py
       - name: Upload browser evidence
         if: always()

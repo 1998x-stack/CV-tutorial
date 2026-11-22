@@ -24,14 +24,14 @@ CV-tutorial/
 ├── docs/                       # GitHub Pages 站点根目录（无需 Node 构建）
 │   ├── index.html              # 课程门户：静态章节卡片 + 可选搜索
 │   ├── courses.json            # 28 章单一课程清单
-│   ├── chapters/               # 01–28 章；01–10 已按深度教程范式精修
+│   ├── chapters/               # 01–28 章；01–15 已按深度教程范式精修
 │   └── assets/
 │       ├── css/site.css        # 站点级设计系统
 │       ├── css/article.css     # 长文版式、MathML、移动端和打印
 │       └── svg/                # 按知识问题组织的原创独立 SVG
 ├── scripts/check_site.py       # 静态链接 / SVG / 章节一致性门禁
 ├── scripts/check_browser.py    # Chromium 1440/390/360 响应式浏览器验收
-├── tests/test_cv_examples.py   # 06–10 章教学代码断言
+├── tests/test_cv_examples.py   # 06–15 章教学代码断言
 ├── .github/workflows/          # QA 与 GitHub Pages 部署
 ├── pdfs/                       # 历史论文资料（不参与本次迁移）
 ├── AGENTS.md                   # 事实核验和长期维护规范
@@ -63,7 +63,10 @@ python3 scripts/check_browser.py
 | --- | --- | --- | --- |
 | 01–05 | 像素、滤波、传统特征、反向传播与 CNN 基础 | 10 张 | 已深化 |
 | 06–10 | PyTorch、分类协议、AlexNet、VGG、ResNet | 16 张 | 已深化 |
-| 11–28 | ViT、ConvNeXt、检测、分割、优化、前沿 | 原课程内容保留 | 等待逐篇复审 |
+| 11–15 | ViT、ConvNeXt、训练策略、评估选型、检测基础 | 17 张 | 已深化 |
+| 16–28 | R-CNN、Faster R-CNN、单阶段检测、分割、部署与前沿 | 原课程内容保留 | 等待逐篇复审 |
+
+11–15 章另增加 Vision Transformer token/attention 算术、ConvNeXt 深度卷积成本、AdamW 解耦衰减、Pareto 选型以及 IoU/COCO AP/NMS 的可运行样例。所有性能示例均独立标注为教学构造，并记录参考来源于 `docs/evidence/11-15.json`。
 
 本轮特别区分 AlexNet 2012 年原版与现代 torchvision，VGG-16 原配置与带 BN 变体，以及 ResNet v1、pre-activation v2 与 torchvision v1.5。历史指标只在指定论文/数据/协议下成立。
 

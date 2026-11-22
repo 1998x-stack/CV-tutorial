@@ -134,7 +134,7 @@
       ],
       "file": "chapters/11.html",
       "stage": "backbones",
-      "refined": false
+      "refined": true
     },
     {
       "num": "12",
@@ -146,7 +146,7 @@
       ],
       "file": "chapters/12.html",
       "stage": "backbones",
-      "refined": false
+      "refined": true
     },
     {
       "num": "13",
@@ -158,7 +158,7 @@
       ],
       "file": "chapters/13.html",
       "stage": "training",
-      "refined": false
+      "refined": true
     },
     {
       "num": "14",
@@ -170,7 +170,7 @@
       ],
       "file": "chapters/14.html",
       "stage": "training",
-      "refined": false
+      "refined": true
     },
     {
       "num": "15",
@@ -182,7 +182,7 @@
       ],
       "file": "chapters/15.html",
       "stage": "detection",
-      "refined": false
+      "refined": true
     },
     {
       "num": "16",

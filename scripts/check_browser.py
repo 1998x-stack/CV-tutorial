@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Headless browser contract for the static home and deep chapters 06–10.
+"""Headless browser contract for the static home and deep chapters 06–15.
 
 Run after: python3 -m pip install playwright
            python3 -m playwright install chromium
@@ -15,7 +15,7 @@ from playwright.sync_api import sync_playwright
 ROOT = Path(__file__).resolve().parents[1]
 SITE = ROOT / "docs"
 OUT = ROOT / "reports/browser"
-PATHS = ["index.html"] + [f"chapters/{i:02}.html" for i in range(6,11)]
+PATHS = ["index.html"] + [f"chapters/{i:02}.html" for i in range(6,16)]
 WIDTHS = [1440, 390, 360]
 
 def run():

@@ -1,0 +1,102 @@
+{
+  "title": "CV Tutorial chapters 11–15 — claim/source register",
+  "date": "2026-11-22",
+  "scope": "Primary papers and official APIs; figures and runnable samples are illustrative, not benchmarks.",
+  "entries": [
+    {
+      "chapter": "11",
+      "claim": "ViT splits images into patches, embeds and positions tokens, runs pre-LN transformer encoder with class token",
+      "sources": [
+        "https://arxiv.org/abs/2010.11929",
+        "https://openreview.net/forum?id=YicbFdNTTy"
+      ],
+      "caveat": "197 tokens refers specifically to 224x224, patch16 and one CLS; large-scale pretraining shapes results"
+    },
+    {
+      "chapter": "11",
+      "claim": "Attention softmax is applied along key axis to QK^T/sqrt(dk), then weighted sum with V",
+      "sources": [
+        "https://arxiv.org/abs/2010.11929",
+        "https://docs.pytorch.org/docs/stable/generated/torch.nn.MultiheadAttention.html"
+      ],
+      "caveat": "MathML expresses single-head attention and omits position embedding/multihead output projection"
+    },
+    {
+      "chapter": "12",
+      "claim": "ConvNeXt-T uses depths 3,3,9,3 and dims 96,192,384,768 with 7x7 depthwise convolution",
+      "sources": [
+        "https://arxiv.org/abs/2201.03545",
+        "https://github.com/facebookresearch/ConvNeXt/blob/main/models/convnext.py"
+      ],
+      "caveat": "V2 introduced other blocks, and original block may include gamma and stochastic-depth components"
+    },
+    {
+      "chapter": "12",
+      "claim": "For same 96 in/out channels, standard 7x7 has 451584 spatial kernel weights vs depthwise 4704",
+      "sources": [
+        "https://docs.pytorch.org/docs/stable/generated/torch.nn.Conv2d.html"
+      ],
+      "caveat": "Only compares DW spatial convolution parameter count, excluding pointwise channel mixing and bias"
+    },
+    {
+      "chapter": "13",
+      "claim": "AdamW decouples weight decay from adaptive gradient update",
+      "sources": [
+        "https://arxiv.org/abs/1711.05101",
+        "https://docs.pytorch.org/docs/stable/generated/torch.optim.AdamW.html"
+      ],
+      "caveat": "Toy zero-gradient parameter demonstrates decay with grad tensor present, not model convergence"
+    },
+    {
+      "chapter": "13",
+      "claim": "Mixed precision, schedule, reproducibility depend on optimizer steps, precision and runtime",
+      "sources": [
+        "https://docs.pytorch.org/docs/stable/amp.html",
+        "https://docs.pytorch.org/docs/stable/notes/randomness.html"
+      ],
+      "caveat": "Warmup+cosine curve is a made-up policy, not a trained model result"
+    },
+    {
+      "chapter": "14",
+      "claim": "FLOPs/MACs/parameters and measured latency differ in definitions",
+      "sources": [
+        "https://docs.pytorch.org/tutorials/recipes/recipes/benchmark.html"
+      ],
+      "caveat": "Pareto points are synthetic, not paper results"
+    },
+    {
+      "chapter": "14",
+      "claim": "Calibration and Expected Calibration Error depend on confidence, binning and predicted outcome",
+      "sources": [
+        "https://arxiv.org/abs/1706.04599"
+      ],
+      "caveat": "Toy confidence bins illustrate overconfidence, not a calibrated model experiment"
+    },
+    {
+      "chapter": "15",
+      "claim": "COCO primary detection AP averages IoU thresholds 0.50:0.05:0.95 and includes small medium large object metrics",
+      "sources": [
+        "https://github.com/cocodataset/cocodataset.github.io/blob/master/dataset/detection-eval.htm",
+        "https://github.com/cocodataset/cocoapi/blob/master/PythonAPI/pycocotools/cocoeval.py"
+      ],
+      "caveat": "AP is not a single-score precision value; matching and recall interpolation depend on benchmark protocol"
+    },
+    {
+      "chapter": "15",
+      "claim": "Batched NMS filters within classes and IoU of half-open continuous boxes has area difference",
+      "sources": [
+        "https://docs.pytorch.org/vision/main/generated/torchvision.ops.batched_nms.html",
+        "https://docs.pytorch.org/vision/main/generated/torchvision.ops.box_iou.html"
+      ],
+      "caveat": "Toy NMS is deterministic on distinct scores, does not implement Soft-NMS nor all COCO ignore rules"
+    },
+    {
+      "chapter": "15",
+      "claim": "DETR is set prediction with bipartite matching, not classic dense NMS procedure",
+      "sources": [
+        "https://arxiv.org/abs/2005.12872"
+      ],
+      "caveat": "Some derived detectors have other architecture and postprocessing"
+    }
+  ]
+}

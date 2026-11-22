@@ -27,10 +27,18 @@
 1. 校验 `docs/courses.json` 恰好 28 项、编号和章节路径完整。
 2. `python3 scripts/check_site.py` 必须通过，检查 HTML 内部资源和 SVG XML。
 3. 浏览器分别检查 1440px 桌面、390px 和 360px 手机、键盘导航、断网后的关键阅读、打印和 reduced motion。
-4. 06–10 的最小实验额外运行 `python3 tests/test_cv_examples.py`；CI 应保存 Chromium 截图，并且不得只看截图忽略溢出与脚本报错。 
+4. 06–15 的最小实验额外运行 `python3 tests/test_cv_examples.py`；CI 应保存 Chromium 截图，并且不得只看截图忽略溢出与脚本报错。 
 5. 有公式时检查 MathML 实际布局，包含结构式而非字符拼接；有互动时检查默认、交互和状态恢复。
 6. 无法运行浏览器时必须写“未验证”，不可标为通过。优先通过 PR / CI，比较 diff 和远程文件，再合并或部署。
 7. Pages 可使用 `docs/` 作为静态发布目录；根路径兼容跳转。无论 Actions Pages 还是 branch Pages，需实际验证可访问后才能声称已上线。
+
+## 第二、第三批案例专项规范
+- ViT：写明 patch 网格、CLS、QKV 轴及 attention softmax 轴；区别原始预训练数据条件与普通 ImageNet 训练；不能将注意力图直接作因果证明。
+- ConvNeXt：按原作者代码表达 DWConv、NHWC LayerNorm、MLP 与可选 LayerScale/DropPath；不可把 GRN（V2）误加到 2022 原版。
+- 训练策略：warmup 的 step 数须以 optimizer update 为单位；AdamW 的 weight decay 是与 Adam 更新解耦的分支。
+- 评估比较：测试集、精度、MAC/FLOP 口径、同步计时与分辨率需同一协议；图中的玩具点不得作为历史模型实测。
+- 检测：框坐标须声明连续边界及单位；匹配一对一，COCO AP@[.50:.05:.95] 不是 VOC AP@.5；NMS 默认只对同类比较。
+- `tests/test_cv_examples.py` 运行正文原始 Python 代码块；不要为了让 CI 通过而修改测试去忽略错误。
 
 ## 边界
 不要自动生成无依据实验指标、隐藏生成水印、添加空链接或装饰性假图。不要修改历史论文 PDF、删除原始章节，或用仅依赖 JavaScript 的目录替代静态导航。对现有章节先做事实复审，再进行结构与视觉改造。

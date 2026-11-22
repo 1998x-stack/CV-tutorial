@@ -26,7 +26,7 @@
 ## 兼容性与发布
 1. 校验 `docs/courses.json` 恰好 28 项、编号和章节路径完整。
 2. `python3 scripts/check_site.py` 必须通过，检查 HTML 内部资源和 SVG XML。
-3. 浏览器分别检查 1440px 桌面、390px 和 360px 手机、键盘导航、断网后的关键阅读、打印和 reduced motion。
+3. 浏览器分别检查 1440px 桌面、768px 平板、390px 和 360px 手机、键盘导航、断网后的关键阅读、打印、reduced motion，并屏蔽外部资源验证离线阅读。
 4. 06–20 的最小实验额外运行 `python3 tests/test_cv_examples.py`；CI 应保存 Chromium 截图，并且不得只看截图忽略溢出与脚本报错。 
 5. 有公式时检查 MathML 实际布局，包含结构式而非字符拼接；有互动时检查默认、交互和状态恢复。
 6. 无法运行浏览器时必须写“未验证”，不可标为通过。优先通过 PR / CI，比较 diff 和远程文件，再合并或部署。

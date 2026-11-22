@@ -34,6 +34,8 @@ def run():
                     page = browser.new_page(viewport={"width":width,"height":900}, device_scale_factor=1)
                     js_errors = []
                     page.on("pageerror", lambda err: js_errors.append(str(err)))
+                    # All assets must remain local; external requests are blocked for offline reading QA.
+                    page.route("https://**", lambda route: route.abort())
                     response = page.goto(f"{base}/{path}", wait_until="load")
                     page.locator("h1").first.wait_for()
                     page.evaluate("document.fonts.ready")
@@ -102,7 +104,10 @@ def run():
                         print_overflow = page.evaluate("document.documentElement.scrollWidth - window.innerWidth")
                         if print_overflow > 1:
                             errors.append(f"{label}: print layout overflows {print_overflow}px")
-                        page.emulate_media(media="screen")
+                        page.emulate_media(media="screen", reduced_motion="reduce")
+                        if not page.evaluate("matchMedia('(prefers-reduced-motion: reduce)').matches"):
+                            errors.append(f"{label}: reduced-motion preference was not applied")
+                        page.emulate_media(media="screen", reduced_motion="no-preference")
                     page.close()
             browser.close()
     finally:

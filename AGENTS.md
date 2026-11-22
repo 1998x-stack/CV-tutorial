@@ -27,7 +27,7 @@
 1. 校验 `docs/courses.json` 恰好 28 项、编号和章节路径完整。
 2. `python3 scripts/check_site.py` 必须通过，检查 HTML 内部资源和 SVG XML。
 3. 浏览器分别检查 1440px 桌面、768px 平板、390px 和 360px 手机、键盘导航、断网后的关键阅读、打印、reduced motion，并屏蔽外部资源验证离线阅读。
-4. 06–25 的最小实验额外运行 `python3 tests/test_cv_examples.py`；CI 应保存 Chromium 截图，并且不得只看截图忽略溢出与脚本报错。 
+4. 06–28 的最小实验额外运行 `python3 tests/test_cv_examples.py`；CI 应保存 Chromium 截图，并且不得只看截图忽略溢出与脚本报错。 
 5. 有公式时检查 MathML 实际布局，包含结构式而非字符拼接；有互动时检查默认、交互和状态恢复。
 6. 无法运行浏览器时必须写“未验证”，不可标为通过。优先通过 PR / CI，比较 diff 和远程文件，再合并或部署。
 7. Pages 可使用 `docs/` 作为静态发布目录；根路径兼容跳转。无论 Actions Pages 还是 branch Pages，需实际验证可访问后才能声称已上线。
@@ -60,3 +60,12 @@
 - 迁移学习：使用 weights enum 对应的预处理；替换分类 head 并确认 optimizer 包含新参数；requires_grad=False 不会自动冻结 BatchNorm running stats。原始 LoRA 论文研究 Transformer 语言模型，视觉 ViT 的 LoRA 属于后续应用；记录 target modules、rank、alpha、dropout 与参数总量。
 - 部署优化：结构化通道剪枝才会改变 dense tensor shape；非结构化稀疏不保证加速。区分 PTQ/QAT、per-tensor/per-channel、权重/激活量化。PyTorch 新量化路径优先参考 torchao PT2E；ONNX dynamo=True 使用 dynamic_shapes；TensorRT 11.x 使用 strong typing 与显式 Q/DQ，不把 10.x implicit INT8 示例冒充新版本流程。报告目标硬件上的端到端 P50/P95/P99、吞吐、内存和质量变化。
 - tests/test_cv_examples.py 独立执行 06–25 的每个正文 Python 代码块；新增实验不得依赖外部数据、权重、下载或未声明的可选库。
+
+
+## 第六批案例专项规范与全站维护（26–28）
+- SimCLR：从 N 张图像产生 2N 增强视图，每个 anchor 的正样本是同源另一视图，排除自身，其余 2N−2 个作为负样本；下游 linear probe 通常取 encoder 表征而不是 projection head。MoCo：query encoder 梯度更新，key encoder EMA 更新并维护 FIFO negatives queue。DINO：教师无反传，centering、sharpening 和 EMA 共同防止 collapse；DINOv2 的 142M curated data 只是作者配方。MAE：高 masking ratio 下重型 encoder 只看 visible patches，decoder 才插入 mask tokens。
+- 多模态：CLIP 的两套 encoder 输出 N×N 图文相似度，用双向对比 CE；zero-shot 需要明确候选文本集。BLIP 图文理解/生成、LLaVA 的 vision projector→LLM 不是 CLIP 原生输出。DDPM 的 alpha_bar_t 使用前向累乘 closed-form q(x_t|x_0)，epsilon MSE 不等于完整采样器；LDM 在 autoencoder latent 上扩散；NeRF 与 3DGS 分别使用隐式体场与显式 Gaussian primitives，不能用单图生成质量代替几何检验。
+- 工程章节：按样本组切分而非先增强后随机划分；CrossEntropyLoss 输入原始 logits；保存 state_dict 与 label/preprocessing manifest，避免不可信 pickle；macro-F1、拒识 coverage/conditional accuracy、P95 及设备域切片应分别报告。合成图像实验结果标为 toy，不得写成真实生产 benchmark。
+- 第 01–28 章必须各有一个 H1、语义导航与可达资源，章节名/链接通过 courses.json 与首页卡片保持一致；全站至少 100 张带 title/desc 的 SVG，正文通过 4 种视口和离线模式检查。
+- 浏览器必须实际测试第 26 章 mask ratio 输入改变 token 状态、恢复默认，并检查 aria-live 输出；不能只截图静态默认状态就声称交互可用。
+- 新文章至少 5 张高信息量 SVG 与 4 个独立可运行的 CPU 代码片段，全面验证 MathML / 参考来源；对未来新增变体，应先更新证据清单，再更新正文和 AGENTS.md。

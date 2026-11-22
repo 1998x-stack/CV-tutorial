@@ -25,17 +25,24 @@ def check():
     if len(set(c["file"] for c in chapters))!=28: bad("courses.json: duplicate chapter paths")
     for c in chapters:
         if not (SITE/c["file"]).is_file(): bad("missing chapter: "+c["file"])
+        if not c.get("refined"): bad("all 28 chapters should be refined: "+c["num"])
     home_html=(SITE/"index.html").read_text(encoding="utf-8")
-    if home_html.count('class="state"') != 25: bad("home: exactly 25 chapters should be visibly refined")
+    if home_html.count('class="state"') != 28: bad("home: exactly 28 chapters should be visibly refined")
+    if home_html.count('class="card"') != 28: bad("home: expected 28 static cards")
+    for c in chapters:
+        if f'href="{c["file"]}"' not in home_html: bad("home: missing card path "+c["file"])
     files=[SITE/"index.html"]+sorted((SITE/"chapters").glob("*.html"))
     for file in files:
         html=file.read_text(encoding="utf-8")
         p=Page(); p.feed(html)
-        if file.name!="index.html" and len(p.headings)!=1 and file.name in {f"{i:02}.html" for i in range(1,26)}:
+        if file.name!="index.html" and len(p.headings)!=1 and file.name in {f"{i:02}.html" for i in range(1,29)}:
             bad(str(file.relative_to(ROOT))+": expected exactly one H1")
-        if file.parent.name=="chapters" and file.name in {f"{i:02}.html" for i in range(6,26)}:
+        if file.parent.name=="chapters" and file.name in {f"{i:02}.html" for i in range(1,6)}:
+            if html.count("<figure>") < 2: bad(f"{file.name}: expected two visual explanations")
+        if file.parent.name=="chapters" and file.name in {f"{i:02}.html" for i in range(6,29)}:
             n=int(file.stem)
-            if html.count("<figure>") < (4 if n in (10,14,15,20,21,22,23,24,25) else 3): bad(f"{file.name}: insufficient illustrations")
+            required = 5 if n >= 26 else (4 if n in (10,14,15,20,21,22,23,24,25) else 3)
+            if html.count("<figure>") < required: bad(f"{file.name}: insufficient illustrations")
             if "<math " not in html: bad(f"{file.name}: MathML equation missing")
             if "<pre>" not in html or "assert " not in html: bad(f"{file.name}: runnable test/assertion missing")
             for image in p.images:
@@ -49,8 +56,18 @@ def check():
             path=unquote(urlsplit(link).path)
             if not path: continue
             if not (file.parent/path).exists(): bad(f"{file.relative_to(ROOT)}: missing relative reference {link}")
+    evidence=json.loads((SITE/"evidence/26-28.json").read_text(encoding="utf-8"))["entries"]
+    if len(evidence) < 18: bad("evidence: at least 18 source-linked records required for 26–28")
+    ids=set()
+    for claim in evidence:
+        if claim.get("id") in ids: bad("evidence: duplicate claim ID "+str(claim.get("id")))
+        ids.add(claim.get("id"))
+        if claim.get("chapter") not in (26,27,28): bad("evidence: wrong chapter "+str(claim.get("id")))
+        if claim.get("status") not in ("verified","derived","illustrative"): bad("evidence: invalid status "+str(claim.get("id")))
+        if not claim.get("source_url","").startswith("https://"): bad("evidence: source URL missing "+str(claim.get("id")))
+        if not claim.get("locator"): bad("evidence: source locator missing "+str(claim.get("id")))
     svgfiles=list((SITE/"assets/svg").glob("*.svg"))
-    if len(svgfiles)<85: bad("expected at least 85 SVGs (home + chapters 01–25, including detection, segmentation and deployment diagrams)")
+    if len(svgfiles)<100: bad("expected at least 100 SVGs (home + chapters 01–28)")
     for f in svgfiles:
         try:
             node=ET.parse(f).getroot()

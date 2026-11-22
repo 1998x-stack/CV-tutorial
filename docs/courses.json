@@ -312,39 +312,39 @@
     },
     {
       "num": "26",
-      "title": "自监督学习与基础模型",
+      "title": "自监督视觉表征：从对比学习到掩码重建",
       "topics": [
-        "对比学习",
-        "MAE掩码重构",
-        "CLIP与SAM"
+        "SimCLR / MoCo 对比学习",
+        "DINO 与 DINOv2 自蒸馏",
+        "MAE 掩码重构"
       ],
       "file": "chapters/26.html",
       "stage": "frontier",
-      "refined": false
+      "refined": true
     },
     {
       "num": "27",
-      "title": "多模态与生成模型概览",
+      "title": "多模态理解、生成与三维视觉",
       "topics": [
-        "扩散模型",
-        "视觉语言模型",
-        "3D视觉前沿"
+        "CLIP / BLIP / LLaVA",
+        "DDPM / Latent Diffusion",
+        "NeRF / 3D Gaussian Splatting"
       ],
       "file": "chapters/27.html",
       "stage": "frontier",
-      "refined": false
+      "refined": true
     },
     {
       "num": "28",
-      "title": "综合实战项目",
+      "title": "从数据到上线：一个可复现的视觉项目",
       "topics": [
-        "需求分析",
-        "模型训练部署",
-        "课程回顾"
+        "Group-aware Split",
+        "训练/宏 F1/拒识",
+        "模型工件与回归门禁"
       ],
       "file": "chapters/28.html",
       "stage": "frontier",
-      "refined": false
+      "refined": true
     }
   ]
 }

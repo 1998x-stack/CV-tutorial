@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Headless browser contract for the static home and deep chapters 06–25.
+"""Headless browser contract for the static home and all 28 chapters.
 
 Run after: python3 -m pip install playwright
            python3 -m playwright install chromium
@@ -15,7 +15,7 @@ from playwright.sync_api import sync_playwright
 ROOT = Path(__file__).resolve().parents[1]
 SITE = ROOT / "docs"
 OUT = ROOT / "reports/browser"
-PATHS = ["index.html"] + [f"chapters/{i:02}.html" for i in range(6,26)]
+PATHS = ["index.html"] + [f"chapters/{i:02}.html" for i in range(1,29)]
 WIDTHS = [1440, 768, 390, 360]
 
 def run():
@@ -99,6 +99,21 @@ def run():
                             summary.click()
                             if not summary.evaluate("(el)=>el.parentElement.open"):
                                 errors.append(f"{label}: details failed to open")
+                    if width==390 and path=="chapters/26.html":
+                        slider=page.locator("#mask-ratio")
+                        before=page.locator("#mask-output").inner_text()
+                        slider.focus()
+                        page.keyboard.press("ArrowLeft")
+                        after=page.locator("#mask-output").inner_text()
+                        if before==after or "50%" not in after or "8 / 16" not in after:
+                            errors.append(f"{label}: MAE mask ratio interaction did not change visible token count")
+                        page.keyboard.press("ArrowRight")
+                        restored=page.locator("#mask-output").inner_text()
+                        if restored!=before:
+                            errors.append(f"{label}: MAE mask ratio reset did not restore default")
+                        aria=page.locator("#mask-output").get_attribute("aria-live")
+                        if aria!="polite":
+                            errors.append(f"{label}: MAE interaction lacks live output")
                     if width==1440:
                         page.emulate_media(media="print")
                         print_overflow = page.evaluate("document.documentElement.scrollWidth - window.innerWidth")

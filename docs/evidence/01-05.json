@@ -1,0 +1,59 @@
+{
+  "purpose": "首批 01–05 章主张与证据登记。所有教学 SVG 和合成数据均为原创，不是论文实验复刻。",
+  "entries": [
+    {
+      "chapter": "01",
+      "claim": "ImageNet 论文介绍分层的大规模标注图像数据库",
+      "source": "https://www.image-net.org/static_files/papers/imagenet_cvpr09.pdf",
+      "scope": "Deng et al. CVPR 2009，数据库与组织方式；不以此直接论证现代模型性能"
+    },
+    {
+      "chapter": "01",
+      "claim": "AlexNet 的 2012 年工作利用深度卷积网络与 GPU 训练推进大规模视觉分类",
+      "source": "https://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks",
+      "scope": "论文中的任务、训练条件；未在本章复现报告数值"
+    },
+    {
+      "chapter": "02",
+      "claim": "GaussianBlur 等为平滑操作；Canny 包含抑制、双阈值与连接",
+      "source": "https://docs.opencv.org/4.x/da/d22/tutorial_py_canny.html",
+      "scope": "OpenCV 4.x tutorial；阈值对输入编码与噪声敏感"
+    },
+    {
+      "chapter": "03",
+      "claim": "SIFT 包括 DoG 尺度极值、方向分配以及常见 128 维描述子",
+      "source": "https://doi.org/10.1023/B:VISI.0000029664.99615.94",
+      "scope": "Lowe 2004 的经典 SIFT，不声称任意透视完全不变"
+    },
+    {
+      "chapter": "03",
+      "claim": "HOG 由 cell 方向直方图和 block 归一化组成",
+      "source": "https://mlanthology.org/cvpr/2005/dalal2005cvpr-histograms/",
+      "scope": "Dalal–Triggs 2005，窗口与规范会改变最终特征维数"
+    },
+    {
+      "chapter": "03",
+      "claim": "Viola–Jones 利用积分图、特征选择和分类器级联加速检测",
+      "source": "https://mlanthology.org/cvpr/2001/viola2001cvpr-rapid/",
+      "scope": "原始框架的检测策略，不对应所有现代级联模型"
+    },
+    {
+      "chapter": "04",
+      "claim": "反向传播通过链式法则沿计算图传递梯度，并在汇合处累加",
+      "source": "https://cs231n.github.io/optimization-2/",
+      "scope": "基础自动微分直觉；单神经元演示不是实际神经网络训练结果"
+    },
+    {
+      "chapter": "05",
+      "claim": "常见 Conv2d 实现使用相关形式与指定权重布局",
+      "source": "https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html",
+      "scope": "PyTorch NCHW、groups=1 等条件明确；具体库的 layout 和 padding 可能不同"
+    },
+    {
+      "chapter": "05",
+      "claim": "标准卷积输出空间长度与 kernel/stride/padding/dilation 相关",
+      "source": "https://arxiv.org/abs/1603.07285",
+      "scope": "Dumoulin–Visin 2016；公式仅适用于注明的离散卷积约定"
+    }
+  ]
+}

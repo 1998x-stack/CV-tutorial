@@ -1,53 +1,62 @@
-# 🖼️ 计算机视觉经典模型 · 从入门到精通
+# 计算机视觉经典模型教程 · CV Tutorial
 
-> 📘 28章 实战体系 · 交互式 HTML 课程
+> 从像素到视觉理解：28 章中文教程，覆盖图像处理、传统特征、神经网络、主干架构、检测、分割和视觉基础模型。
 
-> **English TL;DR:** An all-Chinese 28-chapter course on **classic computer-vision models** — from vision history and digital image processing (SIFT/HOG/Haar), NNs/backprop and CNNs/convolution, through the landmark deep networks that defined the field: AlexNet (2012), VGG, ResNet, and modernized ViT / ConvNeXt. Then the three CV pillars: detection (R-CNN → Faster R-CNN → one-stage / DETR), segmentation (U-Net, Mask R-CNN, DeepLab, SAM), plus data augmentation, transfer learning/LoRA, quantization/pruning deployment, self-supervised & foundation models (MAE, CLIP, SAM), multimodal/diffusion, ending with a full capstone.
+**在线阅读：** https://1998x-stack.github.io/CV-tutorial/ （以 GitHub Pages 实际发布状态为准）
+**直接打开站点源码：** [docs/index.html](docs/index.html) · [课程清单](docs/courses.json) · [写作规范](AGENTS.md)
 
-## 📖 课程简介
+## 学习路径
 
-本课程按**计算机视觉经典模型**的系统图谱组织：从数字图像处理与传统特征（SIFT/HOG/Haar）起步，经神经网络与 CNN 原理，进入图像分类主线——AlexNet / VGG / ResNet / ViT / ConvNeXt——详细剖析每代架构为何能突破当时瓶颈；随后三分支展开：**目标检测**（R-CNN→Faster R-CNN→单阶段→DETR）、**图像分割**（U-Net→Mask R-CNN→DeepLab→SAM）、以及数据增强、迁移学习、模型优化部署。最后覆盖自监督基础模型（MAE/CLIP/SAM）、多模态/生成前沿与综合实战项目。
+| 阶段 | 章节 | 核心问题 |
+| --- | --- | --- |
+| 视觉基础 | 01–08 | 机器如何表示像素、构造特征并训练识别器？ |
+| 主干网络 | 09–12 | CNN 到 ViT 的架构选择源于什么瓶颈？ |
+| 训练评估 | 13–14 | 如何设计可比较、可复现的实验？ |
+| 目标检测 | 15–18 | 如何同时决定「是什么」与「在哪里」？ |
+| 图像分割 | 19–22 | 如何将预测从框推进到像素级？ |
+| 工程实践 | 23–25 | 如何提升鲁棒性、迁移能力与部署效率？ |
+| 前沿实战 | 26–28 | 如何理解预训练、多模态与完整工程系统？ |
 
-## 🚀 快速开始
-
-```bash
-open index.html   # macOS，纯静态即开即看
-```
-
-## 📂 项目结构
+## 目录组织
 
 ```text
 CV-tutorial/
-├── index.html / 01.html ~ 28.html / courses.json / theme.css
+├── docs/                       # GitHub Pages 站点根目录（无需 Node 构建）
+│   ├── index.html              # 课程门户：静态章节卡片 + 可选搜索
+│   ├── courses.json            # 28 章单一课程清单
+│   ├── chapters/               # 01–28 章；01–05 已按深度教程范式精修
+│   └── assets/
+│       ├── css/site.css        # 站点级设计系统
+│       ├── css/article.css     # 长文版式、MathML、移动端和打印
+│       └── svg/                # 按知识问题组织的原创独立 SVG
+├── scripts/check_site.py       # 静态链接 / SVG / 章节一致性门禁
+├── .github/workflows/          # QA 与 GitHub Pages 部署
+├── pdfs/                       # 历史论文资料（不参与本次迁移）
+├── AGENTS.md                   # 事实核验和长期维护规范
+├── 01.html ... 28.html         # 旧路径兼容跳转
+└── index.html                  # 旧首页兼容跳转
 ```
 
-## 📖 章节分段
+## 本地预览
 
-| 阶段 | 章节 | 核心 |
-|------|------|------|
-| **入门基础** | 01–08 | 视觉简史、图像处理、特征方法、NN/CNN、框架、分类任务、AlexNet |
-| **主干网络** | 09–12 | VGG、ResNet、ViT、ConvNeXt |
-| **训练与评估** | 13–14 | 训练调参、评估对比 |
-| **目标检测** | 15–18 | 检测基础、R-CNN、Faster R-CNN、单阶段/DETR |
-| **图像分割** | 19–22 | 分割基础、U-Net、Mask R-CNN、语义/全景/SAM |
-| **增强与优化** | 23–25 | 数据增强、迁移学习、部署优化 |
-| **前沿与实战** | 26–28 | 自监督/基础模型、多模态生成、综合项目 |
+无需安装前端依赖。在仓库根目录运行：
 
-## ✨ 亮点
+```bash
+python3 -m http.server 8000
+# 浏览 http://localhost:8000/docs/
+python3 scripts/check_site.py
+```
 
-- 覆盖检测 + 分割 + 主干演进 + 自监督/多模态全套
-- 从特征工程到基础模型（CLIP/SAM/MAE）的前沿衔接
-- 端到端综合实战项目收束
+避免直接双击 `docs/index.html` 判断所有资源行为：本地文件 URL 与网站 HTTP 路径并不完全等价。
 
-## 🎯 前置知识
+## 协作约定
 
-- 适合：CV 学习者 / 深度学习工程师
-- 建议具备：Python + PyTorch + 线性代数基础
+- 保留 01–28 章节编号和旧链接兼容入口；更新正文以 `docs/chapters/` 为准。
+- 一篇网页应该无需读其它章节也能理解：背景、定义、机制、数学、代码、实验与局限完整闭环。
+- 不能编造历史指标、论文结论、模型结构、图像来源或 QA 结果。技术主张在文末注明来源。
+- 本项目写作实践参照 [Olah-style-posts](https://github.com/1998x-stack/Olah-style-posts) 的 `olah-style-paper-posts` skill，图示和正文独立原创。
+- 贡献者与自动化代理先阅读 [AGENTS.md](AGENTS.md)；PR 请同时执行静态检查、移动端与键盘可访问性验收。
 
-## ✨ 特色
+## 许可证与论文资料
 
-- 按「图像处理 → 主干 → 三任务 → 前沿」的工程图谱组织
-- 即开即用纯静态 HTML
-
----
-*本课程由 `CV-tutorial/` 项目维护。*
+代码与教程版权以仓库现有许可证和各文件来源为准。仓库没有显式总 LICENSE 时，**不应推定其为开源许可**；`pdfs/` 中的论文保留原作者版权，不因本仓库整理而改变授权范围。

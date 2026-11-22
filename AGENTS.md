@@ -27,7 +27,7 @@
 1. 校验 `docs/courses.json` 恰好 28 项、编号和章节路径完整。
 2. `python3 scripts/check_site.py` 必须通过，检查 HTML 内部资源和 SVG XML。
 3. 浏览器分别检查 1440px 桌面、390px 和 360px 手机、键盘导航、断网后的关键阅读、打印和 reduced motion。
-4. 06–15 的最小实验额外运行 `python3 tests/test_cv_examples.py`；CI 应保存 Chromium 截图，并且不得只看截图忽略溢出与脚本报错。 
+4. 06–20 的最小实验额外运行 `python3 tests/test_cv_examples.py`；CI 应保存 Chromium 截图，并且不得只看截图忽略溢出与脚本报错。 
 5. 有公式时检查 MathML 实际布局，包含结构式而非字符拼接；有互动时检查默认、交互和状态恢复。
 6. 无法运行浏览器时必须写“未验证”，不可标为通过。优先通过 PR / CI，比较 diff 和远程文件，再合并或部署。
 7. Pages 可使用 `docs/` 作为静态发布目录；根路径兼容跳转。无论 Actions Pages 还是 branch Pages，需实际验证可访问后才能声称已上线。
@@ -42,3 +42,12 @@
 
 ## 边界
 不要自动生成无依据实验指标、隐藏生成水印、添加空链接或装饰性假图。不要修改历史论文 PDF、删除原始章节，或用仅依赖 JavaScript 的目录替代静态导航。对现有章节先做事实复审，再进行结构与视觉改造。
+
+
+## 第四批案例专项规范（16–20）
+- R-CNN：区分 proposal、检测框与回归框；Selective Search 是外部类别无关候选算法；约 2,000 proposals、227×227 warp、4096-D 特征属于论文具体配置，不是所有实现常数。
+- Fast R-CNN：整图共享 backbone 特征；RoI Pooling 对 feature-map 区域量化并 max-pool 到固定尺寸；分类含 background，框回归只对前景 RoI 激活。RoIAlign 是 Mask R-CNN 后续模块，不可倒填。
+- Faster R-CNN：原始 RPN 每位置 9 anchors（3 scales × 3 ratios）；正/负/ignore IoU 规则、256 anchor mini-batch、NMS 阈值须标明原论文上下文；objectness 不是具体类别概率。四步 alternating training 与 approximate joint training 要区分。
+- YOLO/SSD：本批明确讲 YOLOv1 与 SSD300。YOLOv1 的类别概率按 cell 共享，SSD 按 default box 输出；8732 只对应原始 SSD300 六层配置。不得把现代 YOLO anchor/multi-scale heads 当作 YOLOv1 原结构。
+- U-Net：原版 valid 3×3 conv，572 输入输出 388，skip 先 center-crop 再 concatenate；原始训练用 weighted pixel-wise softmax CE 与 elastic deformation。Dice loss 是常见后续选择，不是原论文主损失。医学图像数据划分要防患者/切片泄漏。
+- tests/test_cv_examples.py 执行 06–20 的正文 Python 代码块；新代码不得依赖外部权重、数据或下载。

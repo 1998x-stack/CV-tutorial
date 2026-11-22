@@ -191,63 +191,63 @@
     },
     {
       "num": "16",
-      "title": "R-CNN——两阶段检测开山",
+      "title": "R-CNN——从候选区域到 CNN 特征",
       "topics": [
         "Selective Search",
-        "CNN特征提取",
-        "SVM分类"
+        "每区域 CNN 特征",
+        "SVM 分类与框回归"
       ],
       "file": "chapters/16.html",
       "stage": "detection",
-      "refined": false
+      "refined": true
     },
     {
       "num": "17",
-      "title": "Faster R-CNN与区域提议网络",
+      "title": "Fast R-CNN——共享特征与 RoI Pooling",
       "topics": [
-        "RPN网络",
-        "Anchor机制",
-        "端到端训练"
+        "整图共享卷积",
+        "固定尺寸 RoI Pooling",
+        "分类与框回归多任务损失"
       ],
       "file": "chapters/17.html",
       "stage": "detection",
-      "refined": false
+      "refined": true
     },
     {
       "num": "18",
-      "title": "单阶段检测概述与对比",
+      "title": "Faster R-CNN——RPN 与 Anchor",
       "topics": [
-        "YOLO与SSD",
-        "DETR端到端",
-        "精度速度权衡"
+        "9-anchor 参考框",
+        "Objectness 与框偏移",
+        "IoU 正负样本分配"
       ],
       "file": "chapters/18.html",
       "stage": "detection",
-      "refined": false
+      "refined": true
     },
     {
       "num": "19",
-      "title": "图像分割基础与分类",
+      "title": "YOLO 与 SSD——单阶段检测",
       "topics": [
-        "语义/实例/全景分割",
-        "mIoU",
-        "分割数据集"
+        "YOLOv1 网格输出",
+        "SSD 多尺度 Default Boxes",
+        "匹配与 Hard Negative Mining"
       ],
       "file": "chapters/19.html",
-      "stage": "segmentation",
-      "refined": false
+      "stage": "detection",
+      "refined": true
     },
     {
       "num": "20",
-      "title": "U-Net——医学图像分割标配",
+      "title": "U-Net——像素级语义分割",
       "topics": [
-        "编码-解码架构",
-        "跳跃连接",
-        "医学应用"
+        "Valid-convolution U 形结构",
+        "中心裁剪与 Skip Concatenation",
+        "Overlap-tile 与像素损失"
       ],
       "file": "chapters/20.html",
       "stage": "segmentation",
-      "refined": false
+      "refined": true
     },
     {
       "num": "21",

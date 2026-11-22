@@ -27,7 +27,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install pinned NumPy and headless OpenCV
-        run: python3 -m pip install --only-binary=:all: -r requirements-vision-tests.txt
+        run: python3 -m pip install -r requirements-vision-tests.txt
       - name: Execute chapters 01–05 and focused vision contracts
         run: python3 tests/test_foundations.py
   examples:

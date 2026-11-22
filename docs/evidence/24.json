@@ -1,0 +1,42 @@
+{
+  "title": "Chapter 24: Transfer learning and low-rank adaptation",
+  "date": "2026-11-22",
+  "entries": [
+    {
+      "id": "24-transfer",
+      "claim": "Common vision transfer learning scenarios include fine-tuning a pretrained convolutional network and freezing it as a fixed feature extractor",
+      "kind": "method",
+      "source_url": "https://docs.pytorch.org/tutorials/beginner/transfer_learning_tutorial.html",
+      "locator": "Transfer learning scenarios; fixed feature extractor",
+      "status": "verified",
+      "notes": "Current Torchvision uses explicit weights enums and weight-specific preprocessing transforms."
+    },
+    {
+      "id": "24-lora",
+      "claim": "LoRA freezes pretrained weights and injects trainable low-rank matrices into Transformer layers",
+      "kind": "method",
+      "source_url": "https://arxiv.org/abs/2106.09685",
+      "locator": "Sections 1 and 4.1",
+      "status": "verified",
+      "notes": "Original paper focuses on language models; visual Transformer use is a later application, not the original paper's benchmark domain."
+    },
+    {
+      "id": "24-lora-parameter-count",
+      "claim": "For a d_out by d_in linear layer, rank-r LoRA update has r(d_in+d_out) trainable parameters",
+      "kind": "derived",
+      "source_url": "https://arxiv.org/abs/2106.09685",
+      "locator": "Section 4.1; low-rank reparameterization",
+      "status": "derived",
+      "notes": "Parameter count follows directly from A∈R^(r×d_in) and B∈R^(d_out×r)."
+    },
+    {
+      "id": "24-peft",
+      "claim": "PEFT methods train a small number of adapter parameters while retaining a pretrained base model",
+      "kind": "engineering",
+      "source_url": "https://huggingface.co/docs/transformers/main/peft",
+      "locator": "Parameter-efficient fine-tuning overview",
+      "status": "verified",
+      "notes": "Adapter insertion targets and supported models depend on the selected library/model architecture."
+    }
+  ]
+}

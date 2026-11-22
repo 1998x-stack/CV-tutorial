@@ -1,0 +1,69 @@
+{
+  "title": "Chapter 25: Compression, export and deployment",
+  "date": "2026-11-22",
+  "entries": [
+    {
+      "id": "25-pruning",
+      "claim": "Network Slimming uses channel-level sparsity to identify and remove unimportant channels from CNNs",
+      "kind": "method",
+      "source_url": "https://openaccess.thecvf.com/content_ICCV_2017/papers/Liu_Learning_Efficient_Convolutional_ICCV_2017_paper.pdf",
+      "locator": "Abstract; Sections 3–4",
+      "status": "verified",
+      "notes": "Structured channel removal changes tensor shapes; unstructured zeros do not guarantee speedup on dense kernels."
+    },
+    {
+      "id": "25-deep-compression",
+      "claim": "Deep Compression combines pruning, trained quantization and Huffman coding as a model storage compression pipeline",
+      "kind": "method",
+      "source_url": "https://hanlab.mit.edu/projects/deep-compression",
+      "locator": "Project abstract; three-stage pipeline",
+      "status": "verified",
+      "notes": "Reported compression ratios are specific to the evaluated AlexNet/VGG-16 configurations and are not generalized."
+    },
+    {
+      "id": "25-distillation",
+      "claim": "Knowledge distillation uses softened teacher probabilities at temperature T and T² gradient scaling when combining soft and hard targets",
+      "kind": "objective",
+      "source_url": "https://arxiv.org/abs/1503.02531",
+      "locator": "Section 2; Equations 1–3",
+      "status": "verified",
+      "notes": "The code example is a deterministic objective sanity check, not a trained student benchmark."
+    },
+    {
+      "id": "25-torchao",
+      "claim": "PyTorch quantization development is moving toward torchao PT2E; older eager and FX quantization flows are recommended to migrate",
+      "kind": "current-api",
+      "source_url": "https://docs.pytorch.org/ao/stable/pt2e_quantization/index.html",
+      "locator": "PT2E quick start; PyTorch quantization migration note",
+      "status": "verified",
+      "notes": "Backend support and API maturity are version-dependent; check the exact installed torchao release."
+    },
+    {
+      "id": "25-onnx",
+      "claim": "The current PyTorch ONNX exporter recommends the torch.export-based dynamo=True path and dynamic_shapes for dynamic dimensions",
+      "kind": "current-api",
+      "source_url": "https://docs.pytorch.org/docs/stable/onnx.html",
+      "locator": "torch.onnx.export API",
+      "status": "verified",
+      "notes": "Export success does not guarantee target runtime operator coverage or numerical parity."
+    },
+    {
+      "id": "25-tensorrt11",
+      "claim": "TensorRT 11.x requires strongly typed networks and removes weak typing and implicit quantization; explicit Q/DQ expresses quantization",
+      "kind": "runtime-version",
+      "source_url": "https://docs.nvidia.com/deeplearning/tensorrt/11.5.0/api/migration/tensorrt-10x-to-11x.html",
+      "locator": "Strongly Typed Networks Are Now Required",
+      "status": "verified",
+      "notes": "Do not copy TensorRT 10.x implicit INT8 flag examples into a TensorRT 11.x workflow."
+    },
+    {
+      "id": "25-tensorrt-profiles",
+      "claim": "TensorRT dynamic-shape optimization profiles define min, opt and max dimensions for runtime input shapes",
+      "kind": "runtime",
+      "source_url": "https://docs.nvidia.com/deeplearning/tensorrt/latest/performance/benchmarking.html",
+      "locator": "Benchmarking with Dynamic Shapes",
+      "status": "verified",
+      "notes": "Only shapes within configured profile bounds are valid; benchmark the actual production shape distribution."
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "title": "Chapter 21: Mask R-CNN and RoIAlign",
+  "date": "2026-11-22",
+  "entries": [
+    {
+      "id": "21-mask-architecture",
+      "claim": "Mask R-CNN retains the Faster R-CNN two-stage procedure and predicts binary masks in parallel with class and box outputs for each RoI",
+      "kind": "architecture",
+      "source_url": "https://openaccess.thecvf.com/content_ICCV_2017/papers/He_Mask_R-CNN_ICCV_2017_paper.pdf",
+      "locator": "Sections 2–3; Figure 1",
+      "status": "verified",
+      "notes": "Mask branch is per RoI and parallel to classification and box regression; not a mask-first cascade."
+    },
+    {
+      "id": "21-roialign",
+      "claim": "RoIAlign removes quantization of RoI boundaries and bins, samples continuous positions by bilinear interpolation and aggregates the samples",
+      "kind": "operator",
+      "source_url": "https://openaccess.thecvf.com/content_ICCV_2017/papers/He_Mask_R-CNN_ICCV_2017_paper.pdf",
+      "locator": "Section 3; RoIAlign subsection",
+      "status": "verified",
+      "notes": "The paper describes four regularly sampled locations per bin and reports average pooling in later experiments."
+    },
+    {
+      "id": "21-mask-loss",
+      "claim": "Mask branch predicts K binary m×m masks per RoI, uses per-pixel sigmoid and average binary cross entropy, and supervises only the ground-truth class mask",
+      "kind": "objective",
+      "source_url": "https://openaccess.thecvf.com/content_ICCV_2017/papers/He_Mask_R-CNN_ICCV_2017_paper.pdf",
+      "locator": "Section 2; multi-task loss",
+      "status": "verified",
+      "notes": "Mask loss is defined only for positive RoIs; paper uses IoU≥0.5 positive assignment."
+    },
+    {
+      "id": "21-roialign-result",
+      "claim": "In the paper's ResNet-50-C4 experiment, RoIAlign improves AP by about 3 points over RoIPool, with much of the gain at AP75",
+      "kind": "reported-result",
+      "source_url": "https://openaccess.thecvf.com/content_ICCV_2017/papers/He_Mask_R-CNN_ICCV_2017_paper.pdf",
+      "locator": "Section 4; Table 2c",
+      "status": "verified",
+      "notes": "Only reported as a specific backbone/stride experiment, not a universal performance guarantee."
+    }
+  ]
+}

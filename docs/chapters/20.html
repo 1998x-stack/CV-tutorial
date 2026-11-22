@@ -1,197 +1,55 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
-    <title>第20章 U-Net——医学图像分割标配</title>
-    <link rel="stylesheet" href="theme.css">
-</head>
-<body>
-<div class="double-border">
-<div class="container">
-    <div class="sidebar">
-        <h3>🖼️ 课程目录</h3>
-        <ul class="chapter-list">
-            <li><a href="01.html">第1章 计算机视觉概述与发展简史</a></li>
-            <li><a href="02.html">第2章 数字图像处理基础</a></li>
-            <li><a href="03.html">第3章 传统特征提取方法</a></li>
-            <li><a href="04.html">第4章 神经网络与反向传播</a></li>
-            <li><a href="05.html">第5章 卷积神经网络原理</a></li>
-            <li><a href="06.html">第6章 深度学习框架入门</a></li>
-            <li><a href="07.html">第7章 图像分类任务与数据集</a></li>
-            <li><a href="08.html">第8章 AlexNet——深度学习视觉起点</a></li>
-            <li><a href="09.html">第9章 VGG——小卷积堆叠的简洁哲学</a></li>
-            <li><a href="10.html">第10章 ResNet——残差学习突破深度瓶颈</a></li>
-            <li><a href="11.html">第11章 ViT——视觉Transformer革命</a></li>
-            <li><a href="12.html">第12章 ConvNeXt——CNN现代化改造</a></li>
-            <li><a href="13.html">第13章 训练策略与调参实战</a></li>
-            <li><a href="14.html">第14章 模型评估与对比分析</a></li>
-            <li><a href="15.html">第15章 目标检测基础</a></li>
-            <li><a href="16.html">第16章 R-CNN——两阶段检测开山</a></li>
-            <li><a href="17.html">第17章 Faster R-CNN与区域提议网络</a></li>
-            <li><a href="18.html">第18章 单阶段检测概述与对比</a></li>
-            <li><a href="19.html">第19章 图像分割基础与分类</a></li>
-            <li><a href="20.html" class="active">第20章 U-Net——医学图像分割标配</a></li>
-            <li><a href="21.html">第21章 Mask R-CNN——检测+分割统一</a></li>
-            <li><a href="22.html">第22章 语义分割前沿与全景分割</a></li>
-            <li><a href="23.html">第23章 数据增强与预处理实战</a></li>
-            <li><a href="24.html">第24章 迁移学习与模型微调</a></li>
-            <li><a href="25.html">第25章 模型优化与部署</a></li>
-            <li><a href="26.html">第26章 自监督学习与基础模型</a></li>
-            <li><a href="27.html">第27章 多模态与生成模型概览</a></li>
-            <li><a href="28.html">第28章 综合实战项目</a></li>
-        </ul>
-    </div>
-    <div class="main-content">
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="U-Net 用对称的 contracting 与 expansive paths 结合上下文和精细位置。理解原始 valid-convolution 尺寸、中心裁剪、overlap-tile 与加权像素损失，才能区分 2015 年论文与现代 U-Net 变体。"><title>第 20 章 · U-Net：用跳跃连接恢复像素级定位 | CV Tutorial</title><link rel="stylesheet" href="../assets/css/article.css"></head><body><a class="skip" href="#content">跳转正文</a><div class="chapter-shell"><nav class="toc" aria-label="文章目录"><h2>20 · 图像分割</h2><div class="toc-items"><a href="../index.html">← 全部课程</a><a href="#s-task">从框级定位走向像素级语义预测</a><a href="#s-encoder">Contracting Path：扩大感受野，逐层增加通道</a><a href="#s-decoder">Expansive Path：上采样后先裁剪，再拼接 Skip Connection</a><a href="#s-geometry">把原始 572→388 的空间尺寸逐层算出来</a><a href="#s-overlap">Overlap-Tile：如何把有限显存扩展到任意大图像？</a><a href="#s-loss">原始论文的训练目标：带像素权重的 Softmax Cross Entropy</a><a href="#s-experiment">可运行实验：复核几何尺寸、加权 CE 与 Dice</a><a href="#s-practice">训练与医学图像应用中的边界条件</a><a href="#references">原始论文与技术文档</a></div></nav><main class="reading" id="content"><article><header><div class="chapter-top"><a href="../index.html">CV TUTORIAL</a><span>图像分割 / 20</span></div><p class="chapter-kicker">CHAPTER 20 · 图像分割</p><h1>U-Net：用跳跃连接恢复像素级定位</h1><p class="dek">U-Net 用对称的 contracting 与 expansive paths 结合上下文和精细位置。理解原始 valid-convolution 尺寸、中心裁剪、overlap-tile 与加权像素损失，才能区分 2015 年论文与现代 U-Net 变体。</p></header><section id="s-task"><h2>从框级定位走向像素级语义预测</h2><p>目标检测输出一组带类别的矩形框；语义分割则为图像中的<strong>每一个像素</strong>分配类别标签。对于显微图像，物体边界可能细而弯曲，相邻细胞可能接触；一个框很难表达细胞轮廓，也无法区分前景与背景之间的每个边界像素。U-Net 将分类主干改造成全卷积的 Encoder–Decoder：先逐步压缩空间分辨率以获取上下文，再逐步恢复分辨率，并把编码路径中的高分辨率特征直接传到解码路径。</p><p>必须区分三个分割任务：语义分割只回答“这个像素属于哪一类”；实例分割还要区分同类物体的不同实例 ID；全景分割则把可数的 thing 实例与不可数的 stuff 类别统一到同一像素标签图。U-Net 的 2015 年论文主要展示生物医学像素级分割，并用边界权重帮助分开相邻细胞；这不等于它原始输出头直接预测通用实例 ID。</p><figure><img src="../assets/svg/20-architecture.svg" width="900" height="420" alt="原始 U-Net：左侧 contracting path 压缩空间、增加通道；右侧 expansive path 上采样并拼接对应的高分辨率 encoder 特征。" loading="lazy"><figcaption>原始 U-Net：左侧 contracting path 压缩空间、增加通道；右侧 expansive path 上采样并拼接对应的高分辨率 encoder 特征。</figcaption></figure></section><section id="s-encoder"><h2>Contracting Path：扩大感受野，逐层增加通道</h2><p>原始 U-Net 的编码端每个尺度重复两次 3×3、stride 1、<strong>不 padding</strong> 的卷积，每次卷积后接 ReLU，再用 2×2、stride 2 的 max pooling 下采样。每次下采样后通道数翻倍：64→128→256→512，bottleneck 达到 1024。下采样减少空间成本、扩大有效感受野，但也会丢失精细位置。</p><p>这里的“valid convolution”是理解原版尺寸的关键：一个 3×3 无 padding 卷积会让每个空间维度减少 2；连续两次就减少 4。原版不是把每层都 pad 回原尺寸，因此 encoder 的 feature maps 会逐层变小。</p><div class="equation" role="group" tabindex="0" aria-label="每个尺度先经过两次 valid 3×3 卷积，再做 2×2、stride 2 的 max pooling。尺寸均假定能被 2 整除。"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mi>n</mi><mover><mo>→</mo><mrow><mn>2</mn><mspace width=".2em"/><mn>3×3</mn><mspace width=".2em"/><mi>valid</mi></mrow></mover><mi>n</mi><mo>−</mo><mn>4</mn><mspace width="1em"/><mo>→</mo><mspace width=".4em"/><mfrac><mrow><mi>n</mi><mo>−</mo><mn>4</mn></mrow><mn>2</mn></mfrac></math><p class="eq-caption">每个尺度先经过两次 valid 3×3 卷积，再做 2×2、stride 2 的 max pooling。尺寸均假定能被 2 整除。</p></div><p>随着分辨率下降，网络获得更大的上下文，但如果只依赖最深层特征，边界与小结构容易变得模糊。解码路径因此需要从 encoder 取回空间细节。</p></section><section id="s-decoder"><h2>Expansive Path：上采样后先裁剪，再拼接 Skip Connection</h2><p>解码端每一步先用 2×2 up-convolution（转置卷积）把特征图放大两倍，并把通道数减半；然后把同尺度 encoder 特征<strong>中心裁剪</strong>到相同空间大小，沿通道维 concatenation；最后再做两次 3×3 valid convolution + ReLU。Skip Connection 在这里不是 ResNet 的逐元素相加，而是特征通道拼接：低层提供边缘与位置细节，高层提供语义上下文。</p><figure><img src="../assets/svg/20-crop.svg" width="900" height="420" alt="原版 U-Net 的 encoder 特征图比 decoder 当前尺寸更大；先中心裁剪到同样 H×W，再沿通道维拼接，不能直接逐元素相加。" loading="lazy"><figcaption>原版 U-Net 的 encoder 特征图比 decoder 当前尺寸更大；先中心裁剪到同样 H×W，再沿通道维拼接，不能直接逐元素相加。</figcaption></figure><p>原版输入 tile 为 572×572，输出为 388×388。空间尺寸不相等不是代码 bug，而是 valid convolution 的直接结果：模型只为拥有完整输入上下文的中心区域输出预测。现代 same-padding U-Net 常让输入输出保持同尺寸，但它改变了边界行为和几何约定，不能与原论文图 1 混为一谈。</p></section><section id="s-geometry"><h2>把原始 572→388 的空间尺寸逐层算出来</h2><p>从 572 开始，四个 encoder stage 的两次 valid 卷积与池化依次得到 568→284、280→140、136→68、64→32；bottleneck 两次卷积得到 28。解码端依次上采样到 56、104、200、392，并把对应 encoder skip feature crop 到这些尺寸；每个尺度再做两次 valid 卷积，最后得到 52、100、196、388。最终 1×1 卷积把 64 个通道映射到类别 logits，不改变空间尺寸。</p><figure><img src="../assets/svg/20-shapes.svg" width="900" height="420" alt="原始 U-Net 的空间尺寸：输入 572×572，bottleneck 28×28，输出 388×388；skip features 因 valid conv 必须中心裁剪。" loading="lazy"><figcaption>原始 U-Net 的空间尺寸：输入 572×572，bottleneck 28×28，输出 388×388；skip features 因 valid conv 必须中心裁剪。</figcaption></figure><pre><code>def conv_pair(size):
+    # Two unpadded 3x3 convolutions, stride 1
+    return size - 4
 
-        <h2>U-Net：医学图像领域的"瑞士军刀"</h2>
+size = 572
+encoder_skips = []
+for _ in range(4):
+    size = conv_pair(size)
+    encoder_skips.append(size)
+    assert size % 2 == 0
+    size //= 2
 
-        <p>在上一章，我们梳理了图像分割的三大任务和经典数据集，提到了从FCN到SAM的发展脉络。今天我们来认识其中影响力最大的一篇分割论文——<strong>U-Net</strong>（MICCAI 2015），被引次数已超过六万次。你可能要问：一篇2015年的论文，结构并不复杂，为什么能在深度学习瞬息万变的今天仍被广泛应用？答案是：<strong>它用最简单的设计解决了一个最核心的问题——如何在标注数据稀缺的情况下实现精确分割</strong>。</p>
+bottleneck = conv_pair(size)
+size = bottleneck
+decoder = []
+for skip_size in reversed(encoder_skips):
+    size *= 2                 # 2x2 up-convolution, stride 2
+    crop_each_side = (skip_size - size) // 2
+    assert skip_size - size == 2 * crop_each_side
+    size = conv_pair(size)
+    decoder.append((size, crop_each_side))
 
-        <p>U-Net由德国弗莱堡大学的Olaf Ronneberger、Philipp Fischer和Thomas Brox提出。它的诞生动机非常实在：医学图像分割领域面临着两个特有的难题。第一，<strong>标注数据极其稀缺</strong>——医学图像的像素级标注需要专业医生来完成，一位医生一天最多标注十几张CT切片，成本极高。第二，<strong>医学分割要求极高的空间精度</strong>——一个肿瘤边界差几个像素就可能影响手术判断。FCN虽然能做端到端分割，但其上采样结果往往丢失了精细的边缘信息。U-Net用一套极为优雅的架构同时解决了这两个问题。</p>
+assert encoder_skips == [568, 280, 136, 64]
+assert bottleneck == 28
+assert decoder == [(52,4), (100,16), (196,40), (388,88)]
+assert size == 388
+print(&quot;original U-Net: 572 -&gt;&quot;, size)</code></pre></section><section id="s-overlap"><h2>Overlap-Tile：如何把有限显存扩展到任意大图像？</h2><p>原始 U-Net 没有全连接层，可以对不同大小的图像 tile 做卷积预测。由于输出只覆盖输入中心区域，推理时使用 overlap-tile strategy：输入 tile 提供比预测区域更大的上下文，模型只输出中间的有效区域；相邻 tile 的有效输出拼接起来覆盖整张大图。靠近原图边界时，缺失的上下文通过镜像（mirroring）外推。</p><figure><img src="../assets/svg/20-overlap.svg" width="900" height="420" alt="重叠 tile 用较大的输入上下文预测较小的中心输出区域；边缘处通过镜像外推缺失上下文，避免只用裁剪边缘预测。" loading="lazy"><figcaption>重叠 tile 用较大的输入上下文预测较小的中心输出区域；边缘处通过镜像外推缺失上下文，避免只用裁剪边缘预测。</figcaption></figure><p>这不是简单地把一张超大图 resize 到网络输入尺寸。重叠推理让局部输出始终拥有足够上下文，同时避免一次性把整张大图送入 GPU。tile 的输入/输出尺寸、重叠步长、镜像 padding 和拼接坐标必须彼此一致，否则会出现接缝、遗漏或重复区域。</p></section><section id="s-loss"><h2>原始论文的训练目标：带像素权重的 Softmax Cross Entropy</h2><p>U-Net 原论文不是用 Dice Loss 作为主要训练目标。它在最终 feature map 上做逐像素 softmax，再对每个像素的真实类别计算交叉熵，并乘以预先计算的权重图 (w(x))。权重图一部分用于平衡类别频率，另一部分强调相邻细胞之间狭窄的分隔边界。原论文给出 (w_0=10)、(sigma≈5) pixels 的设置，以便模型更重视那些容易被合并的边界像素。</p><div class="equation" role="group" tabindex="0" aria-label="Ω 是输出像素集合，ℓ(x) 是像素真值类别，p_{ℓ(x)}(x) 是 softmax 对真值类别的概率。"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mi>E</mi><mo>=</mo><mo>−</mo><munderover><mo>∑</mo><mrow><mi>x</mi><mo>∈</mo><mi>Ω</mi></mrow><mi></mi></munderover><mi>w</mi><mo>(</mo><mi>x</mi><mo>)</mo><mi>log</mi><msub><mi>p</mi><mrow><mi>ℓ</mi><mo>(</mo><mi>x</mi><mo>)</mo></mrow></msub><mo>(</mo><mi>x</mi><mo>)</mo></math><p class="eq-caption">Ω 是输出像素集合，ℓ(x) 是像素真值类别，p_{ℓ(x)}(x) 是 softmax 对真值类别的概率。</p></div><p>Dice coefficient / Dice Loss 是后来分割任务中常见的区域重叠目标，尤其适合前景稀少的场景。二分类 soft Dice 常写作：</p><div class="equation" role="group" tabindex="0" aria-label="p 是前景概率，y 是二值真值，ε 防止分母为零；多类别任务通常按类别分别计算再汇总。"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><mi>Dice</mi><mo>=</mo><mfrac><mrow><mn>2</mn><mo>∑</mo><mi>p</mi><mi>y</mi><mo>+</mo><mi>ε</mi></mrow><mrow><mo>∑</mo><mi>p</mi><mo>+</mo><mo>∑</mo><mi>y</mi><mo>+</mo><mi>ε</mi></mrow></mfrac><mo>,</mo><mspace width=".8em"/><mi>L</mi><msub><mi>Dice</mi><mi>loss</mi></msub><mo>=</mo><mn>1</mn><mo>−</mo><mi>Dice</mi></math><p class="eq-caption">p 是前景概率，y 是二值真值，ε 防止分母为零；多类别任务通常按类别分别计算再汇总。</p></div><p>Dice 的空掩码处理、是否包含背景类、按样本还是按 batch 汇总都会改变数值。Dice 与交叉熵联合使用是常见现代实践，但应明确写成后续训练选择，而不是原论文复现。</p><figure><img src="../assets/svg/20-loss.svg" width="900" height="420" alt="原版 U-Net 使用加权像素级 softmax cross entropy；Dice Loss 是常见后续区域重叠目标，二者的来源与角色不同。" loading="lazy"><figcaption>原版 U-Net 使用加权像素级 softmax cross entropy；Dice Loss 是常见后续区域重叠目标，二者的来源与角色不同。</figcaption></figure></section><section id="s-experiment"><h2>可运行实验：复核几何尺寸、加权 CE 与 Dice</h2><p>第一个脚本只做尺寸推导，不构造完整网络；第二个脚本在一个 2×2 toy mask 上计算像素加权 cross entropy 与可微分 Dice Loss。它用来检查张量轴、标签类型和梯度是否正确，不代表在医学影像数据集上训练出的模型。</p><pre><code>import torch
+import torch.nn.functional as F
 
-        <p>说一个亲身体会。2018年我做肺结节分割项目时，数据集只有50张标注好的CT切片。用当时流行的DeepLabv3直接训练，mIoU只有可怜的60%。一个前辈建议说："试试U-Net吧，不用调什么超参。"我只改了骨干网络为U-Net，其他参数不变跑了一轮，mIoU直接跳到了82%。在医学图像领域，这种场景我后来经历了不下五次——U-Net就像一个可靠的老朋友，可能不是最华丽的，但永远值得你第一个尝试。</p>
+logits = torch.tensor(
+    [[[[2.0,-1.0],[0.5,-0.5]],
+      [[-1.0,2.0],[0.0,1.0]]]],
+    requires_grad=True
+)  # [N=1, K=2, H=2, W=2]
+target = torch.tensor([[[0,1],[1,0]]], dtype=torch.long)
+pixel_weight = torch.tensor([[[1.0,2.0],[2.0,1.0]]])
 
-        <h2>编码-解码对称架构</h2>
+pixel_ce = F.cross_entropy(logits, target, reduction=&quot;none&quot;)
+weighted_ce = (pixel_ce * pixel_weight).sum() / pixel_weight.sum()
 
-        <p>U-Net的架构如其名——形似字母"U"，由三个部分构成：<strong>下采样（编码）路径</strong>、<strong>上采样（解码）路径</strong>和<strong>跳跃连接</strong>。整个网络是对称的：左侧有多少层下采样，右侧就有多少层上采样。</p>
+prob_fg = logits.softmax(dim=1)[:,1]
+target_fg = (target == 1).float()
+eps = 1e-6
+dice = (2*(prob_fg*target_fg).sum()+eps) / (
+    prob_fg.sum()+target_fg.sum()+eps
+)
+dice_loss = 1-dice
+combined_demo = weighted_ce + dice_loss
+combined_demo.backward()
 
-        <p><strong>编码器</strong>（Contracting Path）是一个典型的卷积网络。每层包含两个3×3卷积（每个卷积后跟ReLU）和一个2×2的最大池化下采样。每次下采样后特征图的通道数翻倍（从64→128→256→512→1024），空间尺寸减半。这个过程的目的是逐步提取高层次语义特征：浅层学到边缘、纹理等低级特征，深层学到"这是器官""这是病灶"等高阶语义。</p>
-
-        <p><strong>解码器</strong>（Expanding Path）是编码器的镜像。每层包含一个2×2的转置卷积上采样（特征图尺寸加倍、通道减半），然后与编码器对应层的特征图进行拼接（concatenation），再经过两个3×3卷积。上采样的目的是逐步恢复空间分辨率，将深层语义信息映射回像素空间。</p>
-
-        <p><strong>最底层</strong>（"U"的底部）是编码器和解码器的桥梁，包含两个3×3卷积和一个dropout层，提取最高层次的抽象特征。</p>
-
-        <pre><code># 使用 PyTorch 实现的简化版 U-Net 编码器块
-import torch
-import torch.nn as nn
-
-class EncoderBlock(nn.Module):
-    """U-Net 编码器中的一层：双卷积 + 池化"""
-    def __init__(self, in_ch, out_ch):
-        super().__init__()
-        self.conv = nn.Sequential(
-            nn.Conv2d(in_ch, out_ch, 3, padding=1),
-            nn.BatchNorm2d(out_ch),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(out_ch, out_ch, 3, padding=1),
-            nn.BatchNorm2d(out_ch),
-            nn.ReLU(inplace=True)
-        )
-        self.pool = nn.MaxPool2d(2)
-
-    def forward(self, x):
-        x_out = self.conv(x)     # 保存跳跃连接的输出
-        x_pool = self.pool(x_out) # 下采样后传入下一层
-        return x_out, x_pool
-
-
-class DecoderBlock(nn.Module):
-    """U-Net 解码器中的一层：上采样 + 跳跃连接 + 双卷积"""
-    def __init__(self, in_ch, out_ch):
-        super().__init__()
-        self.up = nn.ConvTranspose2d(in_ch, out_ch, 2, stride=2)
-        self.conv = nn.Sequential(
-            nn.Conv2d(out_ch * 2, out_ch, 3, padding=1),  # *2 是因为拼接
-            nn.BatchNorm2d(out_ch),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(out_ch, out_ch, 3, padding=1),
-            nn.BatchNorm2d(out_ch),
-            nn.ReLU(inplace=True)
-        )
-
-    def forward(self, x, skip):
-        x = self.up(x)
-        x = torch.cat([x, skip], dim=1)  # 跳跃连接：拼接编码器特征
-        x = self.conv(x)
-        return x</code></pre>
-
-        <h2>跳跃连接：融合细节与语义</h2>
-
-        <p>U-Net最核心的贡献是<strong>跳跃连接（Skip Connection）</strong>。你可能马上想到了ResNet的残差连接——但二者完全不同。ResNet的残差连接是在同一层内部加一个恒等映射来缓解梯度消失，而U-Net的跳跃连接是在<strong>编码器和解码器的对应层之间建立捷径</strong>。</p>
-
-        <p>它的工作原理是这样的：编码器在第i层对图像做下采样后，会保留一份该层的输出特征图。解码器在上采样到同等分辨率时，不只是依赖来自底层的抽象特征，还会把编码器保存的这份特征图拼接过来作为补充信息。这样，解码器同时拥有两方面的信息——来自深层的高层语义（"这是什么东西"）和来自浅层的低层细节（"它的边界在哪里"）。</p>
-
-        <p>这个设计的巧妙之处在于：<strong>下采样会丢失空间信息，而分割任务需要精确的空间信息</strong>。没有跳跃连接的编码-解码网络就像一个人戴着高度近视镜做显微手术——他能大致看到病灶的位置，但无法精确找到边界。跳跃连接就是给解码器"戴上矫正眼镜"，直接注入高分辨率的空间细节。</p>
-
-        <div class="tip">
-            <strong>💡 为什么是拼接（concat）而不是相加（add）？</strong>U-Net的跳跃连接使用拼接操作，而不是ResNet那样的逐元素相加。原因是：编码器和解码器特征图的语义层次不同（一个是低层的原始细节，一个是高层的抽象语义），简单的相加会混合这些信息导致相互干扰。而拼接保留了各自的信息通道，让解码器自行决定"重点看哪来的信息"。实验表明，拼接在分割任务中显著优于相加。
-        </div>
-
-        <h2>U-Net的训练策略</h2>
-
-        <p>U-Net能在小数据集上取得好成绩，不仅是架构的功劳，也得益于它的训练策略。原文中使用了<strong>弹性形变数据增强（Elastic Deformation）</strong>——对图像施加随机的非线性扭曲来生成更多训练样本。这个技巧对医学图像特别有效，因为生物组织的形变本身就是非刚性的，弹性形变相当于对自然变化做了模拟。</p>
-
-        <p>U-Net使用的损失函数是<strong>带边界权重的交叉熵损失</strong>。对于两个相邻细胞之间的边界区域，损失权重被提高，迫使模型更关注这些难以分割的边界像素。这种设计体现了医学分割的核心理念：<strong>不是所有像素一样重要，边界和稀疏的小区域需要更高的优先级</strong>。</p>
-
-        <pre><code># U-Net 风格的数据增强（弹性形变伪代码）
-def elastic_deformation(image, alpha=34, sigma=4):
-    """对图像施加弹性形变做数据增强"""
-    # 1. 生成随机位移场（位移量服从高斯分布）
-    dx = np.random.uniform(-1, 1, size=image.shape) * alpha
-    dy = np.random.uniform(-1, 1, size=image.shape) * alpha
-    # 2. 用高斯滤波平滑位移场
-    dx = gaussian_filter(dx, sigma=sigma)
-    dy = gaussian_filter(dy, sigma=sigma)
-    # 3. 生成形变后的采样网格
-    x, y = np.meshgrid(np.arange(W), np.arange(H))
-    indices = (x + dx, y + dy)
-    # 4. 重采样
-    deformed = map_coordinates(image, indices, order=1)
-    return deformed</code></pre>
-
-        <h2>U-Net的多种变体</h2>
-
-        <p>U-Net的简洁架构催生了大量变体，以下是最具影响力的几个：</p>
-
-        <table>
-            <tr><th>变体</th><th>改进点</th><th>适用场景</th></tr>
-            <tr><td>3D U-Net（2016）</td><td>将所有2D操作扩展为3D（3D卷积、3D池化、3D上采样）</td><td>CT/MRI体数据分割、视频分割</td></tr>
-            <tr><td>Attention U-Net（2018）</td><td>在跳跃连接中引入注意力门控，抑制不相关区域的特征</td><td>腹部多器官分割、大目标的场景</td></tr>
-            <tr><td>ResUNet（2018）</td><td>用残差块替代普通卷积块，加深网络到100+层</td><td>需要更丰富语义特征的高难度分割</td></tr>
-            <tr><td>Dense U-Net</td><td>使用密集连接（Dense Connection）替代普通卷积</td><td>小样本场景下的精细分割</td></tr>
-            <tr><td>U-Net++（2018）</td><td>多级嵌套的跳跃连接结构，减少语义鸿沟</td><td>细胞核分割、医学图像中细粒度目标</td></tr>
-            <tr><td>nnU-Net（2020）</td><td>自动化配置的U-Net框架，根据数据集自动调整超参数</td><td>"开箱即用"的医学分割基准</td></tr>
-        </table>
-
-        <p>在这些变体中，<strong>nnU-Net</strong>尤其值得一提。它不是一个新的网络架构，而是一个<strong>自动化的医学分割框架</strong>——它会根据你的数据集自动选择2D/3D U-Net、图像重采样策略、patch大小、损失函数等所有配置。在2020年的医学分割竞赛中，nnU-Net在多个任务上同时取得了第一名，证明了U-Net基线框架的强大泛化能力。</p>
-
-        <div class="highlight">
-            <strong>🏆 U-Net的惊人事实：</strong>截至2025年，U-Net已被引用超过六万次，是计算机视觉领域被引用最多的论文之一。更令人印象深刻的是，在MICCAI、ISBI等顶级医学影像会议上，每年仍有大量新论文使用U-Net作为基线方法，并且在许多挑战赛中，未经任何修改的原始U-Net依然能击败精心设计的复杂模型。这提醒我们：在解决问题时，简单有效的方案往往比花哨的设计更有生命力。
-        </div>
-
-        <h2>U-Net在医学图像中的应用</h2>
-
-        <p>U-Net最初是为<strong>细胞分割</strong>任务设计的——在电子显微镜图像中，细胞形状不规则且互相粘连，传统方法难以区分。U-Net不仅能准确分割单个细胞，还能通过边界权重机制有效分离相邻细胞。这个成就直接推动了生物医学图像分析领域的发展。</p>
-
-        <p>在<strong>器官分割</strong>方面，U-Net及其变体被广泛应用于肝脏、肾脏、心脏、肺叶等器官的自动分割。3D U-Net可以直接处理CT和MRI体数据——输入是一个三维体积（比如256×256×128），输出是同样尺寸的三维分割结果。这些应用在计算机辅助诊断和手术规划中发挥着重要作用。</p>
-
-        <p><strong>病灶检测与分割</strong>是另一个重要应用方向。比如在视网膜OCT图像中分割黄斑水肿区域，在乳腺钼靶图像中分割肿瘤区域，在脑部MRI中分割胶质瘤。由于病灶的形状、位置、大小在不同患者间差异极大，U-Net的编码-解码结构和跳跃连接赋予它足够的灵活性来适应这些变化。</p>
-
-        <h2>U-Net的泛化能力</h2>
-
-        <p>U-Net的成功远不止于医学图像。它的核心设计——"编码器提取语义 + 解码器恢复细节 + 跳跃连接保留空间信息"——已经被证明是一种通用的分割范式，被广泛迁移到了其他领域。</p>
-
-        <p>在<strong>遥感图像</strong>中，U-Net被用于建筑物提取、道路分割、农田地块识别。高分辨率遥感图像中的建筑物边界清晰但形状复杂，U-Net的跳跃连接正好擅长保持边界精细度。在<strong>工业缺陷检测</strong>中，U-Net被用于分割产品表面的划痕、凹坑和裂纹——这些缺陷通常只占图像的极小部分，尺寸小、对比度低，正是U-Net在多尺度特征融合方面的特长所在。</p>
-
-        <p>在<strong>自动驾驶</strong>中，U-Net虽然不像DeepLab或PSPNet那么主流，但其轻量级变体（如Efficient U-Net）被广泛用于可行驶区域分割和车道线检测。特别是在算力受限的嵌入式平台上，U-Net简洁的架构和较低的计算开销反而成了优势。</p>
-
-        <div class="warning">
-            <strong>⚠️ U-Net的适用边界：</strong>U-Net并非万能。它的设计最适合"输入输出空间分辨率基本一致"的任务——医学图像通常满足这个条件。但在需要极大多尺度处理的场景（如自然图像中同时存在极小和极大物体），或者类别数量极大的场景（如ADE20K的150类），U-Net单纯的编码-解码结构可能不够充分，需要考虑更复杂的上下文融合模块（如DeepLab的ASPP）。选型时要根据具体任务做判断。
-        </div>
-
-        <p>U-Net教会了我们一个深刻的道理：<strong>最优雅的设计往往是那些精准匹配问题域的设计</strong>。U-Net没有发明任何花哨的技术模块——卷积、池化、上采样、跳跃连接都是早已存在的概念。它的伟大之处在于将这些元素组合成了恰好符合医学图像分割需求的架构。这也为我们提供了一个重要的方法论启示：不要为了创新而创新，先理解问题本身，再去寻找最合适的解决方案。</p>
-
-        <p>下一章我们将学习另一个重量级的分割模型——<strong>Mask R-CNN</strong>。如果说U-Net是医学分割的标配，那么Mask R-CNN就是实例分割领域的标杆。它是如何将目标检测和图像分割统一在同一框架下的？RoIAlign又解决了什么问题？我们下一章见！</p>
-
-        <div class="footer-nav">
-            <a href="19.html">← 上一章</a>
-            <a href="index.html">📖 返回目录</a>
-            <a href="21.html">下一章 →</a>
-        </div>
-
-    </div>
-</div>
-</div>
-</body>
-</html>
+assert pixel_ce.shape == target.shape
+assert torch.isfinite(weighted_ce) and torch.isfinite(dice_loss)
+assert logits.grad is not None and logits.grad.abs().sum() &gt; 0
+assert 0 &lt;= float(dice) &lt;= 1
+print(&quot;weighted CE:&quot;, float(weighted_ce), &quot;dice:&quot;, float(dice))</code></pre></section><section id="s-practice"><h2>训练与医学图像应用中的边界条件</h2><p>原论文依赖强数据增强，尤其是弹性形变（elastic deformation），让有限的标注图像产生更多合理的组织形态变化；也使用 overlap-tile 推理与像素权重图来解决边界和相邻细胞问题。医学图像中的训练/验证划分必须按患者、切片序列或实验批次考虑相关性，不能把同一患者相邻切片随机分到训练集与测试集，否则容易产生数据泄漏。</p><p>U-Net 的“U”形外观不是保证泛化的原因本身。性能还受标注一致性、图像模态、设备域偏移、类别比例、增强分布、输出阈值和后处理影响。医疗场景还需要校准、不确定性评估、外部验证与临床工作流评估；像素 IoU/Dice 高并不自动意味着临床风险低。</p><details class="mini-test"><summary>理解检查：原版 U-Net 的 skip connection 是逐元素相加吗？</summary><p>不是。原版在 crop 对齐后沿通道维 concatenate，再经过两次卷积融合。ResNet 的 identity addition 是另一种连接方式。</p></details></section><section id="references"><h2>原始论文与技术文档</h2><p>原始 U-Net 的 valid-convolution 几何、加权像素级 softmax 损失与 overlap-tile 策略已单独标明；Dice Loss 作为后续常用扩展，不冒充 2015 年原论文的训练目标。</p><ol class="refs"><li><a href="https://doi.org/10.1007/978-3-319-24574-4_28">Ronneberger, Fischer & Brox, U-Net, MICCAI 2015</a></li><li><a href="https://arxiv.org/abs/1505.04597">U-Net original arXiv v1 (2015)</a></li><li><a href="https://lapi.fi-p.unam.mx/wp-content/uploads/UNET-Original-Paper.pdf">Original U-Net paper PDF</a></li><li><a href="https://docs.pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html">PyTorch CrossEntropyLoss documentation</a></li><li><a href="https://docs.pytorch.org/vision/stable/models.html">Torchvision segmentation models and transforms</a></li></ol></section><nav class="pager" aria-label="前后章节"><a href="19.html">← 19 章</a><a href="21.html">21 章 →</a></nav></article></main></div></body></html>

@@ -19,3 +19,23 @@ jobs:
           test -f _site/index.html
           test -f _site/01.html
           test -f _site/chapters/28.html
+  browser:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Playwright Chromium
+        run: |
+          python3 -m pip install playwright
+          python3 -m playwright install --with-deps chromium
+      - name: Audit home and chapters 06–10 at desktop and mobile widths
+        run: python3 scripts/check_browser.py
+      - name: Upload browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cv-browser-qa
+          path: reports/browser/
+          if-no-files-found: warn

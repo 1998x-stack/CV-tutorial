@@ -24,12 +24,14 @@ CV-tutorial/
 ├── docs/                       # GitHub Pages 站点根目录（无需 Node 构建）
 │   ├── index.html              # 课程门户：静态章节卡片 + 可选搜索
 │   ├── courses.json            # 28 章单一课程清单
-│   ├── chapters/               # 01–28 章；01–05 已按深度教程范式精修
+│   ├── chapters/               # 01–28 章；01–10 已按深度教程范式精修
 │   └── assets/
 │       ├── css/site.css        # 站点级设计系统
 │       ├── css/article.css     # 长文版式、MathML、移动端和打印
 │       └── svg/                # 按知识问题组织的原创独立 SVG
 ├── scripts/check_site.py       # 静态链接 / SVG / 章节一致性门禁
+├── scripts/check_browser.py    # Chromium 1440/390/360 响应式浏览器验收
+├── tests/test_cv_examples.py   # 06–10 章教学代码断言
 ├── .github/workflows/          # QA 与 GitHub Pages 部署
 ├── pdfs/                       # 历史论文资料（不参与本次迁移）
 ├── AGENTS.md                   # 事实核验和长期维护规范
@@ -45,9 +47,25 @@ CV-tutorial/
 python3 -m http.server 8000
 # 浏览 http://localhost:8000/docs/
 python3 scripts/check_site.py
+# 可选：需要 PyTorch 才运行以下单元测试
+python3 tests/test_cv_examples.py
+# 浏览器 QA 需 playwright 和 chromium
+python3 -m pip install playwright
+python3 -m playwright install chromium
+python3 scripts/check_browser.py
 ```
 
 避免直接双击 `docs/index.html` 判断所有资源行为：本地文件 URL 与网站 HTTP 路径并不完全等价。
+
+## 批次记录
+
+| 批次 | 内容 | 图解 | 状态 |
+| --- | --- | --- | --- |
+| 01–05 | 像素、滤波、传统特征、反向传播与 CNN 基础 | 10 张 | 已深化 |
+| 06–10 | PyTorch、分类协议、AlexNet、VGG、ResNet | 16 张 | 已深化 |
+| 11–28 | ViT、ConvNeXt、检测、分割、优化、前沿 | 原课程内容保留 | 等待逐篇复审 |
+
+本轮特别区分 AlexNet 2012 年原版与现代 torchvision，VGG-16 原配置与带 BN 变体，以及 ResNet v1、pre-activation v2 与 torchvision v1.5。历史指标只在指定论文/数据/协议下成立。
 
 ## 协作约定
 

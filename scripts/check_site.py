@@ -29,16 +29,26 @@ def check():
     for file in files:
         html=file.read_text(encoding="utf-8")
         p=Page(); p.feed(html)
-        if file.name!="index.html" and len(p.headings)!=1 and file.name in {f"{i:02}.html" for i in range(1,6)}:
+        if file.name!="index.html" and len(p.headings)!=1 and file.name in {f"{i:02}.html" for i in range(1,11)}:
             bad(str(file.relative_to(ROOT))+": expected exactly one H1")
+        if file.parent.name=="chapters" and file.name in {f"{i:02}.html" for i in range(6,11)}:
+            n=int(file.stem)
+            if html.count("<figure>") < (4 if n==10 else 3): bad(f"{file.name}: insufficient illustrations")
+            if "<math " not in html: bad(f"{file.name}: MathML equation missing")
+            if "<pre>" not in html or "assert " not in html: bad(f"{file.name}: runnable test/assertion missing")
+            for image in p.images:
+                if not image.get("alt"): bad(f"{file.name}: figure image missing meaningful alt")
         if len(p.ids)!=len(set(p.ids)): bad(str(file.relative_to(ROOT))+": duplicate element IDs")
+        if file.parent.name=="chapters" and file.name in {f"{i:02}.html" for i in range(1,11)}:
+            for link in p.links:
+                if link.startswith("#") and link[1:] not in p.ids: bad(f"{file.name}: broken local anchor {link}")
         for link in p.links:
             if link.startswith(("https:","http:","mailto:","tel:","javascript:","data:","#")): continue
             path=unquote(urlsplit(link).path)
             if not path: continue
             if not (file.parent/path).exists(): bad(f"{file.relative_to(ROOT)}: missing relative reference {link}")
     svgfiles=list((SITE/"assets/svg").glob("*.svg"))
-    if len(svgfiles)<11: bad("expected at least 11 original SVGs (home + two per foundational article)")
+    if len(svgfiles)<27: bad("expected at least 27 SVGs (home + chapters 01–10)")
     for f in svgfiles:
         try:
             node=ET.parse(f).getroot()

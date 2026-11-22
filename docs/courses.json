@@ -74,7 +74,7 @@
       ],
       "file": "chapters/06.html",
       "stage": "foundations",
-      "refined": false
+      "refined": true
     },
     {
       "num": "07",
@@ -86,7 +86,7 @@
       ],
       "file": "chapters/07.html",
       "stage": "foundations",
-      "refined": false
+      "refined": true
     },
     {
       "num": "08",
@@ -98,7 +98,7 @@
       ],
       "file": "chapters/08.html",
       "stage": "foundations",
-      "refined": false
+      "refined": true
     },
     {
       "num": "09",
@@ -110,7 +110,7 @@
       ],
       "file": "chapters/09.html",
       "stage": "backbones",
-      "refined": false
+      "refined": true
     },
     {
       "num": "10",
@@ -122,7 +122,7 @@
       ],
       "file": "chapters/10.html",
       "stage": "backbones",
-      "refined": false
+      "refined": true
     },
     {
       "num": "11",

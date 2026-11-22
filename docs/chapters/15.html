@@ -1,11 +1,11 @@
 <!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="目标检测框格式、IoU、匹配、AP、COCO指标、greedy NMS和两阶段/单阶段检测机理。"><title>第 15 章 · 目标检测基础：Boxes IoU AP NMS | CV Tutorial</title><link rel="stylesheet" href="../assets/css/article.css"></head><body><a class="skip" href="#content">跳转正文</a><div class="chapter-shell"><nav class="toc" aria-label="文章目录"><h2>15 · 目标检测</h2><div class="toc-items"><a href="../index.html">← 课程目录</a><a href="#s-question">分类与检测的根本区别不是多输出一串数字</a><a href="#s-boxes">边界框变换必须固定坐标系</a><a href="#s-iou">IoU 是重叠质量，而不是类别置信度</a><a href="#s-matching">IoU 如何进入 AP/mAP 的定义？</a><a href="#s-nms">NMS 的删除决定依赖类别和得分排序</a><a href="#s-taxonomy">两阶段、单阶段、anchor-free 与 DETR 的边界</a><a href="#references">评估来源</a></div></nav><main class="reading" id="content"><article><header><div class="chapter-top"><a href="../index.html">CV TUTORIAL</a><span>目标检测 / 15</span></div><p class="chapter-kicker">CHAPTER 15 · OBJECT DETECTION</p><h1>目标检测：从框坐标到可信的 AP</h1><p class="dek">检测不仅是判断物体存在，还要为它找到正确的矩形、避免重复预测，并在明确的匹配协议下计算精确率和召回率。</p></header><section id="s-question"><h2>分类与检测的根本区别不是多输出一串数字</h2><p>图像分类为整个图像预测类别，目标检测则需要找出数量不固定的一组物体，输出每个物体的类别分数与空间位置。检测系统会遇到尺度变化、遮挡、重复预测、小物体和标注歧义等问题，不能将“把同一个分类器在每处运行一次”直接等价为所有现代检测器。</p><p>学习检测首先要理解三件事：<strong>框如何编码</strong>、<strong>预测如何匹配到真值</strong>、<strong>如何对重复候选进行过滤</strong>。它们分别决定几何正确性、评价口径和最终输出数量。</p><figure><img src="../assets/svg/15-box-formats.svg" width="900" height="420" alt="同一个物体框在 xyxy、左上角 xywh 和 cxcywh 三种格式间的转换；坐标为连续像素边界而不是额外计入右下角一个像素。" loading="lazy"><figcaption>同一个物体框在 xyxy、左上角 xywh 和 cxcywh 三种格式间的转换；坐标为连续像素边界而不是额外计入右下角一个像素。</figcaption></figure></section><section id="s-boxes"><h2>边界框变换必须固定坐标系</h2><p><code>xyxy=(x1,y1,x2,y2)</code> 一般把两个角视作连续坐标边界，宽为 <code>x2−x1</code>，高为 <code>y2−y1</code>；<code>xywh=(x1,y1,w,h)</code> 与 <code>cxcywh=(cx,cy,w,h)</code> 是其它常见形式。有些旧的离散像素框定义包含右下角像素，对应面积会带 <code>+1</code>；不能把不同定义混用。</p><div class="equation" role="group" tabindex="0" aria-label="xyxy 转中心宽度形式：y 方向完全同理；假设 x2≥x1 且 y2≥y1。"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><msub><mi>c</mi><mi>x</mi></msub><mo>=</mo><mfrac><mrow><msub><mi>x</mi><mn>1</mn></msub><mo>+</mo><msub><mi>x</mi><mn>2</mn></msub></mrow><mn>2</mn></mfrac><mo>,</mo><mspace width="1em"/><mi>w</mi><mo>=</mo><msub><mi>x</mi><mn>2</mn></msub><mo>−</mo><msub><mi>x</mi><mn>1</mn></msub></math><p class="eq-caption">xyxy 转中心宽度形式：y 方向完全同理；假设 x2≥x1 且 y2≥y1。</p></div><p>COCO 常见 bbox 标注格式是以像素为单位的 <code>[x,y,width,height]</code>；许多 YOLO 训练格式使用以图像宽高归一化的 <code>center x,center y,width,height</code>。它们不是同一套字段含义。图像经过 resize、letterbox padding、裁剪后，框必须通过相同几何变换映射到正确坐标。</p><pre><code>def xyxy_to_cxcywh(box):
     x1, y1, x2, y2 = box
-    assert x2 &quot;= x1 and y2 &quot;= y1
+    assert x2 &gt;= x1 and y2 &gt;= y1
     return ((x1+x2)/2, (y1+y2)/2, x2-x1, y2-y1)
 
 def cxcywh_to_xyxy(box):
     cx, cy, w, h = box
-    assert w &quot;= 0 and h &quot;= 0
+    assert w &gt;= 0 and h &gt;= 0
     return (cx-w/2, cy-h/2, cx+w/2, cy+h/2)
 
 xyxy = (40.0, 50.0, 200.0, 210.0)
@@ -18,7 +18,7 @@ print(&quot;converted:&quot;, center)</code></pre></section><section id="s-iou">
     intersection = max(0.0,x2-x1)*max(0.0,y2-y1)
     area_a = max(0.0,a[2]-a[0])*max(0.0,a[3]-a[1])
     area_b = max(0.0,b[2]-b[0])*max(0.0,b[3]-b[1])
-    return intersection/(area_a+area_b-intersection) if area_a+area_b&quot;intersection else 0.0
+    return intersection/(area_a+area_b-intersection) if area_a+area_b&gt;intersection else 0.0
 
 a=(0.,0.,4.,4.)
 b=(2.,2.,6.,6.)

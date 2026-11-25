@@ -1,0 +1,55 @@
+{
+  "title": "CV Tutorial chapters 22–28 — claim/source register",
+  "date": "2026-11-25",
+  "scope": "Primary papers and official docs. Figures and runnable samples are illustrative (教学示意), not benchmarks. No dataset-level mIoU/PQ numbers are asserted here.",
+  "entries": [
+    {
+      "chapter": "22",
+      "claim": "FCN replaces the classifier's fully connected layers with convolutions to emit dense per-pixel predictions, but retains downsampling so the prediction is coarse before upsampling",
+      "sources": ["https://arxiv.org/abs/1411.4038"],
+      "caveat": "The ~1/32 output stride is the VGG-based FCN example, not a universal constant"
+    },
+    {
+      "chapter": "22",
+      "claim": "Dilated/atrous convolution keeps the parameter count fixed while the effective kernel grows as k_eff = k + (k-1)(d-1)",
+      "sources": ["https://arxiv.org/abs/1606.00915"],
+      "caveat": "Still cross-correlation (no kernel flip); padding must equal the dilation rate to keep output size"
+    },
+    {
+      "chapter": "22",
+      "claim": "DeepLab v3 ASPP defaults to parallel 1x1, multiple dilation rates (commonly 6/12/18) and a global-average-pooling branch, concatenated and fused by 1x1 conv",
+      "sources": ["https://arxiv.org/abs/1706.05587"],
+      "caveat": "Rate set and output channels are implementation/crop-size choices; gridding motivates hybrid rates"
+    },
+    {
+      "chapter": "22",
+      "claim": "SegNet decodes with pooling indices; PSPNet uses a pyramid pooling module over 1x1/2x2/3x3/6x6 grids; DeepLab v3+ adds a light decoder over ASPP",
+      "sources": ["https://arxiv.org/abs/1611.09326", "https://arxiv.org/abs/1612.01105", "https://arxiv.org/abs/1802.02611"],
+      "caveat": "Comparisons are qualitative here; CRF post-processing belongs to DeepLab v1/v2 and was dropped by v3"
+    },
+    {
+      "chapter": "22",
+      "claim": "Panoptic segmentation assigns every pixel a class label plus an instance id for countable things, with stuff carrying only a class label and no overlaps",
+      "sources": ["https://arxiv.org/abs/1801.00868"],
+      "caveat": "Merging instance and semantic outputs needs a fusion/dedup step; it is not a plain union"
+    },
+    {
+      "chapter": "22",
+      "claim": "Panoptic Quality PQ = SQ x RQ, with SQ the mean IoU over true positives and RQ = TP / (TP + 0.5*FP + 0.5*FN); a predicted/gt segment is a TP only if class matches and IoU > 0.5",
+      "sources": ["https://arxiv.org/abs/1801.00868"],
+      "caveat": "Threshold, empty-segment handling and stuff scoring are part of the protocol; the page's PQ numbers are toy 教学示意"
+    },
+    {
+      "chapter": "22",
+      "claim": "SAM is promptable (points/boxes/masks), uses a heavy image encoder, a light prompt encoder and a light mask decoder, and returns multiple ambiguity-aware masks",
+      "sources": ["https://arxiv.org/abs/2304.02643"],
+      "caveat": "Class-agnostic: it does not output class names; prompt-free use requires an automatic mask-generation pass"
+    },
+    {
+      "chapter": "22",
+      "claim": "SA-1B is reported as ~11M images and ~1.1B masks",
+      "sources": ["https://arxiv.org/abs/2304.02643"],
+      "caveat": "Paper-reported dataset scale; not recomputed here"
+    }
+  ]
+}

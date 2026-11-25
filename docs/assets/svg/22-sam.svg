@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 410" role="img" aria-labelledby="sam-title sam-desc" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif">
+<title id="sam-title">SAM 的三段式架构：重型图像编码器 + 轻量提示编码器 + 轻量掩码解码器</title>
+<desc id="sam-desc">图像经重型 ViT 编码器得到一次性图像嵌入；点/框/掩码提示经轻量提示编码器得到提示 token；两者送入轻量掩码解码器，输出多个候选掩码及质量分。图像嵌入只计算一次，每个新提示复用。</desc>
+<rect width="900" height="410" fill="#fffdf9"/>
+<defs><marker id="sam-arw" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0 0 L7 3 L0 6 z" fill="#7a8a90"/></marker></defs>
+<style>.o{fill:#ffecd9;stroke:#d06d4d;stroke-width:1.6}.t{fill:#d6f1eb;stroke:#147f80;stroke-width:1.6}.p{fill:#ece7f8;stroke:#7461ba;stroke-width:1.6}</style>
+<text x="40" y="42" font-size="21" font-weight="700" fill="#203035">SAM：可提示的分割基础模型</text>
+<text x="40" y="66" font-size="14" fill="#53676d">重编码器只跑一次，轻解码器对每个新提示重复调用</text>
+
+<rect class="t" x="40" y="96" width="120" height="66" rx="9"/>
+<text x="100" y="126" font-size="14" text-anchor="middle" fill="#0f5c5d">图像</text>
+<text x="100" y="146" font-size="12.5" text-anchor="middle" fill="#147f80">H × W × 3</text>
+<path d="M160 129 L200 129" fill="none" stroke="#7a8a90" stroke-width="1.6" marker-end="url(#sam-arw)"/>
+
+<rect class="o" x="204" y="84" width="180" height="90" rx="9"/>
+<text x="294" y="120" font-size="14" font-weight="700" text-anchor="middle" fill="#8a4526">图像编码器</text>
+<text x="294" y="142" font-size="12.5" text-anchor="middle" fill="#a05a32">ViT（重型）</text>
+<path d="M384 129 L414 129" fill="none" stroke="#7a8a90" stroke-width="1.6" marker-end="url(#sam-arw)"/>
+
+<rect class="t" x="418" y="99" width="150" height="60" rx="9"/>
+<text x="493" y="126" font-size="13.5" text-anchor="middle" fill="#0f5c5d">图像嵌入</text>
+<text x="493" y="146" font-size="12.5" text-anchor="middle" fill="#147f80">只计算一次</text>
+
+<rect class="p" x="40" y="272" width="120" height="66" rx="9"/>
+<text x="100" y="302" font-size="13.5" text-anchor="middle" fill="#4a3d80">提示</text>
+<text x="100" y="322" font-size="12.5" text-anchor="middle" fill="#7461ba">点 / 框 / 掩码</text>
+<path d="M160 305 L200 305" fill="none" stroke="#7a8a90" stroke-width="1.6" marker-end="url(#sam-arw)"/>
+
+<rect class="o" x="204" y="272" width="180" height="66" rx="9"/>
+<text x="294" y="300" font-size="14" font-weight="700" text-anchor="middle" fill="#8a4526">提示编码器</text>
+<text x="294" y="322" font-size="12.5" text-anchor="middle" fill="#a05a32">轻量</text>
+<path d="M384 305 L414 305" fill="none" stroke="#7a8a90" stroke-width="1.6" marker-end="url(#sam-arw)"/>
+
+<rect class="t" x="418" y="278" width="150" height="54" rx="9"/>
+<text x="493" y="310" font-size="13.5" text-anchor="middle" fill="#0f5c5d">提示 token</text>
+
+<path d="M568 129 C 620 129, 600 175, 620 190" fill="none" stroke="#7a8a90" stroke-width="1.6" marker-end="url(#sam-arw)"/>
+<path d="M568 305 C 620 305, 600 265, 620 250" fill="none" stroke="#7a8a90" stroke-width="1.6" marker-end="url(#sam-arw)"/>
+
+<rect class="o" x="624" y="150" width="150" height="140" rx="9"/>
+<text x="699" y="200" font-size="14" font-weight="700" text-anchor="middle" fill="#8a4526">掩码解码器</text>
+<text x="699" y="222" font-size="12.5" text-anchor="middle" fill="#a05a32">轻量</text>
+<text x="699" y="244" font-size="12" text-anchor="middle" fill="#a05a32">（可复用嵌入）</text>
+
+<path d="M699 290 L699 320" fill="none" stroke="#7a8a90" stroke-width="1.6" marker-end="url(#sam-arw)"/>
+<rect class="t" x="614" y="324" width="270" height="56" rx="9"/>
+<text x="749" y="348" font-size="13.5" text-anchor="middle" fill="#0f5c5d">多个候选掩码 + 质量分</text>
+<text x="749" y="368" font-size="12.5" text-anchor="middle" fill="#147f80">同一提示可能有多个有效答案（歧义性）</text>
+</svg>

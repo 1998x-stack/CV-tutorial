@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 420" role="img" aria-labelledby="aspp-title aspp-desc" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif">
+<title id="aspp-title">ASPP：同一特征图分叉到多个空洞率分支后拼接融合</title>
+<desc id="aspp-desc">输入特征图同时送入五个并行分支：1×1 卷积、空洞率 6、12、18 的 3×3 空洞卷积，以及全局平均池化。各分支输出保持相同空间尺寸，沿通道维拼接后用 1×1 卷积融合。</desc>
+<rect width="900" height="420" fill="#fffdf9"/>
+<defs><marker id="aspp-arw" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0 0 L7 3 L0 6 z" fill="#7a8a90"/></marker></defs>
+<text x="40" y="40" font-size="21" font-weight="700" fill="#203035">ASPP：多尺度并行采样</text>
+<text x="40" y="64" font-size="14" fill="#53676d">同一张特征图 → 多空洞率并行 → 通道拼接 → 1×1 融合</text>
+
+<rect x="40" y="170" width="130" height="80" rx="10" fill="#d6f1eb" stroke="#147f80" stroke-width="2"/>
+<text x="105" y="204" font-size="15" font-weight="700" text-anchor="middle" fill="#0f5c5d">共享输入</text>
+<text x="105" y="226" font-size="13" text-anchor="middle" fill="#147f80">H × W × C</text>
+
+<g fill="none" stroke="#7a8a90" stroke-width="1.6" marker-end="url(#aspp-arw)">
+<path d="M170 210 C 235 210, 235 59, 300 59"/>
+<path d="M170 210 C 235 210, 235 119, 300 119"/>
+<path d="M170 210 L300 179"/>
+<path d="M170 210 C 235 210, 235 239, 300 239"/>
+<path d="M170 210 C 235 210, 235 299, 300 299"/>
+</g>
+
+<g stroke="#d06d4d" stroke-width="1.6">
+<rect x="300" y="36" width="200" height="46" rx="8" fill="#ffecd9"/>
+<rect x="300" y="96" width="200" height="46" rx="8" fill="#ffecd9"/>
+<rect x="300" y="156" width="200" height="46" rx="8" fill="#ffecd9"/>
+<rect x="300" y="216" width="200" height="46" rx="8" fill="#ffecd9"/>
+<rect x="300" y="276" width="200" height="46" rx="8" fill="#ffecd9"/>
+</g>
+<text x="400" y="64" font-size="14" text-anchor="middle" fill="#8a4526">1×1 卷积（最近邻尺度）</text>
+<text x="400" y="124" font-size="14" text-anchor="middle" fill="#8a4526">3×3 空洞卷积，rate = 6</text>
+<text x="400" y="184" font-size="14" text-anchor="middle" fill="#8a4526">3×3 空洞卷积，rate = 12</text>
+<text x="400" y="244" font-size="14" text-anchor="middle" fill="#8a4526">3×3 空洞卷积，rate = 18</text>
+<text x="400" y="304" font-size="14" text-anchor="middle" fill="#8a4526">全局平均池化（图像级上下文）</text>
+
+<g fill="none" stroke="#7a8a90" stroke-width="1.6" marker-end="url(#aspp-arw)">
+<path d="M500 59 L575 200"/>
+<path d="M500 119 L575 200"/>
+<path d="M500 179 L575 200"/>
+<path d="M500 239 L575 200"/>
+<path d="M500 299 L575 200"/>
+</g>
+
+<rect x="578" y="160" width="120" height="80" rx="10" fill="#d6f1eb" stroke="#147f80" stroke-width="2"/>
+<text x="638" y="194" font-size="14" font-weight="700" text-anchor="middle" fill="#0f5c5d">沿通道拼接</text>
+<text x="638" y="216" font-size="13" text-anchor="middle" fill="#147f80">concat</text>
+
+<path d="M698 200 L740 200" fill="none" stroke="#7a8a90" stroke-width="1.6" marker-end="url(#aspp-arw)"/>
+<rect x="742" y="170" width="120" height="60" rx="10" fill="#d6f1eb" stroke="#147f80" stroke-width="2"/>
+<text x="802" y="196" font-size="14" font-weight="700" text-anchor="middle" fill="#0f5c5d">1×1 融合</text>
+<text x="802" y="216" font-size="13" text-anchor="middle" fill="#147f80">降维输出</text>
+
+<text x="40" y="400" font-size="13" fill="#53676d">分支用 padding = rate 保持空间尺寸一致，才能直接 concat；输出通道数由融合卷积决定，与空洞率无关。</text>
+</svg>

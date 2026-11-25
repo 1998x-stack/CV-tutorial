@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 420" role="img" aria-labelledby="pan-title pan-desc" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif">
+<title id="pan-title">全景分割把可数的 things 与无定形的 stuff 合并成一张无重叠片段图</title>
+<desc id="pan-desc">左侧场景中，两个可数的车辆是 things，各自带独立实例 id；天空和道路是无定形的 stuff，只有类别标签。合并后每个像素恰好属于一个片段，输出是一张没有重叠、没有忽略像素的片段图。</desc>
+<rect width="900" height="420" fill="#fffdf9"/>
+<text x="60" y="44" font-size="21" font-weight="700" fill="#203035">全景分割：things 与 stuff 统一</text>
+<text x="60" y="68" font-size="14" fill="#53676d">输入场景 → 一张无重叠、无忽略像素的片段图</text>
+
+<rect x="60" y="90" width="330" height="230" rx="10" fill="#eef3f2" stroke="#c9d8d3" stroke-width="1.5"/>
+<rect x="60" y="90" width="330" height="86" fill="#cfe8f5"/>
+<text x="225" y="130" font-size="14" text-anchor="middle" fill="#265a72">天空（stuff，仅类别）</text>
+<rect x="60" y="252" width="330" height="68" fill="#ddd7cf"/>
+<text x="225" y="292" font-size="14" text-anchor="middle" fill="#5c5347">道路（stuff，仅类别）</text>
+<rect x="100" y="182" width="82" height="54" rx="6" fill="#f4b183" stroke="#d06d4d" stroke-width="1.5"/>
+<text x="141" y="214" font-size="14" text-anchor="middle" fill="#8a4526">车 #1</text>
+<rect x="244" y="176" width="92" height="60" rx="6" fill="#f4b183" stroke="#d06d4d" stroke-width="1.5"/>
+<text x="290" y="212" font-size="14" text-anchor="middle" fill="#8a4526">车 #2</text>
+
+<path d="M400 205 L455 205" fill="none" stroke="#7a8a90" stroke-width="2" marker-end="url(#pan-arw)"/>
+<defs><marker id="pan-arw" markerWidth="10" markerHeight="10" refX="7" refY="3.5" orient="auto"><path d="M0 0 L8 3.5 L0 7 z" fill="#7a8a90"/></marker></defs>
+
+<rect x="468" y="90" width="372" height="230" rx="10" fill="#f7faf9" stroke="#c9d8d3" stroke-width="1.5"/>
+<text x="488" y="120" font-size="15" font-weight="700" fill="#203035">输出：片段图（panoptic segmentation）</text>
+<g font-size="13.5" fill="#3c4c52">
+<text x="488" y="152">片段 A　类别：车　　实例 id：1</text>
+<text x="488" y="178">片段 B　类别：车　　实例 id：2</text>
+<text x="488" y="204">片段 C　类别：天空　实例 id：—</text>
+<text x="488" y="230">片段 D　类别：道路　实例 id：—</text>
+</g>
+<line x1="488" y1="248" x2="820" y2="248" stroke="#d7e6e1"/>
+<rect x="488" y="260" width="18" height="18" fill="#f4b183" stroke="#d06d4d"/>
+<text x="514" y="274" font-size="13" fill="#53676d">things：类别 + 实例 id</text>
+<rect x="488" y="288" width="18" height="18" fill="#cfe8f5" stroke="#8fb9cd"/>
+<text x="514" y="302" font-size="13" fill="#53676d">stuff：仅类别，无实例 id</text>
+<text x="60" y="366" font-size="13.5" fill="#53676d">合并不是简单相加：实例掩码可能重叠、语义边界可能不一致，需要一个融合与去重步骤。</text>
+<text x="60" y="390" font-size="13.5" fill="#53676d">每个像素恰好得到一个片段，因此全景评测同时检查“分类对不对”与“实例切得准不准”。</text>
+</svg>

@@ -271,7 +271,7 @@
       ],
       "file": "chapters/22.html",
       "stage": "segmentation",
-      "refined": false
+      "refined": true
     },
     {
       "num": "23",

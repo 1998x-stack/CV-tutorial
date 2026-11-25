@@ -86,6 +86,42 @@
       "claim": "Albumentations is designed around joint, synchronized transforms of image plus mask/bboxes/keypoints",
       "sources": ["https://arxiv.org/abs/1809.00916"],
       "caveat": "Library code shown is illustrative (需安装依赖), not executed in the page"
+    },
+    {
+      "chapter": "24",
+      "claim": "Convolutional networks learn a hierarchy of features: shallow layers detect generic edges/textures and transfer well, deeper layers encode task-specific semantics",
+      "sources": ["https://arxiv.org/abs/1207.0580", "https://arxiv.org/abs/1409.0575"],
+      "caveat": "Qualitative claim; the page states no downstream accuracy numbers"
+    },
+    {
+      "chapter": "24",
+      "claim": "ImageNet-1K is ~1.28M images / 1000 classes; ImageNet-21K is ~14M images / ~21841 classes",
+      "sources": ["https://arxiv.org/abs/1409.0575"],
+      "caveat": "Dataset scale figures; exact totals vary by release and are given as approximate"
+    },
+    {
+      "chapter": "24",
+      "claim": "Adapters insert per-layer bottleneck modules and tune only those, reaching close to full fine-tuning at a small fraction of parameters",
+      "sources": ["https://arxiv.org/abs/1902.00751"],
+      "caveat": "The '1-5% params / 95% performance' style figures are not restated here"
+    },
+    {
+      "chapter": "24",
+      "claim": "LoRA freezes W and learns a low-rank update delta_W = B A with scaling (alpha/r); it can be merged back into W for inference",
+      "sources": ["https://arxiv.org/abs/2106.09685"],
+      "caveat": "Page runnable sample is a pure-python 教学示意 of the shapes and forward pass, not the paper's training results"
+    },
+    {
+      "chapter": "24",
+      "claim": "Catastrophic forgetting and discriminative learning rates: overly large updates overwrite pretrained knowledge",
+      "sources": ["https://arxiv.org/abs/2106.09685"],
+      "caveat": "Concept-level claim; the specific learning-rate ranges are starting-point suggestions, not universal constants"
+    },
+    {
+      "chapter": "24",
+      "claim": "Self-supervised pretraining (DINO, MAE) yields representations competitive with supervised pretraining",
+      "sources": ["https://arxiv.org/abs/2104.14294", "https://arxiv.org/abs/2111.06377"],
+      "caveat": "Competitiveness is described qualitatively; no mIoU/AP numbers are asserted"
     }
   ]
 }

@@ -1,215 +1,171 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
-    <title>第24章 迁移学习与模型微调</title>
-    <link rel="stylesheet" href="theme.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="迁移学习与微调：为什么浅层特征可迁移，如何在全量微调、冻结主干、渐进解冻与差分学习率之间选择，域偏移如何处理，以及 LoRA 等参数高效微调的低秩原理、参数量与边界。">
+<title>第 24 章 · 迁移学习与模型微调 | CV Tutorial</title>
+<link rel="stylesheet" href="../assets/css/article.css">
 </head>
 <body>
-<div class="double-border">
-<div class="container">
-    <div class="sidebar">
-        <h3>🖼️ 课程目录</h3>
-        <ul class="chapter-list">
-            <li><a href="01.html">第1章 计算机视觉概述与发展简史</a></li>
-            <li><a href="02.html">第2章 数字图像处理基础</a></li>
-            <li><a href="03.html">第3章 传统特征提取方法</a></li>
-            <li><a href="04.html">第4章 神经网络与反向传播</a></li>
-            <li><a href="05.html">第5章 卷积神经网络原理</a></li>
-            <li><a href="06.html">第6章 深度学习框架入门</a></li>
-            <li><a href="07.html">第7章 图像分类任务与数据集</a></li>
-            <li><a href="08.html">第8章 AlexNet——深度学习视觉起点</a></li>
-            <li><a href="09.html">第9章 VGG——小卷积堆叠的简洁哲学</a></li>
-            <li><a href="10.html">第10章 ResNet——残差学习突破深度瓶颈</a></li>
-            <li><a href="11.html">第11章 ViT——视觉Transformer革命</a></li>
-            <li><a href="12.html">第12章 ConvNeXt——CNN现代化改造</a></li>
-            <li><a href="13.html">第13章 训练策略与调参实战</a></li>
-            <li><a href="14.html">第14章 模型评估与对比分析</a></li>
-            <li><a href="15.html">第15章 目标检测基础</a></li>
-            <li><a href="16.html">第16章 R-CNN——两阶段检测开山</a></li>
-            <li><a href="17.html">第17章 Faster R-CNN与区域提议网络</a></li>
-            <li><a href="18.html">第18章 单阶段检测概述与对比</a></li>
-            <li><a href="19.html">第19章 图像分割基础与分类</a></li>
-            <li><a href="20.html">第20章 U-Net——医学图像分割标配</a></li>
-            <li><a href="21.html">第21章 Mask R-CNN——检测+分割统一</a></li>
-            <li><a href="22.html">第22章 语义分割前沿与全景分割</a></li>
-            <li><a href="23.html">第23章 数据增强与预处理实战</a></li>
-            <li><a href="24.html" class="active">第24章 迁移学习与模型微调</a></li>
-            <li><a href="25.html">第25章 模型优化与部署</a></li>
-            <li><a href="26.html">第26章 自监督学习与基础模型</a></li>
-            <li><a href="27.html">第27章 多模态与生成模型概览</a></li>
-            <li><a href="28.html">第28章 综合实战项目</a></li>
-        </ul>
-    </div>
-    <div class="main-content">
-
-        <h2>什么是迁移学习</h2>
-
-        <p>想象一下：你花了三年时间学会了弹钢琴，现在想学电子琴。你需要从头开始学吗？当然不需要——指法、乐理、节奏感这些基础能力完全可以迁移过去，你只需要适应电子琴特有的音色和触键差异就够了。这就是<strong>迁移学习（Transfer Learning）</strong>的核心逻辑：<strong>将在一个任务上学到的知识迁移到另一个相关任务上，避免从零开始</strong>。</p>
-
-        <p>2017年我接手过一个细胞分类项目，任务是从显微图像中区分正常细胞和病变细胞。团队只有500张标注图像——这点数据训练任何CNN都不可能收敛。情急之下我试着加载了ImageNet上预训练的ResNet-50，冻结了前40层，只在最后加了一个二分类头，用这500张图微调了不到10分钟。结果呢？测试集准确率91%。这个结果至今让我印象深刻——ResNet-50在ImageNet上学习到的"边缘检测"、"纹理识别"、"形状感知"等通用视觉能力，对分析细胞形态几乎完全适用。人类细胞和ImageNet里的狗、猫、汽车长得完全不一样，但底层的视觉特征——轮廓、纹理、颜色分布——却是相通的。</p>
-
-        <p>这就是迁移学习在小数据集上也能成功的根本原因：<strong>深度神经网络的前几层学到的都是通用的视觉基础特征（边缘、角点、纹理基元），这些特征与具体任务无关</strong>。你只需要在顶层重新训练任务相关的特征组合。因为AlexNet在2012年的成功，很大程度上也依赖于在ImageNet上学习到的通用特征——这在当时被称为"ImageNet特征"且被广泛用于各类视觉任务。</p>
-
-        <div class="highlight">
-            <strong>💡 关键理解：</strong>神经网络的学习具有层次性。浅层学到的是Gabor滤波器类似的边缘和纹理检测器，中间层学到的是形状和部件级的特征，只有最后几层才学到的才是"猫的脸"或"汽车轮子"这种任务相关的高层语义。你冻结前几层，保留的正是那些通用视觉能力。
-        </div>
-
-        <h2>预训练权重的力量</h2>
-
-        <p>预训练权重的本质是什么？就是<strong>在海量数据上经过充分优化的模型参数初始值</strong>。相对于随机初始化（Xavier或Kaiming初始化），预训练权重给模型提供了一个极好的起点——模型已经知道如何"看"图像了，只需要针对你的特定任务做微调即可。</p>
-
-        <p>ImageNet预训练（ImageNet Pretraining）是CV领域最经典、应用最广泛的预训练范式。它之所以有效，是因为ImageNet拥有1400万张图像、21841个类别，覆盖了极其丰富的视觉概念。模型在ImageNet上预训练后，学到了令人惊讶的通用视觉表征。下表展示了不同预训练数据规模对下游任务性能的影响：</p>
-
-        <table>
-            <tr><th>预训练数据</th><th>图像数量</th><th>下游任务（分类）</th><th>检测AP</th><th>分割mIoU</th></tr>
-            <tr><td>随机初始化（无预训练）</td><td>0</td><td>65.2%</td><td>42.1</td><td>34.5</td></tr>
-            <tr><td>ImageNet-1K（标准）</td><td>140万</td><td>82.7%</td><td>53.6</td><td>45.2</td></tr>
-            <tr><td>ImageNet-21K（大规模）</td><td>1400万</td><td>85.1%</td><td>56.3</td><td>47.8</td></tr>
-            <tr><td>自监督预训练（DINO / MAE）</td><td>140万</td><td>83.5%</td><td>54.8</td><td>46.1</td></tr>
-        </table>
-
-        <p>上表的数据告诉我们几个重要结论：第一，无论预训练数据是什么，只要有预训练，性能就显著优于随机初始化；第二，更大规模的预训练数据（ImageNet-21K）带来了进一步的提升；第三，自监督预训练（不需要标注）的效果已经接近监督预训练——这预示着"预训练"可能不再需要昂贵的标注数据。</p>
-
-        <div class="tip">
-            <strong>💡 实用指导：</strong>在开始任何CV项目时，<strong>先尝试加载预训练权重</strong>已经成为行业标准做法。即便你的数据集很大（比如10万张），从预训练权重开始微调也比从头训练收敛更快、最终性能更好。除非你的数据集达到百万级且与ImageNet分布差异极大，否则没有理由"从零训练"。
-        </div>
-
-        <h2>微调策略</h2>
-
-        <p>加载预训练权重只是第一步，<strong>如何微调（Fine-tuning）</strong>才是决定最终性能的关键。不同的微调策略适用于不同的场景，选择不当可能导致灾难性遗忘、过拟合或训练效率低下。</p>
-
-        <h3>全量微调（Full Fine-tuning）</h3>
-
-        <p>全量微调是最直接的方法：加载预训练权重后，用目标数据集训练<strong>所有层</strong>的参数。这适用于目标数据集足够大（每个类别>1000张）的情况。优点是模型能完全适应新任务，缺点是计算成本高，且在小数据集上容易过拟合。</p>
-
-        <h3>冻结Backbone（Feature Extractor）</h3>
-
-        <p>当目标数据集非常小（每个类别几十张）时，最好的策略是<strong>冻结预训练模型的主干网络（backbone）</strong>，只训练新添加的分类头或检测头。这种做法将预训练模型视为一个特征提取器（feature extractor），只利用它提取通用特征，然后学习如何组合这些特征来做新任务的决策。训练速度极快，不容易过拟合，是"小数据+大模型"场景下的标配。</p>
-
-        <h3>渐进解冻（Gradual Unfreezing）</h3>
-
-        <p>渐进解冻是介于"全量微调"和"冻结Backbone"之间的折中策略。具体做法：<strong>先只训练分类头，收敛后解冻最后几层继续训练，然后一步步解冻更多层</strong>。这种方法的好处是：先让分类头适应新任务的特征空间，再逐步调整底层的预训练特征。这有点像"先学会走路再跑步"——如果一开始就让所有层同时更新，分类头（尚未训练好）和backbone（预训练好的初始条件）之间的梯度信号会互相干扰。</p>
-
-        <h3>差分学习率（Discriminative Learning Rates）</h3>
-
-        <p>差分学习率是微调中最实用的技巧之一。它的核心思想是：<strong>不同层应该使用不同的学习率</strong>——靠近输入的层使用较小的学习率（因为它们学习的是通用特征，不需要大的更新），靠近输出的层使用较大的学习率（因为它们需要快速适应新任务）。</p>
-
-        <pre><code>import torch.nn as nn
-import torch.optim as optim
-from torchvision.models import resnet50
-
-model = resnet50(pretrained=True)
-
-# 将模型参数分成两组
-# 1. Backbone: 使用较低的学习率
-# 2. 分类头（新添加的层）: 使用较高的学习率
-num_ftrs = model.fc.in_features
-model.fc = nn.Linear(num_ftrs, 2)  # 替换为二分类头
-
-params_to_update = [
-    {'params': list(model.parameters())[:-2], 'lr': 1e-5},    # backbone: 低学习率
-    {'params': model.fc.parameters(), 'lr': 1e-3},            # 分类头: 高学习率
-]
-
-optimizer = optim.AdamW(params_to_update, weight_decay=1e-4)
-# 注意：这里不能给optimizer传全局lr，因为已经在分组中指定
-
-# 也可以使用学习率调度器（如余弦退火）
-scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=50)</code></pre>
-
-        <div class="warning">
-            <strong>⚠️ 踩坑提醒：</strong>差分学习率中backbone的学习率不能过高。我见过有人将全量微调时统一设成1e-3，然后发现模型在验证集上的损失先下降后急剧上升——这是<strong>灾难性遗忘（catastrophic forgetting）</strong>的典型表现：预训练知识在过大的梯度更新中被完全覆盖，新数据不够模型重新学习。Backbone学习率一般建议从1e-5或1e-6开始试。
-        </div>
-
-        <h2>常见的迁移学习误区</h2>
-
-        <p>迁移学习虽然强大，但在实际使用中存在几个常见误区，我几乎在每次团队code review中都会遇到：</p>
-
-        <p><strong>误区一：预训练数据分布与目标任务差异过大</strong>。预训练在ImageNet上的模型擅长处理自然场景图像（物体在画面中心、光照均匀、背景清晰）。但如果你在医学CT图像上直接使用ImageNet预训练权重，效果可能会很差——CT图像是单通道灰度图、像素值代表组织密度而非光照反射、空间结构与自然图像完全不同。解决方案：可以在ImageNet预训练基础上，先在一个中等规模的特定领域数据集上继续进行预训练（domain-specific pre-training），然后再微调到具体任务。</p>
-
-        <p><strong>误区二：学习率设置错误</strong>。最常见的错误是将微调的学习率设置得和从头训练一样高（如1e-3）。预训练权重已经是一个不错的局部最优解，过大的学习率会让参数直接跳出这个最优区域。正确的做法是：微调的学习率通常比从头训练小一个数量级——建议从<strong>1e-4（全量微调）或1e-5（只微调高层）</strong>开始探索。</p>
-
-        <p><strong>误区三：过早停止训练</strong>。微调只需要很少的epoch就能收敛（通常10-20个epoch足够了）。但"不需要很多epoch"不等于"训练1个epoch就能好"。很多人在第一个epoch验证损失下降不明显时就放弃了——请记住，预训练模型在目标数据分布上可能需要几个epoch的"适应期"。</p>
-
-        <table>
-            <tr><th>场景</th><th>推荐策略</th><th>学习率范围</th><th>Epoch数</th></tr>
-            <tr><td>目标数据很小（<500张）</td><td>冻结Backbone + 仅训练分类头</td><td>1e-3 ~ 1e-4（分类头）</td><td>20-50</td></tr>
-            <tr><td>目标数据中等（500~5000张）</td><td>渐进解冻或差分学习率</td><td>1e-5（backbone）+ 1e-4（头）</td><td>20-40</td></tr>
-            <tr><td>目标数据较大（>5000张）</td><td>全量微调</td><td>1e-4（权重衰减1e-4）</td><td>30-100</td></tr>
-            <tr><td>领域差异很大（如医学/遥感）</td><td>先领域预训练，再微调</td><td>领域预训练1e-4，微调1e-5</td><td>50-100 + 20-30</td></tr>
-        </table>
-
-        <h2>领域适配与Domain Shift</h2>
-
-        <p>迁移学习的最大挑战之一是<strong>域偏移（Domain Shift）</strong>：源域（预训练数据的分布）和目标域（你的任务数据的分布）之间存在差异。域偏移的程度决定了迁移学习的难度。</p>
-
-        <p>域偏移可以分为几个层次：<strong>低层次偏移</strong>包括光照、颜色、分辨率等底层视觉差异——这类偏移通常可以通过数据增强和标准化来解决；<strong>中层次偏移</strong>包括物体的纹理、形状、空间布局差异——比如自然图像中的物体通常出现在画面中央，而航拍图像中的物体分布在整个画面；<strong>高层次偏移</strong>包括类别体系的差异——ImageNet上有"猫"和"狗"的类别，但你的医学任务中只有"肿瘤"和"正常组织"——此时顶层语义完全不同。</p>
-
-        <p>从自然图像到医学影像、遥感图像或工业检测图像，域偏移尤为显著。以下是一些针对特定领域的适配策略：</p>
-
-        <ul>
-            <li><strong>医学影像：</strong>通常使用ImageNet预训练加载前几层的权重（只加载卷积层，不加载全连接层），然后在大规模医学数据集（如CheXpert、RadImageNet）上继续预训练。一个常见技巧是将RGB的预训练权重通过平均或重复扩展到单通道或多光谱输入。</li>
-            <li><strong>遥感图像：</strong>遥感图像通常是正射（从上往下拍），具有特殊的空间结构。建议在遥感专用的预训练数据集（如RGB遥感数据集、Million-AID）上继续训练。旋转增强（全角度）是必须的。</li>
-            <li><strong>工业检测：</strong>工业图像通常背景单一、光照可控。域偏移的主要来源是不同产线、不同相机型号导致的色彩和分辨率差异。建议使用颜色增强+风格迁移来弥合差距。</li>
-        </ul>
-
-        <div class="tip">
-            <strong>💡 域适配技巧：</strong>一个简单有效的trick：如果目标域和源域的分布差距较大，可以在训练初期只更新Batch Normalization层的running mean和running variance，而不更新卷积核参数。这是因为BN层的统计量直接反映了数据分布，让模型先用目标数据"校正"BN层的统计信息，再微调卷积核，往往能获得更稳定的训练过程。
-        </div>
-
-        <h2>参数高效微调</h2>
-
-        <p>随着模型越来越大（ViT-Large有3亿参数，ViT-Huge有6亿参数），全量微调的计算成本越来越高。近年来，<strong>参数高效微调（Parameter-Efficient Fine-Tuning, PEFT）</strong>成为NLP和CV领域共同的研究热点。PEFT的核心目标是：<strong>在保持预训练权重不变的前提下，只训练/插入少量额外参数，就能达到接近全量微调的性能</strong>。</p>
-
-        <h3>Linear Probing</h3>
-
-        <p>Linear Probing是最简单的PEFT方法：完全冻结backbone的所有参数，只在顶端训练一个线性分类器（单层全连接层）。这在特征提取器足够强的场景下（如CLIP、DINOv2），效果出奇地好。CLIP的zero-shot分类能力本质上就是一种text-driven的linear probing。</p>
-
-        <h3>Adapter</h3>
-
-        <p>Adapter在网络的每一层中插入一个小型的瓶颈（bottleneck）模块：<strong>先将特征维度压缩（降维），再通过一个非线性激活，最后恢复原始维度</strong>。训练时只更新这些adapter模块的参数，预训练参数全部冻结。Adapter的参数量通常只有原模型的1-5%，但性能可以达到全量微调的95%以上。</p>
-
-        <h3>LoRA（Low-Rank Adaptation）</h3>
-
-        <p>LoRA最初在NLP的大语言模型微调中提出，但很快被引入视觉Transformer的微调。它的核心思想是：<strong>对预训练权重的增量更新进行低秩分解</strong>。对于权重矩阵W ∈ R^(d×k)，LoRA将其更新量ΔW分解为两个低秩矩阵A和B的乘积：ΔW = BA，其中B ∈ R^(d×r)，A ∈ R^(r×k)，r远小于min(d,k)。训练时只更新A和B，W冻结不变。这在视觉Transformer的微调中表现出色——特别是当你有多个下游任务时，每个任务只需要保存一个很小的LoRA权重文件（几MB），而不是完整的模型副本（几百MB）。</p>
-
-        <pre><code># LoRA在ViT上的简化实现（核心逻辑）
-class LoRALayer(nn.Module):
-    def __init__(self, in_dim, out_dim, rank=4, alpha=1.0):
-        super().__init__()
-        # 原始权重冻结
-        self.weight = nn.Parameter(torch.randn(out_dim, in_dim), requires_grad=False)
-        # LoRA低秩矩阵
-        self.lora_A = nn.Parameter(torch.randn(rank, in_dim) * 0.01)
-        self.lora_B = nn.Parameter(torch.zeros(out_dim, rank))
-        self.alpha = alpha
-        self.scaling = alpha / rank
-
-    def forward(self, x):
-        # 原始前向 + LoRA增量
-        base_out = F.linear(x, self.weight)
-        lora_out = (x @ self.lora_A.T) @ self.lora_B.T * self.scaling
-        return base_out + lora_out
-
-# 在ViT中，LoRA通常只应用于attention中的QKV投影层
-# 这样可以大幅减少参数量，同时保持微调效果</code></pre>
-
-        <div class="highlight">
-            <strong>🔬 前沿趋势：</strong>2024年后的研究发现，对CLIP、DINOv2、SAM这类视觉基础模型来说，Linear Probing结合精心设计的数据增强，效果竟然接近甚至超过了全量微调。这表明模型在预训练阶段学到的表征已经足够强大——也许未来"微调"会越来越少，取而代之的是"更好的预训练+简单的适配"。
-        </div>
-
-        <p>迁移学习和模型微调是CV工程中最实用的技术之一。一个经过充分预训练的模型配合正确的微调策略，能让小团队在有限的数据和算力下也能训练出高性能的视觉模型。但在实际生产环境中，训练出一个好模型只是第一步——如何把它部署到生产环境、放到边缘设备上高效运行，是同样重要的工程挑战。下一章我们将进入模型优化与部署的世界。</p>
-
-        <div class="footer-nav">
-            <a href="23.html">← 上一章</a>
-            <a href="index.html">📖 返回目录</a>
-            <a href="25.html">下一章 →</a>
-        </div>
-
-    </div>
+<a class="skip" href="#content">跳转正文</a>
+<div class="chapter-shell">
+<nav class="toc" aria-label="文章目录">
+<h2>24 · 迁移学习</h2>
+<div class="toc-items">
+<a href="../index.html">← 课程目录</a>
+<a href="#s-why">为什么浅层特征可以迁移</a>
+<a href="#s-pretrain">预训练权重：一个更好的初始点</a>
+<a href="#s-finetune">微调策略：冻多少、学多少</a>
+<a href="#s-lr">差分学习率与灾难性遗忘</a>
+<a href="#s-peft">参数高效微调与 LoRA</a>
+<a href="#s-shift">域偏移与领域适配</a>
+<a href="#s-limits">常见误区与边界</a>
+<a href="#references">原始资料与口径</a>
 </div>
+</nav>
+<main class="reading" id="content">
+<article>
+<header>
+<div class="chapter-top"><a href="../index.html">CV TUTORIAL</a><span>工程实践 / 24</span></div>
+<p class="chapter-kicker">CHAPTER 24 · TRANSFER LEARNING</p>
+<h1>迁移学习与模型微调：把预训练知识接到新任务</h1>
+<p class="dek">小数据集上从零训练一个 CNN 几乎无法收敛，但加载 ImageNet 预训练权重、只微调少量参数就能工作。这背后是特征层次性：浅层是通用的边缘/纹理，深层才是任务相关的语义。本章把“冻多少、学多少、用多大学习率”讲成可决策的规则，并解释 LoRA 为什么能用极少的参数逼近全量微调。</p>
+</header>
+<section id="s-why">
+<h2>为什么浅层特征可以迁移</h2>
+<p>深度网络学到的特征是<strong>分层</strong>的：靠近输入的浅层学到类似 Gabor 滤波器的边缘、颜色与纹理基元，中层组合成部件与形状，靠后的深层才形成“猫的脸”“车轮”这类任务相关的语义。浅层的那部分不关心具体类别，这正是它可迁移的原因。AlexNet（2012）之后，把在 ImageNet 上预训练得到的“网络特征”迁移到其他视觉任务成为标准做法。</p>
+<figure><img src="../assets/svg/24-hierarchy.svg" width="900" height="360" alt="网络从输入到输出逐层抽象：浅层是边缘与纹理（通用、可迁移），中层是部件与形状，深层是类别语义（任务专用）。微调时越靠后的层越需要更新。" loading="lazy"><figcaption>层次化特征：越靠浅层越通用、越适合直接沿用；越靠深层越任务专用、越需要重新学习。这条“通用 → 专用”的梯度，正是后文“冻多少、学多少”的依据。</figcaption></figure>
+<p>这个机制也解释了为什么 <strong>ImageNet 预训练</strong>这么有效：模型先在一个类别丰富的大数据集上学会“如何看图像”，再把通用部分搬到新任务。下游任务与 ImageNet 越接近，可复用的层就越多。</p>
+</section>
+<section id="s-pretrain">
+<h2>预训练权重：一个更好的初始点</h2>
+<p>预训练权重的本质是<strong>在大规模数据上充分优化过的参数初始值</strong>。相对随机初始化（Xavier/Kaiming），它给了优化一个“已经会看图像”的起点。ImageNet 系列是最经典的预训练语料：通常说的 ImageNet-1K 约 128 万张图像、1000 个类别；更大规模的 ImageNet-21K 约 1400 万张图像、2 万余个类别（准确数字以官方说明为准）。规模更大的语料通常带来更好的下游泛化。</p>
+<table>
+<tr><th>预训练来源</th><th>数据规模</th><th>典型用途</th><th>说明</th></tr>
+<tr><td>随机初始化</td><td>仅目标数据</td><td>数据极大且与自然图像差异极大时</td><td>收敛慢、易过拟合</td></tr>
+<tr><td>ImageNet-1K</td><td>≈128 万 / 1000 类</td><td>通用视觉任务的默认选择</td><td>最快、最普遍</td></tr>
+<tr><td>ImageNet-21K</td><td>≈1400 万 / 2 万余类</td><td>追求更强表征时</td><td>预训练成本更高</td></tr>
+<tr><td>自监督（DINO / MAE）</td><td>常为 1K 规模</td><td>无需标注的预训练</td><td>表征质量接近监督预训练</td></tr>
+</table>
+<p>本页不给出具体下游精度数字：迁移收益<strong>强烈依赖预训练语料、目标数据规模与任务相似度</strong>，跨论文比较前必须对齐协议。可操作的结论是：除非目标数据达到百万级且分布与自然图像差异极大，否则从预训练权重开始通常比从零训练更快、更好。</p>
+</section>
+<section id="s-finetune">
+<h2>微调策略：冻多少、学多少</h2>
+<p>加载预训练权重只是第一步，<strong>冻多少层、解冻多少层</strong>决定最终效果与成本。三种常见策略：</p>
+<ul>
+<li><strong>冻结主干（feature extractor）</strong>：固定预训练主干，只训练新加的分类/检测头。适合目标数据很小（每类几十张）的场景，训练快、不易过拟合。</li>
+<li><strong>全量微调</strong>：所有层一起更新。适合目标数据较大（每类上千张）的场景，能完全适应新任务，但成本高、小数据上易过拟合。</li>
+<li><strong>渐进解冻</strong>：先只训头部，收敛后逐层解冻靠后的层。先在冻结特征上学好决策边界，再适度调整特征。</li>
+</ul>
+<figure><img src="../assets/svg/24-finetune.svg" width="900" height="400" alt="三种微调策略下模型各层的可训练状态：冻结主干只训头部；全量微调所有层可训；渐进解冻从头部向下逐层解冻。蓝色为冻结，橙色为可训练。" loading="lazy"><figcaption>三种策略的可训练层（橙色）与冻结层（蓝色）。全量微调成本最高；冻结主干最快但上限定住；渐进解冻是二者的折中。</figcaption></figure>
+<p>一个常见的决策表（数值为<strong>起始建议</strong>，需在验证集上调，并非通用常数）：</p>
+<table>
+<tr><th>目标数据量</th><th>推荐策略</th><th>学习率起点</th><th>典型 epoch</th></tr>
+<tr><td>很小（每类数十张）</td><td>冻结主干 + 只训头部</td><td>头部 1e-3 ~ 1e-4</td><td>20–50</td></tr>
+<tr><td>中等（每类数百张）</td><td>渐进解冻 / 差分学习率</td><td>主干 1e-5 + 头部 1e-4</td><td>20–40</td></tr>
+<tr><td>较大（每类上千张）</td><td>全量微调</td><td>~1e-4（含 weight decay）</td><td>30–100</td></tr>
+</table>
+<pre><code># 需安装 torch / torchvision；本页不执行，仅展示参数分组
+from torchvision.models import resnet50
+import torch.nn as nn, torch.optim as optim
+
+model = resnet50(weights="IMAGENET1K_V2")
+model.fc = nn.Linear(model.fc.in_features, 2)      # 替换为二分类头
+
+# 差分学习率：主干小、头部大（必须分参数组，不可再传全局 lr）
+param_groups = [
+    {"params": [p for n, p in model.named_parameters() if not n.startswith("fc.")], "lr": 1e-5},
+    {"params": model.fc.parameters(), "lr": 1e-3},
+]
+optimizer = optim.AdamW(param_groups, weight_decay=1e-4)
+scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=50)</code></pre>
+</section>
+<section id="s-lr">
+<h2>差分学习率与灾难性遗忘</h2>
+<p><strong>差分学习率（discriminative learning rates）</strong>：靠输入的层用较小的学习率（保留通用特征），靠输出的层用较大的学习率（快速适应新任务）。这与“冻结 / 解冻”是同一思路的连续版本：不再二选一，而是给不同深度不同的更新速度。</p>
+<p>最典型的坑是把微调学习率设得与从头训练一样大（如 1e-3）。预训练权重已接近一个不错的局部解，过大的更新会把它<strong>整体推出去</strong>，即<strong>灾难性遗忘（catastrophic forgetting）</strong>：预训练知识被新数据冲掉，而新数据又不够重建。表现常是验证损失先降后急升。</p>
+<p>一个实用的稳定技巧：训练初期只让 BatchNorm 层的 running mean / variance 用目标数据更新，先“校正”统计量，再开始更新卷积核。因为 BN 统计量直接反映数据分布，这一步能减少主干与新分布的不匹配。</p>
+</section>
+<section id="s-peft">
+<h2>参数高效微调与 LoRA</h2>
+<p>模型变大后（ViT-Large 约 3 亿参数），全量微调要为每个下游任务保存一份完整副本。<strong>参数高效微调（PEFT）</strong>的思路是：冻结预训练权重，只训练或插入少量新参数。常见三类：</p>
+<ul>
+<li><strong>Linear Probing</strong>：主干完全冻结，只训一个线性分类头。表征足够强时（如 CLIP、DINOv2）效果很好，成本极低。</li>
+<li><strong>Adapter</strong>：在每层插入一个“降维→非线性→升维”的瓶颈模块，只训这些模块。</li>
+<li><strong>LoRA</strong>：不改变网络结构，而是把权重<strong>增量</strong>写成两个低秩矩阵的乘积。</li>
+</ul>
+<p><strong>LoRA（Low-Rank Adaptation）</strong>对权重矩阵 <code>W ∈ R^{d×k}</code> 不强训 W 本身，而是学习一个低秩增量 <code>ΔW = B A</code>，其中 <code>B ∈ R^{d×r}</code>、<code>A ∈ R^{r×k}</code>，秩 <code>r ≪ min(d,k)</code>。前向变为：</p>
+<div class="equation math-scroll" role="region" tabindex="0" aria-label="LoRA 用冻结权重 W 加上缩放后的低秩增量 B A 代替原权重。"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block" aria-label="LoRA 权重分解"><msup><mi>W</mi><mo>′</mo></msup><mo>=</mo><mi>W</mi><mo>+</mo><mfrac><mi>α</mi><mi>r</mi></mfrac><mi>B</mi><mi>A</mi></math><p class="eq-caption">W 冻结；只更新 B 与 A。每层可训练参数从 <code>d×k</code> 降到 <code>r×(d+k)</code>；推理时可以把 <code>BA</code> 合并回 W，因此<strong>不增加推理延迟</strong>。α 是缩放超参。</p></div>
+<figure><img src="../assets/svg/24-lora.svg" width="900" height="380" alt="LoRA 在冻结的权重矩阵 W 旁并联一条低秩支路：输入先经 A 降到 r 维，再经 B 升回 d 维，乘缩放系数后与 W 的输出相加。" loading="lazy"><figcaption>LoRA 的支路拓扑：主干权重 W（紫色、冻结）保留原路径；旁路 A→B 提供低秩增量（橙色、可训）。注意 A、B 的形状：A 把 k 维降到 r，B 再升回 d，秩 r 越小参数越少。</figcaption></figure>
+<pre><code>def lora_params(d, k, r):
+    """全量微调需 d*k 参数; LoRA 只需 r*(d+k)."""
+    return r * (d + k)
+
+assert lora_params(768, 768, 8) == 8 * (768 + 768)   # 12288
+assert lora_params(768, 768, 8) &lt; 768 * 768           # 远小于全量
+ratio = lora_params(768, 768, 8) / (768 * 768)
+assert abs(ratio - 0.0208333) &lt; 1e-5
+print(f"LoRA(r=8) 参数 {lora_params(768, 768, 8)}, 约为全量的 {ratio:.2%}")
+
+def matvec(M, x):
+    return [sum(M[i][j] * x[j] for j in range(len(x))) for i in range(len(M))]
+
+def matmul(P, Q):
+    return [[sum(P[i][t] * Q[t][j] for t in range(len(Q))) for j in range(len(Q[0]))]
+            for i in range(len(P))]
+
+W = [[1.0, 0.0], [0.0, 1.0]]      # d x k = 2x2, 冻结
+A = [[1.0, 2.0]]                  # r x k = 1x2
+B = [[2.0], [3.0]]                # d x r = 2x1
+alpha, r, x = 2.0, 1, [1.0, 1.0]
+base = matvec(W, x)                                 # W x = [1, 1]
+delta = matvec(matmul(B, A), x)                     # B A x = [6, 9]
+out = [base[i] + delta[i] * (alpha / r) for i in range(2)]
+assert out == [13.0, 19.0]        # (alpha/r)=2 -> [1+12, 1+18]
+print("LoRA 前向输出:", out)</code></pre>
+</section>
+<section id="s-shift">
+<h2>域偏移与领域适配</h2>
+<p>迁移的难度取决于<strong>域偏移（domain shift）</strong>：源域（预训练数据分布）与目标域差异越大，可复用的层越少。粗略分三层：</p>
+<ul>
+<li><strong>低层次偏移</strong>：光照、颜色、分辨率等底层差异。通常靠数据增强（第 23 章）与归一化就能缓解。</li>
+<li><strong>中层次偏移</strong>：纹理、形状、空间布局差异。如自然图像中物体多居中，航拍图像中则分布全图。</li>
+<li><strong>高层次偏移</strong>：类别体系不同。ImageNet 有“猫/狗”，医学任务只有“肿瘤/正常组织”，顶层语义完全不同。</li>
+</ul>
+<p>针对不同领域的常用适配：</p>
+<ul>
+<li><strong>医学影像</strong>：常只加载预训练网络的卷积层、丢弃原分类头，再在领域数据上继续预训练。单通道输入可把 RGB 预训练权重按通道平均或重复取得。</li>
+<li><strong>遥感图像</strong>：多为正射俯视，建议在遥感专用数据上继续预训练，并使用全角度旋转增强。</li>
+<li><strong>工业检测</strong>：背景单一，跨产线/相机的色彩与分辨率差异是主要偏移，颜色增强与风格迁移常能弥合。</li>
+</ul>
+</section>
+<section id="s-limits">
+<h2>常见误区与边界</h2>
+<ul>
+<li><strong>预训练分布与目标差异过大</strong>：直接搬 ImageNet 权重到医学/多光谱输入往往不佳，需要领域适配或领域预训练。</li>
+<li><strong>学习率设得和从头训练一样大</strong>：会把预训练解整体推出去（灾难性遗忘），微调学习率通常比从头训练小一个数量级。</li>
+<li><strong>过早停训</strong>：预训练模型在新分布上需要几个 epoch 的“适应期”，第一个 epoch 不降不代表失败。</li>
+<li><strong>PEFT 不是无限缩水</strong>：LoRA 的秩 r、Adapter 的瓶颈宽度都是容量超参；r 太小会限制可表达的任务增量，需在验证集上调。</li>
+<li><strong>推理收益要分清</strong>：LoRA 可在推理前合并回 W，所以不增加延迟；但 Adapter 会插入额外层，推理时仍有开销。</li>
+</ul>
+<details class="mini-test"><summary>检查理解：目标数据每类只有几十张时，为什么优先“冻结主干”而不是全量微调？</summary><p>全量微调需要足够的梯度信号去更新大量参数，数据太小时容易过拟合，且过大的更新会覆盖预训练知识（灾难性遗忘）。而浅层特征本就通用、无需重学，冻结主干能让优化只集中在任务相关的头部，参数少、收敛快、不易过拟合。待数据或效果需要时，再改用渐进解冻逐层放开。</p></details>
+</section>
+<section id="references">
+<h2>原始资料与口径</h2>
+<p>本页的 ImageNet 预训练、差分学习率、Adapter 与 LoRA 依据对应原论文与官方文档；具体迁移收益与学习率区间依赖数据、语料与任务相似度，本页仅给“起始建议”而不固化下游精度。</p>
+<ol class="refs">
+<li><a href="https://arxiv.org/abs/1207.0580">ImageNet Classification with Deep Convolutional Neural Networks (AlexNet, arXiv:1207.0580)</a></li>
+<li><a href="https://arxiv.org/abs/1409.0575">ImageNet Large Scale Visual Recognition Challenge (ILSVRC, arXiv:1409.0575)</a></li>
+<li><a href="https://arxiv.org/abs/1902.00751">Parameter-Efficient Transfer Learning for NLP (Adapter, arXiv:1902.00751)</a></li>
+<li><a href="https://arxiv.org/abs/2106.09685">LoRA: Low-Rank Adaptation of Large Language Models (Hu 等, arXiv:2106.09685)</a></li>
+<li><a href="https://arxiv.org/abs/2104.14294">Emerging Properties in Self-Supervised Vision Transformers (DINO, arXiv:2104.14294)</a>　·　<a href="https://arxiv.org/abs/2111.06377">Masked Autoencoders Are Scalable Vision Learners (MAE, arXiv:2111.06377)</a></li>
+<li><a href="https://pytorch.org/vision/stable/models.html">torchvision.models 预训练权重说明</a></li>
+</ol>
+</section>
+<nav class="pager" aria-label="章节导航"><a href="23.html">← 第 23 章 数据增强与预处理</a><a href="25.html">第 25 章 模型优化与部署 →</a></nav>
+</article>
+</main>
 </div>
 </body>
 </html>

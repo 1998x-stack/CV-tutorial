@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 360" role="img" aria-labelledby="hier-title hier-desc" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif">
+<title id="hier-title">深度网络特征的层次性与可迁移性</title>
+<desc id="hier-desc">从输入图像到输出，浅层学到边缘与颜色（通用、可直接迁移），中层学到纹理与部件（较通用），深层学到类别语义（任务专用、需要重新学习）。</desc>
+<rect width="900" height="360" fill="#fffdf9"/>
+<defs><marker id="hier-arw" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0 0 L7 3 L0 6 z" fill="#7a8a90"/></marker></defs>
+<text x="40" y="46" font-size="21" font-weight="700" fill="#203035">特征层次：越浅越通用，越深越专用</text>
+<text x="40" y="82" font-size="14" fill="#53676d">← 通用、可直接沿用</text>
+<text x="700" y="82" font-size="14" fill="#8a4526">任务专用、需重学 →</text>
+<rect x="40" y="100" width="380" height="12" rx="6" fill="#147f80" opacity="0.25"/>
+<rect x="480" y="100" width="380" height="12" rx="6" fill="#d06d4d" opacity="0.3"/>
+
+<rect x="40" y="140" width="150" height="110" rx="10" fill="#eef3f2" stroke="#c9d8d3" stroke-width="1.5"/>
+<text x="115" y="188" font-size="15" font-weight="700" text-anchor="middle" fill="#3c4c52">输入图像</text>
+<text x="115" y="212" font-size="12.5" text-anchor="middle" fill="#53676d">像素</text>
+
+<rect x="230" y="140" width="150" height="110" rx="10" fill="#d6f1eb" stroke="#147f80" stroke-width="1.5"/>
+<text x="305" y="182" font-size="14" font-weight="700" text-anchor="middle" fill="#0f5c5d">浅层</text>
+<text x="305" y="206" font-size="12.5" text-anchor="middle" fill="#147f80">边缘 / 颜色 / 纹理</text>
+<text x="305" y="228" font-size="12.5" text-anchor="middle" fill="#147f80">通用</text>
+
+<rect x="420" y="140" width="150" height="110" rx="10" fill="#f7e2cf" stroke="#d06d4d" stroke-width="1.5"/>
+<text x="495" y="182" font-size="14" font-weight="700" text-anchor="middle" fill="#8a4526">中层</text>
+<text x="495" y="206" font-size="12.5" text-anchor="middle" fill="#a05a32">形状 / 部件</text>
+<text x="495" y="228" font-size="12.5" text-anchor="middle" fill="#a05a32">较通用</text>
+
+<rect x="610" y="140" width="160" height="110" rx="10" fill="#ffecd9" stroke="#d06d4d" stroke-width="2"/>
+<text x="690" y="182" font-size="14" font-weight="700" text-anchor="middle" fill="#8a4526">深层</text>
+<text x="690" y="206" font-size="12.5" text-anchor="middle" fill="#a05a32">类别语义</text>
+<text x="690" y="228" font-size="12.5" text-anchor="middle" fill="#a05a32">任务专用</text>
+
+<g fill="none" stroke="#7a8a90" stroke-width="1.6" marker-end="url(#hier-arw)">
+<path d="M190 195 L226 195"/><path d="M380 195 L416 195"/><path d="M570 195 L606 195"/></g>
+<text x="40" y="330" font-size="14" fill="#53676d">微调时，浅层可冻结、深层需更新；下游任务与预训练分布越接近，可复用的层越多。</text>
+</svg>

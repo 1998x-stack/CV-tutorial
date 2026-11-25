@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 400" role="img" aria-labelledby="ft-title ft-desc" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif">
+<title id="ft-title">三种微调策略下的可训练层</title>
+<desc id="ft-desc">冻结主干：底部主干层全部冻结、只训练顶部新分类头；全量微调：所有层可训练；渐进解冻：先训练头部、再自顶向下逐层解冻。蓝色表示冻结、橙色表示可训练。</desc>
+<rect width="900" height="400" fill="#fffdf9"/>
+<style>.fr{fill:#d6f1eb;stroke:#147f80}.tr{fill:#ffecd9;stroke:#d06d4d}</style>
+<text x="40" y="44" font-size="21" font-weight="700" fill="#203035">冻多少、学多少：三种微调策略</text>
+
+<text x="70" y="92" font-size="15" font-weight="700" fill="#0f5c5d">冻结主干</text>
+<rect class="tr" x="70" y="104" width="180" height="42" rx="6"/><text x="160" y="130" font-size="13" text-anchor="middle" fill="#8a4526">分类头（可训）</text>
+<rect class="fr" x="70" y="152" width="180" height="42" rx="6"/><text x="160" y="178" font-size="13" text-anchor="middle" fill="#0f5c5d">主干 block 3（冻结）</text>
+<rect class="fr" x="70" y="200" width="180" height="42" rx="6"/><text x="160" y="226" font-size="13" text-anchor="middle" fill="#0f5c5d">主干 block 2（冻结）</text>
+<rect class="fr" x="70" y="248" width="180" height="42" rx="6"/><text x="160" y="274" font-size="13" text-anchor="middle" fill="#0f5c5d">浅层 block 1（冻结）</text>
+<text x="160" y="320" font-size="12.5" text-anchor="middle" fill="#53676d">数据极小：快、稳、上限低</text>
+
+<text x="360" y="92" font-size="15" font-weight="700" fill="#8a4526">全量微调</text>
+<rect class="tr" x="360" y="104" width="180" height="42" rx="6"/><text x="450" y="130" font-size="13" text-anchor="middle" fill="#8a4526">分类头（可训）</text>
+<rect class="tr" x="360" y="152" width="180" height="42" rx="6"/><text x="450" y="178" font-size="13" text-anchor="middle" fill="#8a4526">主干 block 3（可训）</text>
+<rect class="tr" x="360" y="200" width="180" height="42" rx="6"/><text x="450" y="226" font-size="13" text-anchor="middle" fill="#8a4526">主干 block 2（可训）</text>
+<rect class="tr" x="360" y="248" width="180" height="42" rx="6"/><text x="450" y="274" font-size="13" text-anchor="middle" fill="#8a4526">浅层 block 1（可训）</text>
+<text x="450" y="320" font-size="12.5" text-anchor="middle" fill="#53676d">数据较大：成本高、易灾难性遗忘</text>
+
+<text x="650" y="92" font-size="15" font-weight="700" fill="#8a4526">渐进解冻</text>
+<rect class="tr" x="650" y="104" width="180" height="42" rx="6"/><text x="740" y="130" font-size="13" text-anchor="middle" fill="#8a4526">分类头（先训）</text>
+<rect class="tr" x="650" y="152" width="180" height="42" rx="6"/><text x="740" y="178" font-size="13" text-anchor="middle" fill="#8a4526">block 3（后解冻）</text>
+<rect class="tr" x="650" y="200" width="180" height="42" rx="6"/><text x="740" y="226" font-size="13" text-anchor="middle" fill="#8a4526">block 2（再解冻）</text>
+<rect class="fr" x="650" y="248" width="180" height="42" rx="6"/><text x="740" y="274" font-size="13" text-anchor="middle" fill="#0f5c5d">浅层（最后解冻）</text>
+<text x="740" y="320" font-size="12.5" text-anchor="middle" fill="#53676d">折中：先学头，再放开底层</text>
+
+<path d="M848 160 L848 290" fill="none" stroke="#7a8a90" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#ft-arw)"/>
+<defs><marker id="ft-arw" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0 0 L7 3 L0 6 z" fill="#7a8a90"/></marker></defs>
+<rect x="40" y="352" width="20" height="16" fill="#d6f1eb" stroke="#147f80"/><text x="68" y="365" font-size="13" fill="#53676d">冻结（不更新）</text>
+<rect x="220" y="352" width="20" height="16" fill="#ffecd9" stroke="#d06d4d"/><text x="248" y="365" font-size="13" fill="#53676d">可训练</text>
+</svg>

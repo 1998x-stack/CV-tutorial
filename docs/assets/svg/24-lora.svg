@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 380" role="img" aria-labelledby="lora-title lora-desc" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif">
+<title id="lora-title">LoRA：冻结主权重 W，并联一条低秩 A→B 支路</title>
+<desc id="lora-desc">输入 x 一方面经过冻结的权重矩阵 W（d×k）得到原始输出，另一方面经过低秩支路 A（r×k）降到 r 维、再经 B（d×r）升回 d 维，乘以缩放系数 α/r 后与主路径相加。推理时可把 BA 合并回 W。</desc>
+<rect width="900" height="380" fill="#fffdf9"/>
+<defs><marker id="lora-arw" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0 0 L7 3 L0 6 z" fill="#7a8a90"/></marker></defs>
+<text x="40" y="44" font-size="21" font-weight="700" fill="#203035">LoRA：低秩旁路，主干冻结</text>
+<text x="40" y="68" font-size="14" fill="#53676d">W′ = W + (α/r)·B·A，其中 r ≪ min(d, k)</text>
+
+<rect x="40" y="170" width="90" height="56" rx="8" fill="#d6f1eb" stroke="#147f80" stroke-width="1.5"/>
+<text x="85" y="196" font-size="13.5" text-anchor="middle" fill="#0f5c5d">输入 x</text>
+<text x="85" y="214" font-size="12" text-anchor="middle" fill="#147f80">k 维</text>
+
+<rect x="210" y="120" width="170" height="70" rx="9" fill="#ece7f8" stroke="#7461ba" stroke-width="1.8"/>
+<text x="295" y="152" font-size="14" font-weight="700" text-anchor="middle" fill="#4a3d80">W  (d×k)</text>
+<text x="295" y="174" font-size="12.5" text-anchor="middle" fill="#7461ba">冻结，不更新</text>
+
+<rect x="210" y="248" width="150" height="62" rx="9" fill="#ffecd9" stroke="#d06d4d" stroke-width="1.6"/>
+<text x="285" y="276" font-size="13.5" font-weight="700" text-anchor="middle" fill="#8a4526">A (r×k)</text>
+<text x="285" y="296" font-size="12" text-anchor="middle" fill="#a05a32">可训练</text>
+<rect x="410" y="248" width="150" height="62" rx="9" fill="#ffecd9" stroke="#d06d4d" stroke-width="1.6"/>
+<text x="485" y="276" font-size="13.5" font-weight="700" text-anchor="middle" fill="#8a4526">B (d×r)</text>
+<text x="485" y="296" font-size="12" text-anchor="middle" fill="#a05a32">可训练</text>
+<rect x="610" y="256" width="110" height="48" rx="9" fill="#eef3f2" stroke="#c9d8d3" stroke-width="1.5"/>
+<text x="665" y="285" font-size="13.5" text-anchor="middle" fill="#3c4c52">× α / r</text>
+
+<circle cx="740" cy="155" r="24" fill="#fffdf9" stroke="#7a8a90" stroke-width="1.8"/>
+<text x="740" y="163" font-size="20" text-anchor="middle" fill="#3c4c52">+</text>
+<rect x="800" y="127" width="70" height="56" rx="8" fill="#d6f1eb" stroke="#147f80" stroke-width="1.5"/>
+<text x="835" y="153" font-size="13.5" text-anchor="middle" fill="#0f5c5d">输出 y</text>
+<text x="835" y="171" font-size="12" text-anchor="middle" fill="#147f80">d 维</text>
+
+<g fill="none" stroke="#7a8a90" stroke-width="1.6" marker-end="url(#lora-arw)">
+<path d="M130 198 C 170 198, 170 155, 206 155"/>
+<path d="M130 198 C 170 198, 170 279, 206 279"/>
+<path d="M360 279 L406 279"/>
+<path d="M560 279 L606 279"/>
+<path d="M720 280 C 740 280, 740 250, 740 181"/>
+<path d="M380 155 L712 155"/>
+<path d="M764 155 L796 155"/>
+</g>
+<text x="40" y="348" font-size="13.5" fill="#53676d">紫色 = 冻结参数；橙色 = 可训练。推理前把 (α/r)·B·A 合并进 W，即得到普通权重矩阵，不增加推理延迟。</text>
+</svg>

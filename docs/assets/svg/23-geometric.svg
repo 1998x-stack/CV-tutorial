@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 400" role="img" aria-labelledby="geo-title geo-desc" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif">
+<title id="geo-title">几何增强：翻转、裁剪、旋转改变坐标但不改变语义标签</title>
+<desc id="geo-desc">同一张含有一个树形目标的图像，经水平翻转、随机裁剪放大与旋转后得到三个增强样本。类别标签不变；若任务是检测或分割，标注框与掩码必须做同样的坐标变换。</desc>
+<rect width="900" height="400" fill="#fffdf9"/>
+<defs>
+<g id="tree"><polygon points="0,0 -24,44 24,44" fill="#9fd8c4" stroke="#2f8f6e" stroke-width="2"/><rect x="-7" y="44" width="14" height="18" fill="#b98a5a"/></g>
+<marker id="geo-arw" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0 0 L7 3 L0 6 z" fill="#7a8a90"/></marker>
+</defs>
+<text x="40" y="46" font-size="21" font-weight="700" fill="#203035">几何增强：改坐标，不改语义</text>
+<text x="40" y="70" font-size="14" fill="#53676d">同一张图 + 不同空间变换 = 更多样的训练样本</text>
+
+<rect x="40" y="120" width="160" height="150" rx="10" fill="#d6f1eb" stroke="#147f80" stroke-width="1.5"/>
+<use href="#tree" transform="translate(120 170)"/>
+<text x="120" y="296" font-size="14" font-weight="700" text-anchor="middle" fill="#0f5c5d">原始图像</text>
+
+<rect x="280" y="120" width="160" height="150" rx="10" fill="#d6f1eb" stroke="#147f80" stroke-width="1.5"/>
+<use href="#tree" transform="translate(360 170) scale(-1 1)"/>
+<rect x="280" y="120" width="160" height="150" rx="10" fill="none" stroke="#147f80" stroke-width="1.5"/>
+<text x="360" y="296" font-size="14" font-weight="700" text-anchor="middle" fill="#0f5c5d">水平翻转（p = 0.5）</text>
+
+<rect x="500" y="120" width="160" height="150" rx="10" fill="#d6f1eb" stroke="#147f80" stroke-width="1.5"/>
+<use href="#tree" transform="translate(580 170) scale(1.5)"/>
+<rect x="500" y="120" width="160" height="150" rx="10" fill="none" stroke="#147f80" stroke-width="1.5"/>
+<text x="580" y="296" font-size="14" font-weight="700" text-anchor="middle" fill="#0f5c5d">随机裁剪 / 缩放</text>
+
+<rect x="720" y="120" width="160" height="150" rx="10" fill="#d6f1eb" stroke="#147f80" stroke-width="1.5"/>
+<use href="#tree" transform="translate(800 175) rotate(20)"/>
+<rect x="720" y="120" width="160" height="150" rx="10" fill="none" stroke="#147f80" stroke-width="1.5"/>
+<text x="800" y="296" font-size="14" font-weight="700" text-anchor="middle" fill="#0f5c5d">随机旋转（±15°）</text>
+
+<path d="M200 195 L276 195" fill="none" stroke="#7a8a90" stroke-width="1.6" marker-end="url(#geo-arw)"/>
+<path d="M440 195 L496 195" fill="none" stroke="#7a8a90" stroke-width="1.6" marker-end="url(#geo-arw)"/>
+<path d="M660 195 L716 195" fill="none" stroke="#7a8a90" stroke-width="1.6" marker-end="url(#geo-arw)"/>
+<text x="40" y="340" font-size="14" fill="#53676d">分类：标签不变即可。检测 / 分割：框、掩码、关键点必须做同一坐标变换，否则制造脏样本。</text>
+<text x="40" y="366" font-size="14" fill="#53676d">垂直翻转会颠倒语义，人脸 / 行人等任务应避免。</text>
+</svg>

@@ -1,269 +1,176 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
-    <title>第23章 数据增强与预处理实战</title>
-    <link rel="stylesheet" href="theme.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="数据增强与预处理：几何与颜色增强如何注入不变性，MixUp/CutMix/CutOut 如何混合样本，RandAugment 如何把策略自动化，训练与验证 Pipeline 有何区别，以及类别不平衡下重采样与 Focal Loss 的作用与边界。">
+<title>第 23 章 · 数据增强与预处理实战 | CV Tutorial</title>
+<link rel="stylesheet" href="../assets/css/article.css">
 </head>
 <body>
-<div class="double-border">
-<div class="container">
-    <div class="sidebar">
-        <h3>🖼️ 课程目录</h3>
-        <ul class="chapter-list">
-            <li><a href="01.html">第1章 计算机视觉概述与发展简史</a></li>
-            <li><a href="02.html">第2章 数字图像处理基础</a></li>
-            <li><a href="03.html">第3章 传统特征提取方法</a></li>
-            <li><a href="04.html">第4章 神经网络与反向传播</a></li>
-            <li><a href="05.html">第5章 卷积神经网络原理</a></li>
-            <li><a href="06.html">第6章 深度学习框架入门</a></li>
-            <li><a href="07.html">第7章 图像分类任务与数据集</a></li>
-            <li><a href="08.html">第8章 AlexNet——深度学习视觉起点</a></li>
-            <li><a href="09.html">第9章 VGG——小卷积堆叠的简洁哲学</a></li>
-            <li><a href="10.html">第10章 ResNet——残差学习突破深度瓶颈</a></li>
-            <li><a href="11.html">第11章 ViT——视觉Transformer革命</a></li>
-            <li><a href="12.html">第12章 ConvNeXt——CNN现代化改造</a></li>
-            <li><a href="13.html">第13章 训练策略与调参实战</a></li>
-            <li><a href="14.html">第14章 模型评估与对比分析</a></li>
-            <li><a href="15.html">第15章 目标检测基础</a></li>
-            <li><a href="16.html">第16章 R-CNN——两阶段检测开山</a></li>
-            <li><a href="17.html">第17章 Faster R-CNN与区域提议网络</a></li>
-            <li><a href="18.html">第18章 单阶段检测概述与对比</a></li>
-            <li><a href="19.html">第19章 图像分割基础与分类</a></li>
-            <li><a href="20.html">第20章 U-Net——医学图像分割标配</a></li>
-            <li><a href="21.html">第21章 Mask R-CNN——检测+分割统一</a></li>
-            <li><a href="22.html">第22章 语义分割前沿与全景分割</a></li>
-            <li><a href="23.html" class="active">第23章 数据增强与预处理实战</a></li>
-            <li><a href="24.html">第24章 迁移学习与模型微调</a></li>
-            <li><a href="25.html">第25章 模型优化与部署</a></li>
-            <li><a href="26.html">第26章 自监督学习与基础模型</a></li>
-            <li><a href="27.html">第27章 多模态与生成模型概览</a></li>
-            <li><a href="28.html">第28章 综合实战项目</a></li>
-        </ul>
-    </div>
-    <div class="main-content">
-
-        <h2>为什么数据增强不可或缺</h2>
-
-        <p>先分享一段让我印象深刻的经历。几年前我给一个工业质检项目训练缺陷检测模型，客户提供了3000张标注好的产品图像——听起来不少了对吧？我信心满满地训练了一个ResNet-50，在测试集上准确率达到了97%。交付那天，客户在产线上拍了一段30分钟的实时视频让我跑模型验证。结果惨不忍睹：产线上的光照条件和客户提供的训练数据完全不同，产品摆放的角度也有几度偏差，模型的检测率直接掉到了63%。客户当场脸色就变了。</p>
-
-        <p>事后复盘，问题的根源非常清晰：<strong>训练数据的多样性远远不足以覆盖真实世界的变异性</strong>。3000张图像虽然多，但它们都是在同一个实验室环境下拍摄的——固定的光照、固定的角度、固定的背景。而真实世界的图像充满了光照变化、角度偏移、遮挡、噪声——如果模型从来没有"见过"这些变化，它就学不会鲁棒的特征。这个问题的解决办法，就是我们这一章要讲的核心主题：<strong>数据增强（Data Augmentation）</strong>。</p>
-
-        <p>数据增强的核心思想很简单：<strong>在不改变语义标签的前提下，对原始图像施加各种变换，生成多样化的训练样本</strong>。一张"猫"的照片水平翻转后仍然是"猫"，但模型从中学到的特征却更加丰富和鲁棒。数据增强已经成为现代CV训练流程中不可或缺的一环——几乎所有state-of-the-art模型都离不开精心设计的增强策略。</p>
-
-        <div class="tip">
-            <strong>💡 核心洞见：</strong>数据增强相当于免费的训练数据。在标注成本高昂的现实项目中，一个好的增强策略往往比更换更大的模型带来更显著的性能提升。我后来在那个质检项目中加入了随机光照扰动、随机旋转和随机裁剪，同样的ResNet-50在产线视频上的检测率从63%提升到了91%。
-        </div>
-
-        <h2>几何增强</h2>
-
-        <p>几何增强是最直观、应用最广泛的一类数据增强方法。它的核心是<strong>对图像的空间结构进行变换</strong>，同时保持内容的语义不变。对于大多数视觉任务（分类、检测、分割），物体的语义不会因为它在图像中的位置、朝向或尺寸发生变化而改变。</p>
-
-        <h3>随机裁剪（Random Crop）和水平翻转（Horizontal Flip）</h3>
-
-        <p>随机裁剪可能是最简单的增强操作，但效果出奇地好。它的做法是：从原始图像中随机裁剪出一块子区域，然后缩放到固定尺寸输入网络。这迫使模型学会从局部信息推断整体内容——即使只看到猫的耳朵和半边脸，也要能正确识别为"猫"。水平翻转则直接利用了对自然界图像的对称性假设：一张左脸朝向的猫和右脸朝向的猫都是猫。这两个操作的组合是ImageNet训练的标配，被几乎所有现代CNN模型使用。</p>
-
-        <h3>旋转、缩放与剪切</h3>
-
-        <p>更丰富的几何变换还包括：<strong>随机旋转</strong>（小角度如±15°，或全角度旋转）、<strong>随机缩放</strong>（放大局部区域或缩小填入背景）、以及<strong>剪切变换（Shear）</strong>（沿一个方向倾斜图像，模拟视角变化）。这些操作让模型学会"同一物体在不同视角下看起来的差异"，对提升泛化能力至关重要。</p>
-
-        <table>
-            <tr><th>几何增强方法</th><th>变换参数</th><th>典型值</th><th>适用任务</th></tr>
-            <tr><td>水平翻转</td><td>翻转概率</td><td>p=0.5</td><td>几乎所有任务</td></tr>
-            <tr><td>随机裁剪</td><td>裁剪比例</td><td>0.08~1.0（ImageNet标准）</td><td>分类、检测、分割</td></tr>
-            <tr><td>随机旋转</td><td>旋转角度范围</td><td>±10°~±30°</td><td>航拍图像、医学影像</td></tr>
-            <tr><td>随机缩放</td><td>缩放因子</td><td>0.5~2.0</td><td>目标检测、行人重识别</td></tr>
-            <tr><td>剪切变换</td><td>剪切角度</td><td>±20°以内</td><td>文字识别、车牌检测</td></tr>
-            <tr><td>垂直翻转</td><td>翻转概率</td><td>极少使用（颠倒语义）</td><td>航拍图像（屋顶朝下仍为屋顶）</td></tr>
-        </table>
-
-        <div class="warning">
-            <strong>⚠️ 踩坑提醒：</strong>不是所有几何变换都适用于所有任务。垂直翻转在大多数场景下会破坏语义——一张正着的脸和倒着的脸在语义上可能是不同的（想想"倒立的人"在检测任务中是否仍然被标注为"人"）。对检测和分割任务，几何增强必须同步变换标注框或掩码坐标，否则会引入训练数据与标签不匹配的错误。
-        </div>
-
-        <h2>颜色增强</h2>
-
-        <p>如果说几何增强教给模型的是"位置不变性"，那么颜色增强教给模型的就是<strong>"光照和外观不变性"</strong>。现实世界中同一物体的颜色会因为光照条件、摄像头参数、环境反射等因素发生巨大变化。如果模型只在"标准光照"下见过蓝色汽车，当它在阴天黄昏时遇到同样蓝色的汽车，就可能无法识别。</p>
-
-        <p><strong>Color Jitter</strong>是最常用的颜色增强方法，它通过随机调整图像的亮度（Brightness）、对比度（Contrast）、饱和度（Saturation）和色调（Hue）来生成多样化的外观变化。PyTorch的<code>transforms.ColorJitter</code>一行代码就能实现：</p>
-
-        <pre><code>from torchvision import transforms
-
-# 定义一个带有颜色增强的数据增强组合
+<a class="skip" href="#content">跳转正文</a>
+<div class="chapter-shell">
+<nav class="toc" aria-label="文章目录">
+<h2>23 · 数据增强</h2>
+<div class="toc-items">
+<a href="../index.html">← 课程目录</a>
+<a href="#s-why">为什么增强不等于“凭空造数据”</a>
+<a href="#s-geometric">几何增强：注入空间不变性</a>
+<a href="#s-color">颜色增强：注入外观不变性</a>
+<a href="#s-mixing">MixUp、CutMix 与 CutOut</a>
+<a href="#s-automated">RandAugment 与增强库</a>
+<a href="#s-pipeline">预处理 Pipeline 与归一化</a>
+<a href="#s-imbalance">类别不平衡与 Focal Loss</a>
+<a href="#s-limits">适用条件与边界</a>
+<a href="#references">原始资料与口径</a>
+</div>
+</nav>
+<main class="reading" id="content">
+<article>
+<header>
+<div class="chapter-top"><a href="../index.html">CV TUTORIAL</a><span>工程实践 / 23</span></div>
+<p class="chapter-kicker">CHAPTER 23 · DATA AUGMENTATION</p>
+<h1>数据增强与预处理：把不变性写进训练数据</h1>
+<p class="dek">模型只见过固定光照、固定角度、固定背景的图像，一旦换到真实产线就会失效。数据增强不是“凭空造数据”，而是把已知的、不改变语义的变换先验编码成训练样本。本章按几何、颜色、样本混合、自动化到预处理的顺序展开，并说明训练与验证 Pipeline 的区别，以及类别不平衡时该动数据还是动损失。</p>
+</header>
+<section id="s-why">
+<h2>为什么增强不等于“凭空造数据”</h2>
+<p>模型学到的是<strong>训练数据的统计规律</strong>。如果训练图像都来自同一实验室环境（固定光照、固定角度、固定背景），模型就会把这些偶然条件当成“物体的一部分”。一旦部署环境变了——阴天、轻微旋转、背景更杂——这些条件不再成立，精度遂下降。根本原因不是模型太小，而是<strong>训练分布没有覆盖部署时的变化</strong>。</p>
+<p>数据增强（data augmentation）的做法是：在不改变语义标签的前提下，对图像施加已知的变换，生成更多样化的训练样本。一张“猫”水平翻转后仍是“猫”，但模型见到的像素分布更广。它本质上是在训练时<strong>把“我们已知的不变性”写成先验</strong>，让模型不必从有限样本里重新发现它。</p>
+<p>需要分清边界：增强只能扩充已有信息的<strong>表达方式</strong>，不能创造新信息。少数类只有几张图时，再强的增强也无法凭空变出有意义的特征——那就该考虑迁移学习（第 24 章）或补充数据。</p>
+</section>
+<section id="s-geometric">
+<h2>几何增强：注入空间不变性</h2>
+<p>几何增强变换图像的空间结构，而保持语义不变。随机裁剪迫使模型从局部推断整体（只看到耳朵也要认出猫）；水平翻转利用自然图像的镜像对称假设，且成本几乎为零，是 ImageNet 训练的标配。旋转、缩放、剪切则模拟视角与距离的变化。</p>
+<figure><img src="../assets/svg/23-geometric.svg" width="900" height="400" alt="同一张原始图像经过水平翻转、随机裁剪、旋转与剪切后得到四种增强样本，语义标签保持不变；若任务是检测或分割，框与掩码必须同步变换。" loading="lazy"><figcaption>几何增强的四种常见变换：翻转、裁剪、旋转、剪切。它们改变坐标，不改变类别；对检测/分割任务必须同步变换标注框或掩码，否则会制造“图像与标签不匹配”的毒样本。</figcaption></figure>
+<table>
+<tr><th>方法</th><th>变换参数</th><th>常见取值</th><th>适用任务</th></tr>
+<tr><td>水平翻转</td><td>翻转概率</td><td>p = 0.5</td><td>大多数自然图像任务</td></tr>
+<tr><td>随机裁剪 / 缩放裁剪</td><td>面积比例、宽高比</td><td>scale 0.08–1.0（ImageNet 常用）</td><td>分类、检测、分割</td></tr>
+<tr><td>随机旋转</td><td>角度范围</td><td>±10°–±30°</td><td>航拍、医学、工业质检</td></tr>
+<tr><td>随机缩放</td><td>缩放因子</td><td>0.5–2.0</td><td>检测、行人重识别</td></tr>
+<tr><td>剪切 Shear</td><td>剪切角</td><td>±20° 以内</td><td>文字、车牌</td></tr>
+<tr><td>垂直翻转</td><td>翻转概率</td><td>多数任务慎用</td><td>航拍（俯视对称）</td></tr>
+</table>
+<p>两个常见陷阱：一是<strong>垂直翻转会颠倒语义</strong>，人脸、行人等任务不应使用；二是对检测/分割，几何增强必须对框、掩码、关键点做<strong>完全相同的坐标变换</strong>，否则标签与图像对不上，训练集会被污染。这也是 Albumentations 这类库把“图像+标注联合变换”作为设计核心的原因。</p>
+</section>
+<section id="s-color">
+<h2>颜色增强：注入外观不变性</h2>
+<p>几何增强教的是“位置不变性”，颜色增强教的是“光照与外观不变性”。同一物体在阴天、黄昏、不同白平衡下颜色差异很大；只在“标准光照”上学到的特征在部署时会失效。<strong>Color Jitter</strong> 是最常用的做法：分别随机调整亮度（brightness）、对比度（contrast）、饱和度（saturation）与色调（hue）。系数写成 <code>0.2</code> 时，含义是[1−0.2, 1+0.2]的乘性抖动。</p>
+<p>此外还有<strong>灰度化</strong>（强制忽略颜色、依赖纹理与形状）、<strong>高斯模糊</strong>（模拟失焦/运动模糊）、<strong>RGB Shift</strong>（三个通道各自加偏移）。它们的共同目的是断开“颜色=类别”这种不可靠的伪相关。</p>
+<pre><code># 需安装 torchvision；本页不执行，仅展示参数与顺序
+from torchvision import transforms
 train_transform = transforms.Compose([
-    transforms.RandomResizedCrop(224),
+    transforms.RandomResizedCrop(224, scale=(0.08, 1.0)),
     transforms.RandomHorizontalFlip(p=0.5),
-    transforms.ColorJitter(
-        brightness=0.2,    # 亮度调整范围 [0.8, 1.2]
-        contrast=0.2,      # 对比度调整范围 [0.8, 1.2]
-        saturation=0.2,    # 饱和度调整范围 [0.8, 1.2]
-        hue=0.1,           # 色调偏移范围 [-0.1, 0.1]
-    ),
-    transforms.ToTensor(),
+    transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),
+    transforms.ToTensor(),                       # [0,255] 像素 -> [0,1] tensor
     transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                         std=[0.229, 0.224, 0.225]),
+                         std=[0.229, 0.224, 0.225]),  # ImageNet 统计
 ])</code></pre>
+<p>顺序不能搞反：torchvision 的 ColorJitter 作用于 <strong>[0,255] 的 PIL 图像</strong>，在 ToTensor/Normalize 之前；若先归一化再调色，会使抖动幅度被归一化尺度稀释。</p>
+</section>
+<section id="s-mixing">
+<h2>MixUp、CutMix 与 CutOut</h2>
+<p>前三类变换只动一张图。更激进的一类策略在<strong>样本之间</strong>做混合，通常能带来更大的泛化收益。</p>
+<p><strong>MixUp</strong>（Zhang 等，2018）把两张图按同一比例 <code>λ</code> 做凸组合，并用同样的比例混合它们的 one-hot 标签。模型不再看到“纯粹的猫或狗”，而是“60% 猫 + 40% 狗”的混合样本与软标签：</p>
+<div class="equation math-scroll" role="region" tabindex="0" aria-label="MixUp 用同一系数 λ 对两张图像和它们的标签分别做凸组合。"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block" aria-label="MixUp 的图像与标签凸组合"><mover><mi>x</mi><mo>~</mo></mover><mo>=</mo><mi>λ</mi><msub><mi>x</mi><mi>i</mi></msub><mo>+</mo><mo stretchy="false">(</mo><mn>1</mn><mo>−</mo><mi>λ</mi><mo stretchy="false">)</mo><msub><mi>x</mi><mi>j</mi></msub></math><math xmlns="http://www.w3.org/1998/Math/MathML" display="block" aria-label="MixUp 的标签凸组合"><mover><mi>y</mi><mo>~</mo></mover><mo>=</mo><mi>λ</mi><msub><mi>y</mi><mi>i</mi></msub><mo>+</mo><mo stretchy="false">(</mo><mn>1</mn><mo>−</mo><mi>λ</mi><mo stretchy="false">)</mo><msub><mi>y</mi><mi>j</mi></msub></math><p class="eq-caption">λ 通常从 Beta(α,α) 采样（α 常取 0.2），所以大多数时候 λ 接近 0 或 1，只在少数时候接近 0.5。需要区分：这仍是一个<strong>独立同分布的凸组合先验</strong>，不是数据本身的信息。</p></div>
+<figure><img src="../assets/svg/23-mixup-cutmix.svg" width="900" height="400" alt="MixUp 按系数叠加两张图的像素并混合标签；CutMix 把一张图的矩形区域贴到另一张图上，标签按面积比例混合；CutOut 在单张图上遮盖一块区域、标签不变。" loading="lazy"><figcaption>三种样本级策略的差别：MixUp 是“调色”（全图叠合、标签插值），CutMix 是“拼贴”（局部贴块、标签按面积比例），CutOut 是“遮挡”（单图挖洞、标签不变）。CutMix 保留局部纹理，在检测/定位上往往优于 MixUp。</figcaption></figure>
+<p><strong>CutMix</strong>（Yun 等，2019）不混合像素，而是从一张图里剪一块矩形区域贴到另一张图上，标签按<strong>贴入面积占比</strong>混合；<strong>CutOut</strong>（DeVries &amp; Taylor，2017）则只在单图上随机遮盖一个方块、标签不变，迫使模型不依赖单一显著区域。</p>
+<pre><code>def mixup(x_i, y_i, x_j, y_j, lam):
+    """x: 特征向量(list); y: one-hot 标签(list). 返回混合样本与混合标签."""
+    x = [lam * a + (1 - lam) * b for a, b in zip(x_i, x_j)]
+    y = [lam * a + (1 - lam) * b for a, b in zip(y_i, y_j)]
+    return x, y
 
-        <p>除了Color Jitter，还有一些常用的颜色增强方法：<strong>灰度化（Grayscale）</strong>强制模型忽略颜色信息，只关注纹理和形状；<strong>高斯模糊</strong>模拟失焦或运动模糊；<strong>颜色扰动（RGB Shift）</strong>对RGB三个通道独立调整偏移量。这些操作的共同目标是：迫使模型学习"颜色不变的特征"，而不是简单地记住"猫是橙色的"这种不可靠的相关性。</p>
-
-        <h2>高级增强策略</h2>
-
-        <p>基础的几何和颜色增强虽然有效，但研究者们很快发现：<strong>更激进的、样本间混合的增强策略能带来更大的泛化收益</strong>。这就是所谓的高级增强策略，它们在近年来成为ImageNet竞赛和各类CV比赛中最关键的技巧之一。</p>
-
-        <h3>MixUp 与 CutMix</h3>
-
-        <p><strong>MixUp</strong>的 idea 非常 elegant：随机取两张训练图像，按一个随机比例混合它们的像素值，同时按同样的比例混合它们的标签（one-hot标签的线性插值）。模型不再看到"纯粹"的猫或"纯粹"的狗，而是看到一张"60%像猫 + 40%像狗"的混合图像。这听起来反直觉——教模型看模糊不清的东西能有用吗？实验结果证明了它的强大：MixUp显著减少了模型对训练样本的过拟合，提升了泛化能力。</p>
-
-        <p><strong>CutMix</strong>则是对MixUp的改良：不混合像素值，而是从一张图像中裁剪一块区域贴到另一张图像上，标签按面积比例混合。相比MixUp，CutMix保留了局部区域的纹理信息，在目标检测和定位任务上表现更好。打一个比方：MixUp就像把两种颜料调在一起，得到一种全新的颜色；CutMix则像拼贴画，保留了原始素材的局部纹理。</p>
-
-        <h3>CutOut 与 RandAugment</h3>
-
-        <p><strong>CutOut</strong>的方法更简单：随机在图像中遮盖一个方形区域（用纯色或随机像素填充），迫使模型在缺失局部信息的条件下仍能正确分类。这相当于一种隐式的注意力机制——模型不能只依赖最明显的特征（比如猫的脸），而必须学会综合利用整张图像的信息。</p>
-
-        <p><strong>RandAugment</strong>和<strong>AutoAugment</strong>代表了增强策略自动化的方向。AutoAugment使用强化学习搜索最优的增强组合策略，在ImageNet上找到了一个包含15种操作的策略组合。RandAugment则简化了搜索过程：从一组候选操作中随机采样n个操作，每个操作使用统一的强度参数m。两个超参数（n和m）的调优远比搜索完整策略容易，效果却非常接近。如今这些策略已经集成在torchvision等主流库中，几行代码即可使用：</p>
-
-        <pre><code>from torchvision.transforms import RandAugment
-
-# RandAugment: 每个batch随机应用2个增强操作，强度为9（0-14范围）
-train_transform = transforms.Compose([
-    transforms.RandomResizedCrop(224),
-    transforms.RandomHorizontalFlip(),
-    RandAugment(num_ops=2, magnitude=9),
-    transforms.ToTensor(),
-    transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                         std=[0.229, 0.224, 0.225]),
-])</code></pre>
-
-        <h2>数据增强库</h2>
-
-        <p>在实际项目中，你很少需要从零实现增强操作。成熟的第三方库封装了几乎所有主流方法，并提供了快速、可组合的接口。以下是最常用的几个增强库及其特点对比：</p>
-
-        <table>
-            <tr><th>库名</th><th>特点</th><th>速度</th><th>适用场景</th></tr>
-            <tr><td>torchvision.transforms</td><td>PyTorch官方、简洁易用、GPU tensor兼容</td><td>中等</td><td>快速原型、标准Pipeline</td></tr>
-            <tr><td>Albumentations</td><td>丰富（70+操作）、优化性能、与检测/分割标签同步</td><td>快（基于OpenCV）</td><td>检测/分割/医学影像</td></tr>
-            <tr><td>imgaug</td><td>可视化方便、支持增强序列定义、操作种类丰富</td><td>中等</td><td>研究探索、自定义增强链</td></tr>
-            <tr><td>Keras Preprocessing</td><td>TensorFlow生态、与tf.data无缝集成</td><td>快</td><td>TensorFlow工作流</td></tr>
-        </table>
-
-        <p>我个人最推荐<strong>Albumentations</strong>。它的设计哲学非常务实：所有操作都针对<strong>RGB图像+掩码+边界框+关键点</strong>的联合变换做了优化，在医学影像分割、遥感目标检测等需要精确对齐增强的项目中几乎成为了标配。以下是一个Albumentations的实际使用示例：</p>
-
-        <pre><code>import albumentations as A
-import cv2
-
-# 定义一个用于分割任务的增强Pipeline
+x1, y1 = [0.0, 0.0], [1.0, 0.0]   # 类别 0
+x2, y2 = [1.0, 1.0], [0.0, 1.0]   # 类别 1
+x, y = mixup(x1, y1, x2, y2, lam=0.6)
+assert x == [0.4, 0.4]
+assert y == [0.6, 0.4]
+assert abs(sum(y) - 1.0) &lt; 1e-9          # 混合标签仍是概率分布
+assert mixup(x1, y1, x2, y2, 1.0) == (x1, y1)  # lam=1 退化为原样本
+print("mixup lam=0.6 -> x =", x, " y =", y)</code></pre>
+</section>
+<section id="s-automated">
+<h2>RandAugment 与增强库</h2>
+<p>手工调增强策略很费时。<strong>AutoAugment</strong>（Cubuk 等，2018）用强化学习在一组候选操作与幅度上搜索出面向特定数据集的最优策略，但它搜索代价高、策略不易迁移。<strong>RandAugment</strong>（Cubuk 等，2019）把搜索简化成两个超参数：<code>num_ops</code>（每个样本随机应用几个操作）和 <code>magnitude</code>（统一强度），不需要分阶段搜索。torchvision 的默认是 <code>num_ops=2</code>、<code>magnitude=9</code>（具体含义以官方文档为准）。</p>
+<p>工程上很少从零实现增强。常用库的定位不同：<code>torchvision.transforms</code> 是 PyTorch 官方、与 tensor 兼容；<strong>Albumentations</strong> 以 OpenCV 为后端、操作丰富，并把<strong>图像 + 掩码 + 框 + 关键点的联合变换</strong>作为设计核心，因此在分割/检测/医学影像中常见；<code>imgaug</code> 适合定义自定义增强链。选型的关键不是“谁操作多”，而是<strong>它能不能同步变换你的标注</strong>。</p>
+<pre><code># 例：Albumentations 分割 Pipeline（需安装 albumentations 与 opencv，本页不执行）
+import albumentations as A
 train_aug = A.Compose([
-    A.RandomResizedCrop(height=256, width=256, scale=(0.5, 1.0)),
+    A.RandomResizedCrop(size=(256, 256), scale=(0.5, 1.0)),
     A.HorizontalFlip(p=0.5),
     A.ShiftScaleRotate(shift_limit=0.05, scale_limit=0.1, rotate_limit=15, p=0.5),
     A.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1, p=0.8),
-    A.GaussNoise(var_limit=(10.0, 50.0), p=0.3),
     A.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
 ])
+out = train_aug(image=image, mask=mask)   # image 与 mask 同步变换</code></pre>
+</section>
+<section id="s-pipeline">
+<h2>预处理 Pipeline 与归一化</h2>
+<p>一个完整的训练数据流程是：<strong>加载 → 解码 → 增强 → ToTensor → 归一化 → 批处理</strong>。最容易被忽视的一步是归一化，也最容易将训练与验证弄混。</p>
+<p><strong>归一化</strong>把像素从 [0,255] 映射到按通道的零均值单位方差。<code>Normalize(mean, std)</code> 对每个通道做 <code>(x/255 − mean) / std</code>；自然图像通常直接用 ImageNet 的全局统计 <code>mean=[0.485,0.456,0.406]</code>、<code>std=[0.229,0.224,0.225]</code>（RGB 三通道）。但如果任务不是自然图像（如 CT、遥感多光谱、红外），就应在自己的训练集上统计每通道的均值与标准差，而不是照搬 ImageNet。</p>
+<figure><img src="../assets/svg/23-pipeline.svg" width="900" height="380" alt="训练 Pipeline 包含随机增强与归一化两步；验证/测试 Pipeline 只做确定性的 Resize 与相同的归一化，不使用任何随机增强。" loading="lazy"><figcaption>训练与推理的 Pipeline 必须分开：训练时用随机增强 + 归一化，验证/测试时只用确定性的 Resize + 相同的归一化参数。把随机增强误用到验证集会把指标系统性压低，且使不同轮次不可比。</figcaption></figure>
+<p>一个常见错误是把 <code>ColorJitter</code>、<code>RandomCrop</code> 等随机操作写进验证 Pipeline，导致同一模型每次评估结果不同；另一个错误是训练与验证用了不同的 <code>mean/std</code>，使输入分布不一致。规范做法是把 <strong>mean/std 与目标尺寸当作训练配置的一部分</strong>，训练与评估严格共享。</p>
+</section>
+<section id="s-imbalance">
+<h2>类别不平衡与 Focal Loss</h2>
+<p>数据增强解决“多样性不足”，而<strong>类别不平衡</strong>是另一个困境：某些类别样本远多于其他，如良品占 99%、缺陷仅占 1%。此时模型把所有样本判为多数类也能拿到 99% 准确率，但这是无用的。常用策略有三类：</p>
+<ul>
+<li><strong>重采样</strong>：对少数类过采样（最好配合增强生成不同版本）或对多数类欠采样。</li>
+<li><strong>类别权重</strong>：在交叉熵中给少数类更大的权重，让它的错误得到更大惩罚。</li>
+<li><strong>调整损失</strong>：用 Focal Loss 降低“好分的样本”对损失的贡献。</li>
+</ul>
+<p><strong>Focal Loss</strong>（Lin 等，2017，随 RetinaNet 提出）在交叉熵前乘一个调节因子 <code>(1−p_t)^γ</code>，其中 <code>p_t</code> 是模型对正确类别的预测概率：</p>
+<div class="equation math-scroll" role="region" tabindex="0" aria-label="Focal Loss 等于负的 alpha_t 乘以 (1 减 p_t) 的 gamma 次方，再乘以 log p_t。"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block" aria-label="Focal Loss 定义"><msub><mi>FL</mi><mi>t</mi></msub><mo>=</mo><mo>−</mo><msub><mi>α</mi><mi>t</mi></msub><msup><mrow><mo stretchy="false">(</mo><mn>1</mn><mo>−</mo><msub><mi>p</mi><mi>t</mi></msub><mo stretchy="false">)</mo></mrow><mi>γ</mi></msup><mi>log</mi><mo stretchy="false">(</mo><msub><mi>p</mi><mi>t</mi></msub><mo stretchy="false">)</mo></math><p class="eq-caption">当 <code>p_t→1</code>（已分对）时调节因子趋近 0，易分样本的梯度被压低；<code>p_t</code> 小（难分）时接近 1。γ 常取 2，且 γ=0 时退化为加权的交叉熵。</p></div>
+<pre><code>import math
 
-# 增强时同步变换图像和掩码
-image = cv2.imread('sample.jpg')
-mask = cv2.imread('mask.png', cv2.IMREAD_GRAYSCALE)
+def focal_loss(p_t, gamma=2.0, alpha=1.0):
+    """p_t: 模型对正确类别的预测概率, 取值 (0,1]. 返回单样本损失."""
+    return -alpha * (1 - p_t) ** gamma * math.log(p_t)
 
-augmented = train_aug(image=image, mask=mask)
-aug_image = augmented['image']
-aug_mask = augmented['mask']</code></pre>
+# gamma=0 退化为加权交叉熵 -alpha*log(p_t)
+assert abs(focal_loss(0.9, gamma=0.0, alpha=1.0) + math.log(0.9)) &lt; 1e-12
+easy = focal_loss(0.9, gamma=2.0)   # 易分样本
+exactly = focal_loss(0.1, gamma=2.0)  # 难分样本
+assert exactly &gt; easy * 10          # 难分样本权重被保留
 
-        <div class="tip">
-            <strong>💡 实用建议：</strong>训练阶段和验证/测试阶段的增强策略必须不同！训练阶段可以使用激进的增强组合，但验证和测试只需要<strong>Resize到固定尺寸 + Normalize标准化</strong>。这一点看起来简单，但我在代码审查中多次发现有人"不小心"把ColorJitter用到了验证集上，导致验证指标被压低。
-        </div>
-
-        <h2>数据预处理Pipeline</h2>
-
-        <p>数据增强只是整个数据预处理Pipeline的一部分。一个完整的训练数据流程通常包括：<strong>数据加载 → 解码 → 增强 → 标准化 → 批处理</strong>。其中，标准化（Normalization）是一个常被初学者忽视但至关重要的环节。</p>
-
-        <h3>Normalization的正确做法</h3>
-
-        <p>图像标准化将像素值从原始的[0, 255]范围转换到均值为0、标准差为1的分布。标准的做法是使用<strong>ImageNet数据集的全局均值和标准差</strong>作为归一化参数：mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]（对应RGB三个通道）。这是绝大多数预训练模型的默认参数。</p>
-
-        <p>但是，如果你的任务不是自然图像（比如医学CT、遥感多光谱、红外图像），使用ImageNet的归一化参数就<strong>不一定合适</strong>了。正确的做法是：在自己的训练集上计算每通道的均值和标准差，然后使用这些参数进行标准化。步骤很简单：</p>
-
-        <pre><code>import torch
-from torch.utils.data import DataLoader, Dataset
-
-def compute_dataset_stats(dataloader):
-    """计算数据集的逐通道均值和标准差"""
-    mean = torch.zeros(3)
-    std = torch.zeros(3)
-    total_images = 0
-
-    for images, _ in dataloader:
-        # images shape: (batch, 3, H, W)
-        batch_samples = images.size(0)
-        images = images.view(batch_samples, 3, -1)   # 展平HW
-        mean += images.mean(dim=2).sum(dim=0)
-        std += images.std(dim=2).sum(dim=0)
-        total_images += batch_samples
-
-    mean /= total_images
-    std /= total_images
-    return mean.tolist(), std.tolist()
-
-# 使用示例
-dataloader = DataLoader(your_dataset, batch_size=64, shuffle=False)
-custom_mean, custom_std = compute_dataset_stats(dataloader)
-print(f"自定义均值: {custom_mean}")
-print(f"自定义标准差: {custom_std}")</code></pre>
-
-        <div class="highlight">
-            <strong>💡 实战经验：</strong>Normalization的顺序非常关键。ColorJitter等颜色增强操作应该在<strong>ToTensor之后、Normalize之前</strong>还是在<strong>PIL图像上、ToTensor之前</strong>？torchvision中ColorJitter是在PIL图像上操作的，然后才执行ToTensor和Normalize。这意味着ColorJitter操作的是[0,255]范围的像素，而Normalize作用于[0,1]范围的tensor。这个顺序不能搞错——如果你先Normalize再ColorJitter，增强效果会被归一化稀释。
-        </div>
-
-        <h2>数据不平衡处理</h2>
-
-        <p>数据增强解决的是"样本多样性不足"的问题，而数据不平衡（class imbalance）是另一个常见的困境：某些类别的样本远远多于其他类别。在工业缺陷检测中，良品样本可能占总量的99%，缺陷样本只有1%。在医学影像中，病变图像和正常图像的比例可能高达1:1000。如果不做特殊处理，模型会倾向于将所有样本分类为多数类——因为这样也能达到99%的准确率。</p>
-
-        <p>处理数据不平衡的常见策略有三种：</p>
-
-        <h3>重采样</h3>
-
-        <p>最直接的方法是对少数类进行<strong>过采样（Oversampling）</strong>或对多数类进行<strong>欠采样（Undersampling）</strong>。过采样意味着在训练时让少数类图像被反复看到（可以结合数据增强生成不同的版本），欠采样则是随机丢弃多数类的部分样本。实践中更常用的是过采样+数据增强的组合——特别是对少数类应用更强的增强策略。</p>
-
-        <h3>类别权重</h3>
-
-        <p>当重采样不可行时（比如样本量太大不好管理），可以在损失函数中为不同类别分配不同的权重。在PyTorch中，<code>CrossEntropyLoss</code>支持传入<code>weight</code>参数：</p>
-
-        <pre><code>import torch.nn as nn
-
-# 假设训练集中类别0有10000张，类别1有200张
-# 权重 inversely proportional to frequency
-class_counts = torch.tensor([10000, 200])
-class_weights = 1.0 / class_counts.float()
-class_weights = class_weights / class_weights.sum() * len(class_counts)
-
-criterion = nn.CrossEntropyLoss(weight=class_weights)
-
-# 现在，少数类（类别1）的每个错误预测会受到约50倍于多数类的惩罚
-# 这迫使模型更关注少数类的学习</code></pre>
-
-        <h3>Focal Loss</h3>
-
-        <p><strong>Focal Loss</strong>是何恺明团队在2017年提出的一种专门针对极端类别不平衡的损失函数。它的核心思想是：<strong>降低对"容易分类的样本"的损失贡献，让模型更关注"难以分类的样本"</strong>。在大多数情况下，多数类的样本往往更容易被正确分类（因为模型有大量训练样本），所以Focal Loss自动降低了多数类对梯度的贡献，相当于间接放大了少数类的影响。</p>
-
-        <p>Focal Loss的数学形式是在标准交叉熵损失上乘以一个调节因子 <code>(1 - p_t)^gamma</code>，其中<code>p_t</code>是模型对正确类别的预测概率。当<code>p_t</code>接近1（模型很确定）时，调节因子接近0；当<code>p_t</code>很小（模型不确定）时，调节因子接近1。gamma是超参数，通常取2。这个简单的修改在密集目标检测（如RetinaNet）中取得了巨大的成功。</p>
-
-        <div class="warning">
-            <strong>⚠️ 踩坑提醒：</strong>数据不平衡的处理不是万能的。如果少数类的样本过于稀少（比如只有5张图像），任何不平衡处理方法都无法产生足够的信息来学习有意义的特征。这种情况下，更有效的做法是：<strong>使用预训练模型+迁移学习</strong>（第24章），或者<strong>收集更多少数类样本</strong>。数据增强不能创造信息——它只能扩充已有的信息。
-        </div>
-
-        <p>数据增强和预处理是CV实践中性价比最高的技巧之一。它不改变模型架构、不增加推理成本、但能稳定带来2-5个百分点的性能提升。一个好的增强策略需要根据任务特点进行定制——没有"放之四海而皆准"的最佳方案。理解每种增强操作背后的动机和适用场景，比你盲目套用SOTA论文中的增强配方要重要得多。</p>
-
-        <p>掌握了数据增强之后，下一件要做的事情就是<strong>如何利用预训练模型来加速训练并提升性能</strong>。这就是我们下一章的主题：迁移学习与模型微调。</p>
-
-        <div class="footer-nav">
-            <a href="22.html">← 上一章</a>
-            <a href="index.html">📖 返回目录</a>
-            <a href="24.html">下一章 →</a>
-        </div>
-
-    </div>
-</div>
+# 类别权重与频率成反比
+counts = [10000, 200]
+w = [1.0 / c for c in counts]
+w = [x / sum(w) * len(counts) for x in w]
+assert w[1] &gt; w[0] * 10
+print(f"focal easy={easy:.4f} hard={exactly:.4f} weights={[round(x, 4) for x in w]}")</code></pre>
+<p>注意 Focal Loss 改变的不只是梯度尺度，也会<strong>影响概率校准</strong>：模型输出的置信度不再等于真实正确率。需要概率解释（如风险分级）时，应单独做校准（第 14 章）。</p>
+</section>
+<section id="s-limits">
+<h2>适用条件与边界</h2>
+<ul>
+<li><strong>增强不能创造信息</strong>：少数类只有几张图时，任何增强都无法变出有意义的特征；应改用迁移学习（第 24 章）或补充数据。</li>
+<li><strong>增强必须与任务一致</strong>：垂直翻转会颠倒人脸/行人语义；检测与分割的几何增强必须同步变换标注框/掩码/关键点。</li>
+<li><strong>训练与评估 Pipeline 必须分开</strong>：验证/测试不做随机增强，且归一化参数与输入尺寸要与训练严格一致。</li>
+<li><strong>样本混合会改变监督信号</strong>：MixUp/CutMix 产生软标签，在细粒度分类或需要可靠概率时可能不利；增强强度过大也会降低精度。</li>
+<li><strong>Focal Loss 的 γ、α 不是通用常数</strong>：它们依赖数据集与任务，需验证集调参，且会影响概率校准。</li>
+</ul>
+<details class="mini-test"><summary>检查理解：为什么检测/分割任务里几何增强必须同步变换标注？</summary><p>分类任务的标签只有类别，图像怎么变标签都不变。但检测的标签是框坐标、分割的标签是掩码，它们是与像素坐标绑定的。如果只旋转/裁剪图像而不变换框或掩码，输入与监督信号就错位了——模型学的就是“错误坐标上的目标”，属于脏数据。Albumentations 把“图像+标注联合变换”作为设计核心，正是为了避免这类错位。</p></details>
+</section>
+<section id="references">
+<h2>原始资料与口径</h2>
+<p>本页的 MixUp/CutMix/CutOut、AutoAugment/RandAugment、Focal Loss、torchvision 与 Albumentations 均以对应原论文与官方文档为准；具体增强强度、num_ops/magnitude 等属于可调超参，本页不固化精度提升数值。</p>
+<ol class="refs">
+<li><a href="https://arxiv.org/abs/1710.09412">mixup: Beyond Empirical Risk Minimization (Zhang 等, 2018, arXiv:1710.09412)</a></li>
+<li><a href="https://arxiv.org/abs/1905.04899">CutMix: Regularization Strategy to Train Strong Classifiers with Localizable Features (Yun 等, 2019, arXiv:1905.04899)</a></li>
+<li><a href="https://arxiv.org/abs/1708.04552">Improved Regularization of Convolutional Neural Networks with Cutout (DeVries &amp; Taylor, 2017, arXiv:1708.04552)</a></li>
+<li><a href="https://arxiv.org/abs/1805.09501">AutoAugment: Learning Augmentation Strategies from Data (Cubuk 等, 2018, arXiv:1805.09501)</a>　·　<a href="https://arxiv.org/abs/1909.13719">RandAugment: Practical Automated Data Augmentation (Cubuk 等, 2019, arXiv:1909.13719)</a></li>
+<li><a href="https://arxiv.org/abs/1708.02002">Focal Loss for Dense Object Detection (Lin 等, 2017, arXiv:1708.02002)</a></li>
+<li><a href="https://arxiv.org/abs/1809.00916">Albumentations: Fast and Flexible Image Augmentations (2018, arXiv:1809.00916)</a></li>
+<li><a href="https://docs.pytorch.org/vision/stable/transforms.html">torchvision.transforms 官方文档</a></li>
+</ol>
+</section>
+<nav class="pager" aria-label="章节导航"><a href="22.html">← 第 22 章 语义分割前沿</a><a href="24.html">第 24 章 迁移学习与微调 →</a></nav>
+</article>
+</main>
 </div>
 </body>
 </html>

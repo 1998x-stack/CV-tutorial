@@ -50,6 +50,42 @@
       "claim": "SA-1B is reported as ~11M images and ~1.1B masks",
       "sources": ["https://arxiv.org/abs/2304.02643"],
       "caveat": "Paper-reported dataset scale; not recomputed here"
+    },
+    {
+      "chapter": "23",
+      "claim": "MixUp takes a convex combination of an image pair with the same coefficient lambda applied to one-hot labels; lambda is drawn from Beta(alpha, alpha)",
+      "sources": ["https://arxiv.org/abs/1710.09412"],
+      "caveat": "Runnable page snippet is a pure-python toy implementation (教学示意), not the paper's full training recipe"
+    },
+    {
+      "chapter": "23",
+      "claim": "CutMix pastes a rectangular patch from one image onto another and mixes labels by the pasted area ratio; CutOut occludes a square on a single image with an unchanged label",
+      "sources": ["https://arxiv.org/abs/1905.04899", "https://arxiv.org/abs/1708.04552"],
+      "caveat": "No numeric accuracy gains are asserted"
+    },
+    {
+      "chapter": "23",
+      "claim": "AutoAugment searches augmentation policies with reinforcement learning; RandAugment reduces the search to two hyperparameters (num_ops, magnitude)",
+      "sources": ["https://arxiv.org/abs/1805.09501", "https://arxiv.org/abs/1909.13719"],
+      "caveat": "num_ops=2 / magnitude=9 are stated as torchvision defaults, not paper constants"
+    },
+    {
+      "chapter": "23",
+      "claim": "Focal Loss multiplies cross-entropy by a modulating factor (1-p_t)^gamma with a class-balancing weight alpha_t; gamma=0 reduces to weighted cross-entropy",
+      "sources": ["https://arxiv.org/abs/1708.02002"],
+      "caveat": "gamma/alpha are task-dependent; the page's loss values are toy 教学示意"
+    },
+    {
+      "chapter": "23",
+      "claim": "Normalization uses per-channel dataset statistics; ImageNet mean/std are the common default for natural images and are not appropriate for CT/multispectral inputs",
+      "sources": ["https://docs.pytorch.org/vision/stable/transforms.html"],
+      "caveat": "Exact values attributed to the torchvision Normalize documentation example"
+    },
+    {
+      "chapter": "23",
+      "claim": "Albumentations is designed around joint, synchronized transforms of image plus mask/bboxes/keypoints",
+      "sources": ["https://arxiv.org/abs/1809.00916"],
+      "caveat": "Library code shown is illustrative (需安装依赖), not executed in the page"
     }
   ]
 }

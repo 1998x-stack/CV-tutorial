@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 360" role="img" aria-labelledby="pipe-title pipe-desc" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif">
+<title id="pipe-title">训练与验证的预处理 Pipeline 必须分开</title>
+<desc id="pipe-desc">训练 Pipeline 为：加载、解码、随机增强、转 tensor、归一化、组成 batch；验证与测试 Pipeline 用确定性的 Resize 替换随机增强，并复用与训练相同的归一化参数。</desc>
+<rect width="900" height="360" fill="#fffdf9"/>
+<defs><marker id="pipe-arw" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0 0 L7 3 L0 6 z" fill="#7a8a90"/></marker></defs>
+<text x="40" y="40" font-size="21" font-weight="700" fill="#203035">训练与验证：两条不同的 Pipeline</text>
+
+<text x="40" y="82" font-size="15" font-weight="700" fill="#8a4526">训练 Pipeline（随机增强）</text>
+<rect x="40" y="96" width="115" height="56" rx="8" fill="#d6f1eb" stroke="#147f80" stroke-width="1.4"/><text x="97" y="130" font-size="13.5" text-anchor="middle" fill="#0f5c5d">加载 / 解码</text>
+<rect x="181" y="96" width="115" height="56" rx="8" fill="#ffecd9" stroke="#d06d4d" stroke-width="1.4"/><text x="238" y="130" font-size="13.5" text-anchor="middle" fill="#8a4526">随机增强</text>
+<rect x="322" y="96" width="115" height="56" rx="8" fill="#d6f1eb" stroke="#147f80" stroke-width="1.4"/><text x="379" y="130" font-size="13.5" text-anchor="middle" fill="#0f5c5d">ToTensor</text>
+<rect x="463" y="96" width="115" height="56" rx="8" fill="#d6f1eb" stroke="#147f80" stroke-width="1.4"/><text x="520" y="124" font-size="13.5" text-anchor="middle" fill="#0f5c5d">归一化</text><text x="520" y="142" font-size="11.5" text-anchor="middle" fill="#147f80">mean / std</text>
+<rect x="604" y="96" width="115" height="56" rx="8" fill="#d6f1eb" stroke="#147f80" stroke-width="1.4"/><text x="661" y="130" font-size="13.5" text-anchor="middle" fill="#0f5c5d">组成 batch</text>
+<rect x="745" y="96" width="115" height="56" rx="8" fill="#eef3f2" stroke="#c9d8d3" stroke-width="1.4"/><text x="802" y="130" font-size="13.5" text-anchor="middle" fill="#53676d">送入网络</text>
+<g fill="none" stroke="#7a8a90" stroke-width="1.6" marker-end="url(#pipe-arw)">
+<path d="M155 124 L177 124"/><path d="M296 124 L318 124"/><path d="M437 124 L459 124"/><path d="M578 124 L600 124"/><path d="M719 124 L741 124"/></g>
+
+<text x="40" y="212" font-size="15" font-weight="700" fill="#0f5c5d">验证 / 测试 Pipeline（仅确定性变换）</text>
+<rect x="40" y="226" width="115" height="56" rx="8" fill="#d6f1eb" stroke="#147f80" stroke-width="1.4"/><text x="97" y="260" font-size="13.5" text-anchor="middle" fill="#0f5c5d">加载 / 解码</text>
+<rect x="181" y="226" width="115" height="56" rx="8" fill="#d6f1eb" stroke="#147f80" stroke-width="1.4"/><text x="238" y="260" font-size="13.5" text-anchor="middle" fill="#0f5c5d">Resize</text>
+<rect x="322" y="226" width="115" height="56" rx="8" fill="#d6f1eb" stroke="#147f80" stroke-width="1.4"/><text x="379" y="260" font-size="13.5" text-anchor="middle" fill="#0f5c5d">ToTensor</text>
+<rect x="463" y="226" width="115" height="56" rx="8" fill="#d6f1eb" stroke="#147f80" stroke-width="1.4"/><text x="520" y="254" font-size="13.5" text-anchor="middle" fill="#0f5c5d">归一化</text><text x="520" y="272" font-size="11.5" text-anchor="middle" fill="#147f80">相同 mean / std</text>
+<rect x="604" y="226" width="115" height="56" rx="8" fill="#d6f1eb" stroke="#147f80" stroke-width="1.4"/><text x="661" y="260" font-size="13.5" text-anchor="middle" fill="#0f5c5d">组成 batch</text>
+<rect x="745" y="226" width="115" height="56" rx="8" fill="#eef3f2" stroke="#c9d8d3" stroke-width="1.4"/><text x="802" y="260" font-size="13.5" text-anchor="middle" fill="#53676d">送入网络</text>
+<g fill="none" stroke="#7a8a90" stroke-width="1.6" marker-end="url(#pipe-arw)">
+<path d="M155 254 L177 254"/><path d="M296 254 L318 254"/><path d="M437 254 L459 254"/><path d="M578 254 L600 254"/><path d="M719 254 L741 254"/></g>
+
+<text x="40" y="322" font-size="14" fill="#53676d">橙色 = 随机操作（仅训练）；蓝色 = 确定性操作（两端共享）；归一化参数与输入尺寸必须一致。</text>
+<text x="40" y="346" font-size="14" fill="#53676d">把随机增强误用到验证集会系统性压低指标，并使不同评估轮次不可比。</text>
+</svg>

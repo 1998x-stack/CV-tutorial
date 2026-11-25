@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 360" role="img" aria-labelledby="d3-title d3-desc" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif">
+<title id="d3-title">NeRF 隐式表示与 3D Gaussian Splatting 显式表示</title>
+<desc id="d3-desc">同一组多视角图像分别送入两种表示：NeRF 用 MLP 把 3D 点与方向映射为密度和颜色、沿射线体渲染；3D Gaussian Splatting 用数百万个显式高斯椭球并可微光栅化。两者都能渲染新视角。</desc>
+<rect width="900" height="360" fill="#fffdf9"/>
+<defs><marker id="d3-arw" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0 0 L7 3 L0 6 z" fill="#7a8a90"/></marker></defs>
+<text x="40" y="44" font-size="21" font-weight="700" fill="#203035">3D 表示：隐式 NeRF 与显式 3D Gaussian Splatting</text>
+
+<rect x="40" y="120" width="120" height="130" rx="9" fill="#d6f1eb" stroke="#147f80" stroke-width="1.5"/>
+<text x="100" y="176" font-size="13" text-anchor="middle" fill="#0f5c5d">多视角</text>
+<text x="100" y="196" font-size="13" text-anchor="middle" fill="#0f5c5d">2D 图像</text>
+<g stroke="#147f80" stroke-width="1"><path d="M60 130h80M60 150h80M60 170h80M60 190h80M60 210h80M60 230h80"/></g>
+
+<rect x="240" y="70" width="230" height="86" rx="9" fill="#ece7f8" stroke="#7461ba" stroke-width="1.8"/>
+<text x="355" y="104" font-size="13.5" font-weight="700" text-anchor="middle" fill="#4a3d80">NeRF（隐式）</text>
+<text x="355" y="126" font-size="12.5" text-anchor="middle" fill="#7461ba">MLP: (x,y,z,θ,φ) → 密度 + 颜色</text>
+<text x="355" y="146" font-size="12" text-anchor="middle" fill="#7461ba">沿射线体积渲染</text>
+
+<rect x="240" y="220" width="230" height="86" rx="9" fill="#ffecd9" stroke="#d06d4d" stroke-width="1.8"/>
+<text x="355" y="254" font-size="13.5" font-weight="700" text-anchor="middle" fill="#8a4526">3DGS（显式）</text>
+<text x="355" y="276" font-size="12.5" text-anchor="middle" fill="#a05a32">数百万个 3D 高斯椭球</text>
+<text x="355" y="296" font-size="12" text-anchor="middle" fill="#a05a32">可微光栅化</text>
+
+<rect x="570" y="70" width="290" height="86" rx="9" fill="#f7faf9" stroke="#c9d8d3" stroke-width="1.5"/>
+<text x="715" y="106" font-size="13.5" text-anchor="middle" fill="#3c4c52">新视角渲染：质量高、训练/渲染慢</text>
+<text x="715" y="132" font-size="12.5" text-anchor="middle" fill="#53676d">Instant-NGP 用哈希编码加速</text>
+
+<rect x="570" y="220" width="290" height="86" rx="9" fill="#f7faf9" stroke="#c9d8d3" stroke-width="1.5"/>
+<text x="715" y="256" font-size="13.5" text-anchor="middle" fill="#3c4c52">新视角渲染：接近实时（30+ FPS）</text>
+<text x="715" y="282" font-size="12.5" text-anchor="middle" fill="#53676d">代价：存储/显存随高斯数增长</text>
+
+<g fill="none" stroke="#7a8a90" stroke-width="1.6" marker-end="url(#d3-arw)">
+<path d="M160 165 C 200 165, 200 113, 236 113"/><path d="M160 205 C 200 205, 200 263, 236 263"/>
+<path d="M470 113 L566 113"/><path d="M470 263 L566 263"/></g>
+<text x="40" y="340" font-size="13.5" fill="#53676d">同为“从 2D 图重建可渲染 3D 场景”，一个把场景存进网络权重，一个存成显式高斯——选型取决于实时性与存储预算。</text>
+</svg>

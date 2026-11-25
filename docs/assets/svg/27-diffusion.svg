@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 360" role="img" aria-labelledby="df-title df-desc" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif">
+<title id="df-title">扩散模型的前向加噪与反向去噪</title>
+<desc id="df-desc">上排前向过程从原图逐步加噪到近似高斯噪声，无需学习；下排反向过程用训练好的去噪网络从噪声逐步恢复原图，每一步预测当前噪声。</desc>
+<rect width="900" height="360" fill="#fffdf9"/>
+<defs><marker id="df-arw" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0 0 L7 3 L0 6 z" fill="#7a8a90"/></marker></defs>
+<text x="40" y="44" font-size="21" font-weight="700" fill="#203035">扩散：加噪（无需学习）与去噪（需训练）</text>
+
+<text x="40" y="102" font-size="13.5" fill="#0f5c5d">前向：x₀ → x_T（加噪）</text>
+<rect x="120" y="80" width="110" height="70" rx="8" fill="#d6f1eb" stroke="#147f80" stroke-width="1.5"/>
+<rect x="300" y="80" width="110" height="70" rx="8" fill="#c9e0da" stroke="#147f80" stroke-width="1.5"/>
+<rect x="480" y="80" width="110" height="70" rx="8" fill="#cfd8d6" stroke="#9aa7ac" stroke-width="1.5"/>
+<rect x="660" y="80" width="110" height="70" rx="8" fill="#dfe3e2" stroke="#9aa7ac" stroke-width="1.5"/>
+<text x="175" y="120" font-size="13" text-anchor="middle" fill="#0f5c5d">x₀（原图）</text>
+<text x="355" y="120" font-size="13" text-anchor="middle" fill="#0f5c5d">x₁</text>
+<text x="535" y="120" font-size="13" text-anchor="middle" fill="#3c4c52">…</text>
+<text x="715" y="120" font-size="13" text-anchor="middle" fill="#3c4c52">x_T（噪声）</text>
+<g fill="none" stroke="#7a8a90" stroke-width="1.6" marker-end="url(#df-arw)"><path d="M230 115 L296 115"/><path d="M410 115 L476 115"/><path d="M590 115 L656 115"/></g>
+
+<text x="40" y="252" font-size="13.5" fill="#8a4526">反向：x_T → x₀（去噪）</text>
+<rect x="120" y="230" width="110" height="70" rx="8" fill="#dfe3e2" stroke="#9aa7ac" stroke-width="1.5"/>
+<rect x="300" y="230" width="110" height="70" rx="8" fill="#cfd8d6" stroke="#9aa7ac" stroke-width="1.5"/>
+<rect x="480" y="230" width="110" height="70" rx="8" fill="#c9e0da" stroke="#147f80" stroke-width="1.5"/>
+<rect x="660" y="230" width="110" height="70" rx="8" fill="#d6f1eb" stroke="#147f80" stroke-width="1.5"/>
+<text x="175" y="270" font-size="13" text-anchor="middle" fill="#3c4c52">x_T（噪声）</text>
+<text x="355" y="270" font-size="13" text-anchor="middle" fill="#3c4c52">…</text>
+<text x="535" y="270" font-size="13" text-anchor="middle" fill="#0f5c5d">x₁</text>
+<text x="715" y="270" font-size="13" text-anchor="middle" fill="#0f5c5d">x₀（生成）</text>
+<g fill="none" stroke="#7a8a90" stroke-width="1.6" marker-end="url(#df-arw)"><path d="M230 265 L296 265"/><path d="M410 265 L476 265"/><path d="M590 265 L656 265"/></g>
+
+<rect x="480" y="150" width="200" height="30" rx="7" fill="#ece7f8" stroke="#7461ba" stroke-width="1.5"/>
+<text x="580" y="171" font-size="12.5" text-anchor="middle" fill="#4a3d80">每一步预测噪声 ε_θ(x_t, t)</text>
+<text x="40" y="340" font-size="13.5" fill="#53676d">训练损失 = 预测噪声与真实噪声的 MSE；采样时从纯噪声逐少去噪，DDPM 需上千步，DDIM/LDM 大幅减少。</text>
+</svg>

@@ -188,6 +188,30 @@
       "claim": "SAM is promptable (points/boxes/masks) and class-agnostic; its image encoder is ViT-based",
       "sources": ["https://arxiv.org/abs/2304.02643"],
       "caveat": "Cross-references chapter 22 for architecture details; no metrics asserted"
+    },
+    {
+      "chapter": "27",
+      "claim": "DDPM has a closed-form forward noising x_t = sqrt(alpha_bar_t) x_0 + sqrt(1-alpha_bar_t) eps and trains by predicting the noise with an MSE loss",
+      "sources": ["https://arxiv.org/abs/2006.11239"],
+      "caveat": "T=1000 is DDPM's default; the page's runnable sample is a toy 教学示意"
+    },
+    {
+      "chapter": "27",
+      "claim": "DDIM reduces sampling steps via non-Markovian sampling; LDM/Stable Diffusion diffuses in a VAE latent space (e.g. f=8 maps 512x512x3 to 64x64x4)",
+      "sources": ["https://arxiv.org/abs/2010.02502", "https://arxiv.org/abs/2112.10752"],
+      "caveat": "The 1/48 figure (and f=8) is a configuration-specific example, not universal"
+    },
+    {
+      "chapter": "27",
+      "claim": "BLIP uses caption filtering/self-improvement; LLaVA connects a CLIP ViT encoder to an LLM via a projection layer over visual tokens",
+      "sources": ["https://arxiv.org/abs/2201.12086", "https://arxiv.org/abs/2304.08485"],
+      "caveat": "GPT-4V/4o capabilities described qualitatively; no benchmark numbers asserted"
+    },
+    {
+      "chapter": "27",
+      "claim": "NeRF is an implicit MLP radiance field rendered by volume rendering; 3D Gaussian Splatting uses explicit 3D Gaussians with differentiable rasterization for real-time rendering",
+      "sources": ["https://arxiv.org/abs/2003.08934", "https://arxiv.org/abs/2308.04079"],
+      "caveat": "Instant-NGP hash-encoding cited for training speedup; page cites no FPS/PSNR numbers as its own"
     }
   ]
 }

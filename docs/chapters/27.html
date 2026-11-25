@@ -1,213 +1,105 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
-    <title>第27章 多模态与生成模型概览</title>
-    <link rel="stylesheet" href="theme.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="多模态与生成模型概览：扩散模型的前向加噪与反向去噪、隐空间扩散与加速采样、视觉语言模型（BLIP/LLaVA）的连接器设计、以及 NeRF 与 3D Gaussian Splatting 的隐式与显式 3D 表示，并给出各自的口径与未解挑战。">
+<title>第 27 章 · 多模态与生成模型概览 | CV Tutorial</title>
+<link rel="stylesheet" href="../assets/css/article.css">
 </head>
 <body>
-<div class="double-border">
-<div class="container">
-    <div class="sidebar">
-        <h3>🖼️ 课程目录</h3>
-        <ul class="chapter-list">
-            <li><a href="01.html">第1章 计算机视觉概述与发展简史</a></li>
-            <li><a href="02.html">第2章 数字图像处理基础</a></li>
-            <li><a href="03.html">第3章 传统特征提取方法</a></li>
-            <li><a href="04.html">第4章 神经网络与反向传播</a></li>
-            <li><a href="05.html">第5章 卷积神经网络原理</a></li>
-            <li><a href="06.html">第6章 深度学习框架入门</a></li>
-            <li><a href="07.html">第7章 图像分类任务与数据集</a></li>
-            <li><a href="08.html">第8章 AlexNet——深度学习视觉起点</a></li>
-            <li><a href="09.html">第9章 VGG——小卷积堆叠的简洁哲学</a></li>
-            <li><a href="10.html">第10章 ResNet——残差学习突破深度瓶颈</a></li>
-            <li><a href="11.html">第11章 ViT——视觉Transformer革命</a></li>
-            <li><a href="12.html">第12章 ConvNeXt——CNN现代化改造</a></li>
-            <li><a href="13.html">第13章 训练策略与调参实战</a></li>
-            <li><a href="14.html">第14章 模型评估与对比分析</a></li>
-            <li><a href="15.html">第15章 目标检测基础</a></li>
-            <li><a href="16.html">第16章 R-CNN——两阶段检测开山</a></li>
-            <li><a href="17.html">第17章 Faster R-CNN与区域提议网络</a></li>
-            <li><a href="18.html">第18章 单阶段检测概述与对比</a></li>
-            <li><a href="19.html">第19章 图像分割基础与分类</a></li>
-            <li><a href="20.html">第20章 U-Net——医学图像分割标配</a></li>
-            <li><a href="21.html">第21章 Mask R-CNN——检测+分割统一</a></li>
-            <li><a href="22.html">第22章 语义分割前沿与全景分割</a></li>
-            <li><a href="23.html">第23章 数据增强与预处理实战</a></li>
-            <li><a href="24.html">第24章 迁移学习与模型微调</a></li>
-            <li><a href="25.html">第25章 模型优化与部署</a></li>
-            <li><a href="26.html">第26章 自监督学习与基础模型</a></li>
-            <li><a href="27.html" class="active">第27章 多模态与生成模型概览</a></li>
-            <li><a href="28.html">第28章 综合实战项目</a></li>
-        </ul>
-    </div>
-    <div class="main-content">
-
-        <h2>27.1 扩散模型原理 — DDPM到Stable Diffusion</h2>
-
-        <p>如果你在过去两年关注过AI图像生成，你一定听说过"扩散模型"（Diffusion Models）这个术语。从DALL-E 2到Stable Diffusion，从Midjourney到Sora——这些令人惊叹的图像和视频生成工具的核心引擎都是扩散模型。这是一个从物理热力学中获得启发的生成范式，它的出现彻底取代了GAN在图像生成领域的统治地位。</p>
-
-        <p>故事要从2015年说起。当时Jascha Sohl-Dickstein等人提出了<strong>扩散模型</strong>的基础框架，但当时的生成效果远不如GAN。直到2020年，Ho等人的里程碑论文<strong>DDPM</strong>（Denoising Diffusion Probabilistic Models）才真正展示了扩散模型的潜力。DDPM的核心思想可以这样理解：<strong>前向过程</strong>——不断地在图像上加高斯噪声，直到图像完全变成随机噪声；<strong>反向过程</strong>——训练一个神经网络从随机噪声中一步步去噪，还原出原始图像。</p>
-
-        <p>DDPM的前向过程是一个马尔可夫链：每一步给数据添加少量噪声，经过足够多的步数（DDPM用了1000步），图像完全变成标准高斯噪声。反向过程则是学习一个参数化的去噪网络，预测每一步的噪声，逐步还原图像。DDPM的损失函数形式极其简洁：<strong>最小化预测噪声和实际噪声之间的MSE</strong>。</p>
-
-        <div class="highlight">
-            <strong>💡 直觉理解：</strong>可以把扩散模型想象成一个"反向的雕塑过程"。前向过程就像把一个完美的雕塑逐渐风化成一堆碎石；反向过程就是学习如何把碎石一步步拼回雕塑。模型不是直接预测最终的雕塑，而是每一步只学习"把这堆碎石稍微修整一下"——这让问题变得简单了很多。
-        </div>
-
-        <p>然而DDPM的一个巨大问题是：<strong>生成速度太慢</strong>。1000步的迭代采样意味着生成一张图需要数秒甚至数十秒的推理时间。2021年，Song等人提出的<strong>DDIM</strong>（Denoising Diffusion Implicit Models）将采样步数减少到50-100步。更重要的突破来自Rombach等人的<strong>Latent Diffusion Model（LDM）</strong>，也就是后来的<strong>Stable Diffusion</strong>——它不是在原始像素空间做扩散，而是<strong>在VAE压缩后的隐空间（Latent Space）中做扩散</strong>。图像被压缩到原来大小的1/48（从512×512×3压缩到64×64×4），扩散过程在低维隐空间中运行，计算量大幅降低，同时生成质量不减反增。</p>
-
-        <table>
-            <tr><th>模型</th><th>时间</th><th>核心创新</th><th>采样步数</th><th>生成质量</th></tr>
-            <tr><td>DDPM</td><td>2020</td><td>奠定了扩散模型的基础框架</td><td>1000</td><td>良好，接近GAN</td></tr>
-            <tr><td>DDIM</td><td>2021</td><td>非马尔可夫采样，加速数十倍</td><td>50-100</td><td>与DDPM相当</td></tr>
-            <tr><td>LDM/Stable Diffusion</td><td>2022</td><td>隐空间扩散+文本条件控制</td><td>50</td><td>优秀</td></tr>
-            <tr><td>DALL-E 2</td><td>2022</td><td>CLIP引导+先验模型+扩散解码</td><td>100</td><td>卓越</td></tr>
-            <tr><td>Imagen</td><td>2022</td><td>T5文本编码器+级联扩散</td><td>50</td><td>卓越</td></tr>
-        </table>
-
-        <pre><code># DDPM训练过程的简洁实现（概念代码）
-        def ddpm_training(images, model, noise_scheduler):
-            # 对每张图像随机采样一个时间步 t
-            t = torch.randint(0, T, (images.shape[0],))  # T=1000
-
-            # 生成对应时间步的随机噪声
-            noise = torch.randn_like(images)
-
-            # 前向加噪：x_t = sqrt(alpha_bar_t) * x_0 + sqrt(1 - alpha_bar_t) * epsilon
-            noisy_images = noise_scheduler.add_noise(images, noise, t)
-
-            # 模型预测噪声（U-Net架构）
-            predicted_noise = model(noisy_images, t)
-
-            # 损失函数：预测噪声与实际噪声的MSE
-            loss = F.mse_loss(predicted_noise, noise)
-
-            return loss
-
-        # 采样（推理）过程
-        def ddpm_sampling(model, noise_scheduler, shape):
-            # 从纯噪声开始
-            x_t = torch.randn(shape)
-
-            # 从 T 到 1 逐步去噪
-            for t in reversed(range(T)):
-                predicted_noise = model(x_t, t)
-                x_t = noise_scheduler.step(predicted_noise, t, x_t)
-
-            return x_t  # 生成的图像</code></pre>
-
-        <p>我在2023年尝试用Stable Diffusion做一个工业质检的数据增强项目。我们的检测数据集只有2000张良品和300张不良品，训练一个YOLOv8模型严重过拟合。我尝试用ControlNet + SD生成不同形态的不良品样本——通过边缘图控制生成物体的形状，通过深度图控制空间布局。最终生成了3000张合成不良品图像，将模型的mAP从0.43提升到了0.67。这个项目让我深刻体会到：扩散模型不仅是"好玩"的生成工具，它们正在成为解决实际数据稀缺问题的利器。</p>
-
-        <h2>27.2 视觉语言模型（VLM）— BLIP、LLaVA、GPT-4V</h2>
-
-        <p>扩散模型让我们可以"从文生图"，那么反过来呢？<strong>视觉语言模型（Vision-Language Model, VLM）</strong>的目标是让AI能够"看图说话"——理解图像内容并用自然语言表达出来，甚至与人类进行视觉对话。</p>
-
-        <p>早期的VLM可以分为两大类：基于<strong>双塔架构</strong>的（如CLIP、ALIGN）和基于<strong>融合编码器</strong>的（如UNITER、ViLBERT）。双塔模型擅长对比/检索任务但缺乏细粒度的视觉理解；融合模型理解能力强但计算量大。BLIP（Bootstrapping Language-Image Pre-training）在2022年巧妙地结合了两种架构的优势，并引入了一个重要的技术创新——<strong>字幕滤波（Caption Filtering）</strong>：利用互联网嘈杂的图文数据训练后，再生成高质量的字幕来过滤或增强训练数据，形成一个自我改进的循环。</p>
-
-        <p>2023年，<strong>LLaVA</strong>（Large Language and Vision Assistant）的开源发布标志着VLM进入了一个新的阶段。LLaVA的核心思路极其优雅：<strong>将一个预训练的视觉编码器（CLIP的ViT）通过一个简单的线性投影层连接到LLM（LLaMA/Vicuna）</strong>。视觉编码器提取图像特征，投影层将视觉特征映射到LLM的embedding空间，然后LLM基于视觉和文本的双重输入进行理解和推理。这个简洁的设计使得LLaVA具备了强大的多模态对话能力——你可以给它一张图片，然后问它"这张图里的人在做什么？""背景中的建筑是什么风格的？"</p>
-
-        <p>GPT-4V（2023）和后来的GPT-4o（2024）则代表了商业VLM的巅峰。它们不仅能理解图像内容，还能进行复杂的推理——比如看一张手绘的架构图然后指出设计中的缺陷、阅读照片中的菜单并推荐菜品、甚至通过摄像头实时指导你组装家具。这些能力的背后是比开源VLM大得多的模型规模和更精细的多模态对齐训练。</p>
-
-        <div class="tip">
-            <strong>🔮 趋势：</strong>VLM的发展正在模糊CV和NLP的边界。当模型可以理解并对图像进行复杂推理时，"视觉"就不再是一个独立的任务，而是LLM感知世界的一种方式。这种趋势越往后走越明显——2024-2025年的多模态大模型几乎都采用了"一个统一的Transformer + 视觉tokens"的架构。
-        </div>
-
-        <h2>27.3 图像生成经典模型 — GAN与Diffusion</h2>
-
-        <p>在扩散模型崛起之前，GAN（Generative Adversarial Network）是图像生成的绝对王者。理解GAN为什么被扩散模型取代，以及各自的优势，对于理解图像生成技术的演进至关重要。</p>
-
-        <p>GAN由Ian Goodfellow于2014年提出，核心思想是一个"造假者"（生成器G）和一个"鉴定师"（判别器D）的博弈：G从随机噪声生成假图像，D判断图像是真还是假。两者在对抗中共同进步——G越来越擅长以假乱真，D越来越火眼金睛。这个过程被称为<strong>对抗训练（Adversarial Training）</strong>。</p>
-
-        <p><strong>StyleGAN系列</strong>（2019-2021）是GAN技术集大成者。StyleGAN的核心创新包括：映射网络（Mapping Network）将随机噪声映射到解耦的隐空间、自适应实例归一化（AdaIN）来控制风格、以及渐进式增长训练。StyleGAN生成的逼真人脸曾经达到了"真假难辨"的水平。但它也有两个致命弱点：<strong>模式坍塌</strong>（生成器只学会生成小部分模式，缺失多样性）和<strong>训练不稳定</strong>（G和D之间的平衡极其脆弱，稍有不慎训练就崩溃）。</p>
-
-        <table>
-            <tr><th>特性</th><th>GAN</th><th>扩散模型</th></tr>
-            <tr><td>训练稳定性</td><td>不稳定，易模式坍塌</td><td>稳定，损失函数简单</td></tr>
-            <tr><td>生成速度</td><td>快（一次前向）</td><td>慢（步进迭代）</td></tr>
-            <tr><td>多样性</td><td>有限（模式坍塌）</td><td>丰富</td></tr>
-            <tr><td>高分辨率</td><td>需要精心设计</td><td>隐空间扩散自然支持</td></tr>
-            <tr><td>可控生成</td><td>困难</td><td>自然支持（引导/条件）</td></tr>
-            <tr><td>代表模型</td><td>StyleGAN3, BigGAN</td><td>Stable Diffusion, DALL-E 3</td></tr>
-        </table>
-
-        <h2>27.4 AIGC的视觉应用 — ControlNet与图像编辑</h2>
-
-        <p>如果说扩散模型提供了"原料"，那么AIGC（AI Generated Content）领域的各种工具和方法就是"加工工艺"。这里最值得一提的就是<strong>ControlNet</strong>——它让文生图从"全凭运气"变成了"精准可控"。</p>
-
-        <p>ControlNet由张吕敏（Lvmin Zhang）在2023年初提出。它解决的痛点非常直观：用Stable Diffusion生成图像时，你只能通过文本描述来控制结果——"a red car on a mountain road"——但你无法精确控制车的姿态、位置、大小。ControlNet的方法是在扩散模型中额外引入一个<strong>条件控制通道</strong>：你可以提供一张边缘图（Canny edge）、深度图、姿态骨骼图、甚至是另一张图像的语义分割图，ControlNet会将这些条件注入到扩散过程的不同层中，精确引导生成结果的几何结构和空间布局。</p>
-
-        <div class="warning">
-            <strong>⚠️ 踩坑提醒：</strong>ControlNet的权重需要根据不同的控制类型选择——Canny控制对边缘敏感但容易生成"描边填色"的僵硬效果；深度控制能保持空间结构但可能丢失纹理细节；姿态控制对人物姿态非常精确但有时会扭曲背景。实践中最常用的组合是"边缘+深度"双ControlNet，兼顾几何精度和自然度。但这也意味着推理时间翻倍——需要在质量和速度之间做权衡。
-        </div>
-
-        <p>另一个重要的AIGC方向是<strong>图像编辑</strong>。InstructPix2Pix（2023）允许你通过自然语言指令编辑图像——"把背景改成日落""让这个人戴一顶帽子""把地上的雪去掉"。它的训练数据是通过组合GPT-3生成的编辑指令和由另一个扩散模型生成的编辑前/后图像对来构造的。DreamBooth和LoRA等技术则让你能用少量图像（3-5张）对一个扩散模型进行个性化微调，使其学会生成特定对象（比如你的宠物狗）在不同场景下的图像。</p>
-
-        <pre><code># ControlNet推理的基本流程（概念代码简化）
-        # 使用 diffusers 库
-
-        import torch
-        from diffusers import StableDiffusionControlNetPipeline, ControlNetModel
-
-        # 加载 ControlNet 和基础模型
-        controlnet = ControlNetModel.from_pretrained(
-            "lllyasviel/sd-controlnet-canny"
-        )
-        pipe = StableDiffusionControlNetPipeline.from_pretrained(
-            "runwayml/stable-diffusion-v1-5",
-            controlnet=controlnet
-        )
-
-        # 准备控制条件（Canny边缘图）
-        control_image = cv2.Canny(original_image, 100, 200)
-
-        # 生成：文本引导 + 边缘控制
-        result = pipe(
-            "a beautiful mountain landscape, highly detailed",
-            image=control_image,  # 控制条件
-            num_inference_steps=20,
-            guidance_scale=7.5,
-            controlnet_conditioning_scale=0.8
-        ).images[0]</code></pre>
-
-        <h2>27.5 3D视觉前沿 — NeRF与3D Gaussian Splatting</h2>
-
-        <p>我们前面讨论的都还停留在2D图像。那么CV的下一个前沿在哪里？<strong>3D视觉</strong>无疑是重要的方向之一。这里必须要提到两个改变游戏规则的技术：NeRF和3D Gaussian Splatting。</p>
-
-        <p><strong>NeRF</strong>（Neural Radiance Fields）由Mildenhall等人于2020年提出。它的核心思想是用一个MLP神经网络隐式地表示一个3D场景——输入一个3D空间点和观察方向(x, y, z, theta, phi)，网络输出该点的密度和颜色。通过从多个视角拍摄的一组2D图像，NeRF可以学习到完整的3D场景表示，然后从任意新视角渲染出逼真的新视图。NeRF的效果令人惊叹——新视角渲染的细节丰富度远超传统的3D重建方法。</p>
-
-        <p>但NeRF有两个主要痛点：<strong>训练速度慢</strong>（一个场景需要数小时到数十小时）和<strong>推理速度慢</strong>（渲染一帧需要数秒）。后续的改进工作如Instant NGP（Instant Neural Graphics Primitives）通过哈希编码和多分辨率特征网格将训练时间缩短到秒级。而2023年的<strong>3D Gaussian Splatting</strong>则完全换了一种思路——不再用隐式神经表示，而是使用数百万个显式的3D高斯椭球体来直接建模场景。这种方法在保持NeRF级渲染质量的同时，实现了实时（30+ FPS）的新视角渲染。我在2024年初尝试用3D Gaussian Splatting重建一个历史建筑的外观，用手机拍摄了50张照片，训练只用了15分钟，渲染效果媲美专业3D扫描。这项技术正在被广泛用于数字孪生、VR/AR、电影特效等领域。</p>
-
-        <div class="highlight">
-            <strong>💡 前瞻：</strong>3D Gaussian Splatting的一个重要趋势是与生成模型的结合。2024年已经有工作尝试用扩散模型直接从单张图片生成3D Gaussian表示（如MVDream、DreamGaussian），这预示着一个"从单张照片直接生成可交互3D场景"的未来并不遥远。
-        </div>
-
-        <h2>27.6 CV的未完成挑战</h2>
-
-        <p>经过前面五个小节的介绍，你可能会觉得CV已经发展得非常成熟了——图像分类超过人类、生成效果逼真、模型通用化趋势明显。但作为一个负责任的老师，我想在这个章节的最后，坦诚地告诉你CV领域还有哪些未完成的挑战。这些挑战既是这个领域的"硬骨头"，也是你未来可以深入钻研的方向。</p>
-
-        <ul>
-            <li><strong>鲁棒性（Robustness）：</strong>对抗样本的存在——对人眼不可感知的像素扰动就能让最先进的分类器出错——揭示了深度学习模型的根本脆弱性。在自动驾驶、医疗影像等安全关键场景中，鲁棒性问题还没有被真正解决。</li>
-            <li><strong>可解释性（Interpretability）：</strong>即使是最先进的ViT模型，我们仍然无法完全理解其内部决策过程。一位医生如果使用AI辅助诊断，他需要知道"为什么模型认为这片区域是病变？"——目前的可视化方法（GradCAM、注意力图）只能提供粗略的解释，远远不够。</li>
-            <li><strong>少样本学习（Few-Shot Learning）：</strong>人类可以从一两张照片中就学会识别一个新物体，而CV模型仍然需要数十到数百张标注图像才能达到可用的精度。基础模型（如CLIP、SAM）显著改善了这个差距，但没有完全消除。</li>
-            <li><strong>具身智能（Embodied Intelligence）：</strong>目前的CV系统大多是"被动观察者"——它们看图像、做判断，但不与环境互动。真正的智能应该能够像人类一样在三维空间中移动、操作物体、与环境交互。具身AI要求CV不仅理解"看到什么"，还要理解"我如何与它交互"。</li>
-            <li><strong>长尾分布（Long-Tail Distribution）：</strong>现实世界的数据分布是严重不均衡的——常见类别占据了大多数样本，而大量罕见类别只有极少样本。大多数CV模型在长尾分布上的表现远差于在均衡数据集上的表现。</li>
-            <li><strong>持续学习（Continual Learning）：</strong>人类可以持续学习新知识而不会忘记旧知识。CV模型则面临"灾难性遗忘"的问题——在学会识别新的10类物体后，之前学会的100类物体的识别准确率会显著下降。</li>
-        </ul>
-
-        <p>这张清单并不是让人灰心，反而应该让人振奋——因为它意味着CV领域仍有大量值得投入的开放问题。每一代研究者都会推动这些问题向前一步。你完全有可能在某个方向上做出你的贡献。</p>
-
-        <p>好了，第27章到这里就结束了。从扩散模型的精妙原理到VLM的多模态理解，从AIGC的创意应用到3D视觉的前沿突破，再到CV领域尚未解决的挑战——你看到了一个蓬勃发展但远未成熟的技术画卷。下一章也是本课程的最后一章，我们将把所有28章的知识串联起来，进行一个<strong>综合实战项目</strong>——从需求分析到数据准备，从模型训练到部署上线，完整体验一个CV项目的全流程。</p>
-
-        <div class="footer-nav">
-            <a href="26.html">← 上一章</a>
-            <a href="index.html">📖 返回目录</a>
-            <a href="28.html">下一章 →</a>
-        </div>
-
-    </div>
+<a class="skip" href="#content">跳转正文</a>
+<div class="chapter-shell">
+<nav class="toc" aria-label="文章目录">
+<h2>27 · 多模态与生成</h2>
+<div class="toc-items">
+<a href="../index.html">← 课程目录</a>
+<a href="#s-diffusion">扩散模型：加噪与去噪</a>
+<a href="#s-latent">隐空间扩散与加速采样</a>
+<a href="#s-vlm">视觉语言模型：如何把图像接进 LLM</a>
+<a href="#s-3d">3D 视觉：隐式 NeRF 与显式 3DGS</a>
+<a href="#s-open">未完成的挑战</a>
+<a href="#references">原始资料与口径</a>
 </div>
+</nav>
+<main class="reading" id="content">
+<article>
+<header>
+<div class="chapter-top"><a href="../index.html">CV TUTORIAL</a><span>基础模型 / 27</span></div>
+<p class="chapter-kicker">CHAPTER 27 · MULTIMODAL & GENERATIVE</p>
+<h1>多模态与生成模型概览：从扩散到 3D 表示</h1>
+<p class="dek">本章是一张技术地图：扩散模型如何用“加噪—去噪”取代 GAN，隐空间扩散为何能把采样成本压下来，视觉语言模型怎样把图像接进大语言模型，以及 NeRF 与 3D Gaussian Splatting 两种相反的 3D 表示各有什么代价。目标不是穷举模型，而是让每个名字对应一个可核查的机制。</p>
+</header>
+<section id="s-diffusion">
+<h2>扩散模型：加噪与去噪</h2>
+<p>扩散模型不去和判别器“对抗”，而是学习一个<strong>去噪过程</strong>。<strong>DDPM（Denoising Diffusion Probabilistic Models）</strong>（Ho 等，2020）把它分成两个方向：</p>
+<ul>
+<li><strong>前向过程</strong>：不断向图像加高斯噪声，经足够多步（DDPM 用 <code>T=1000</code>）后图像变成近似标准高斯噪声。</li>
+<li><strong>反向过程</strong>：训练一个网络从噪声出发逐步去噪，还原图像。</li>
+</ul>
+<p>前向过程有一个便利的闭式表达：一步到位地从 <code>x_0</code> 采样出任意时刻 <code>x_t</code>，省去逐步迭代。设 <code>ᾱ_t</code> 为累乘的噪声保有系数：</p>
+<div class="equation math-scroll" role="region" tabindex="0" aria-label="前向加噪的闭式表达 x_t 等于根号 alpha_bar_t 乘 x_0 加根号一减 alpha_bar_t 乘噪声；去噪损失是预测噪声与真实噪声的均方误差期望。"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block" aria-label="前向加噪闭式表达"><msub><mi>x</mi><mi>t</mi></msub><mo>=</mo><msqrt><msub><mover><mi>α</mi><mo>‾</mo></mover><mi>t</mi></msub></msqrt><msub><mi>x</mi><mn>0</mn></msub><mo>+</mo><msqrt><mn>1</mn><mo>−</mo><msub><mover><mi>α</mi><mo>‾</mo></mover><mi>t</mi></msub></msqrt><mi>ε</mi></math><math xmlns="http://www.w3.org/1998/Math/MathML" display="block" aria-label="去噪损失"><mi>L</mi><mo>=</mo><msub><mi>E</mi><mrow><mi>t</mi><mo>,</mo><msub><mi>x</mi><mn>0</mn></msub><mo>,</mo><mi>ε</mi></mrow></msub><mo stretchy="false">[</mo><mo>‖</mo><mi>ε</mi><mo>−</mo><msub><mi>ε</mi><mi>θ</mi></msub><mo stretchy="false">(</mo><msub><mi>x</mi><mi>t</mi></msub><mo>,</mo><mi>t</mi><mo stretchy="false">)</mo><msup><mo>‖</mo><mn>2</mn></msup><mo stretchy="false">]</mo></math><p class="eq-caption">网络 <code>ε_θ</code> 不直接预测图像，而是<strong>预测噪声</strong>；损失就是预测噪声与真实噪声的 MSE。这比直接回归像素值的任务简单得多。</p></div>
+<figure><img src="../assets/svg/27-diffusion.svg" width="900" height="360" alt="上排是前向过程：从原图 x0 逐步加噪到近高斯噪声 xT；下排是反向过程：训练好的去噪网络从噪声逐步恢复原图，每一步预测当前噪声。" loading="lazy"><figcaption>上：前向加噪（无需学习）；下：反向去噪（需训练）。每一步只学“去掉一点点噪声”，而不是一次生成整张图，这是扩散模型稳定的原因。</figcaption></figure>
+<pre><code>import math
+
+def forward_noise(x0, eps, alpha_bar_t):
+    """x_t = sqrt(alpha_bar_t)*x0 + sqrt(1-alpha_bar_t)*eps."""
+    return math.sqrt(alpha_bar_t) * x0 + math.sqrt(1 - alpha_bar_t) * eps
+
+alpha_bar = [1.0, 0.9, 0.5, 0.0]   # t 越大, 原图信息越少
+x0, eps = 1.0, 2.0
+assert forward_noise(x0, eps, alpha_bar[0]) == x0   # t=0：完全是原图
+assert forward_noise(x0, eps, alpha_bar[3]) == eps  # alpha_bar=0：只剩纯噪声
+
+signal = [math.sqrt(a) for a in alpha_bar]
+assert signal[3] &lt; signal[1] &lt; signal[0]             # 信号权重随 t 递减
+print("alpha_bar=", alpha_bar, " 信号权重=", [round(s, 3) for s in signal])</code></pre>
+</section>
+<section id="s-latent">
+<h2>隐空间扩散与加速采样</h2>
+<p>DDPM 的代价是<strong>采样慢</strong>：1000 步迭代才能出一张图。<strong>DDIM</strong>（Song 等，2021）用非马尔可夫采样把步数降到几十步而基本不降质。更关键的一步是 <strong>LDM / Stable Diffusion</strong>（Rombach 等，2022）：不在像素空间扩散，而是先用 VAE 把图像编到<strong>隐空间</strong>再扩散。</p>
+<p>以常见的下采样因子 <code>f=8</code> 为例：<code>512×512×3</code> 的图像被压到 <code>64×64×4</code>，像素数是原来的约 <code>1/48</code>。扩散在低维隐空间运行，计算量大幅下降；采样后再由 VAE 解码器还原到像素空间。这使高分辨率文生图在消费级 GPU 上变得可行，也自然支持文本等条件控制。</p>
+</section>
+<section id="s-vlm">
+<h2>视觉语言模型：如何把图像接进 LLM</h2>
+<p>生成模型负责“文→图”，<strong>视觉语言模型（VLM）</strong>则做“图→文”的理解与对话。早期 VLM 分两派：<strong>双塔</strong>（如 CLIP、ALIGN）擅检索但缺细粒度理解；<strong>融合编码器</strong>（如 UNITER、ViLBERT）理解强但计算重。BLIP（Li 等，2022）用<strong>字幕滤波（caption filtering）</strong>——先用噪声图文数据训练，再用模型生成高质量字幕来清洗/增强数据，形成自改进循环。</p>
+<p>LLaVA（Liu 等，2023）给出了一个极简而有效的连接方案：<strong>预训练的视觉编码器（CLIP ViT）→ 一个线性投影层 → 大语言模型</strong>。视觉特征被投影到 LLM 的 embedding 空间，与文本 token 拼在一起输入 LLM，从而获得多模态对话与推理能力。GPT-4V / GPT-4o 则代表了商业 VLM 的当前水位。</p>
+<figure><img src="../assets/svg/27-vlm.svg" width="900" height="360" alt="视觉语言模型：图像经 CLIP ViT 编码器得到视觉特征，经投影层映射到 LLM 的嵌入空间，与文本 token 拼接后输入大语言模型，输出文本回答。" loading="lazy"><figcaption>LLaVA 式连接器：视觉编码器冻结或少量微调，投影层把视觉特征对齐到 LLM 的嵌入空间，再与文本 token 拼接。关键不是“更大的模型”，而是<strong>对齐视觉与语言两个空间</strong>。</figcaption></figure>
+</section>
+<section id="s-3d">
+<h2>3D 视觉：隐式 NeRF 与显式 3DGS</h2>
+<p>前面都是 2D。3D 重建的两个代表方法恰好代表了两种相反的表示思路。</p>
+<p><strong>NeRF（Neural Radiance Fields）</strong>（Mildenhall 等，2020）是<strong>隐式</strong>表示：用一个 MLP 把 3D 点与观察方向 <code>(x, y, z, θ, φ)</code> 映射到该点的密度与颜色，再沿射线做体渲染合成像素。给定多视角 2D 图像即可学出连续场景，并能从新视角渲染。其代价是<strong>训练慢、渲染慢</strong>（每帧需沿射线积分多个点）；Instant-NGP 用多分辨率哈希编码把训练时间大幅缩短。</p>
+<p><strong>3D Gaussian Splatting（3DGS）</strong>（Kerbl 等，2023）是<strong>显式</strong>表示：不学 MLP，而直接用数百万个 3D 高斯椭球建模场景，用可微光栅化渲染。它能在保持接近 NeRF 质量的同时实现实时新视角渲染，代价是存储与显存随高斯数量增长。</p>
+<figure><img src="../assets/svg/27-3d.svg" width="900" height="360" alt="左侧多视角输入图像分别送入两种表示：NeRF 用 MLP 隐式表示场景并沿射线体渲染；3D Gaussian Splatting 用数百万个显式高斯椭球并做可微光栅化，两者都能渲染出新视角。" loading="lazy"><figcaption>同一任务、两种表示：NeRF 把场景“存进网络权重”（隐式，连续但采样慢），3DGS 把场景“存成一组高斯”（显式，快但占空间）。选型取决于是否需要实时渲染与存储预算。</figcaption></figure>
+</section>
+<section id="s-open">
+<h2>未完成的挑战</h2>
+<p>分类精度超过人类、生成效果逼真、模型趋通用化——但这些进展并未消除根本难题：</p>
+<ul>
+<li><strong>鲁棒性</strong>：对人眼不可感知的对抗扰动就能让最先进分类器出错，自动驾驶、医疗等安全关键场景尚未真正解决。</li>
+<li><strong>可解释性</strong>：Grad-CAM、注意力图只能给出粗略归因；医疗场景需要的“为什么这里是病变”仍未被满足。</li>
+<li><strong>少样本</strong>：CLIP、SAM 缩小了与人类“看一两张就会”的差距，但未消除。</li>
+<li><strong>长尾与持续学习</strong>：现实分布严重不均，罕见类表现差；学会新类时旧类可能被灾难性遗忘（第 24 章）。</li>
+<li><strong>具身智能</strong>：当前 CV 多为被动的“观察者”，尚未真正进入“看得见又动得了”的闭环。</li>
+</ul>
+<details class="mini-test"><summary>检查理解：为何扩散模型在像素空间训练稳定，却要搬到隐空间去做？</summary><p>稳定性与生成位置是两件事。扩散的损失是一个简单的 MSE，不需要 GAN 那样的对抗平衡，所以训练本身稳定。但直接在高分辨率像素上做 1000 步去噪的推理成本太高。LDM 先用 VAE 把图像压到低维隐空间（如 1/48 像素量）再扩散，把昂贵的迭代从像素空间移到小得多的隐空间，采样后再解码回像素，从而在消费级硬件上也能生成高分辨率图像。</p></details>
+</section>
+<section id="references">
+<h2>原始资料与口径</h2>
+<p>本页的扩散模型、隐空间扩散、BLIP/LLaVA、NeRF 与 3D Gaussian Splatting 均以对应原论文为准；采样步数、压缩比、生成质量等为特定配置下的典型值，本页不将其作为跨模型的排名依据。</p>
+<ol class="refs">
+<li><a href="https://arxiv.org/abs/2006.11239">Denoising Diffusion Probabilistic Models (DDPM, arXiv:2006.11239)</a>　·　<a href="https://arxiv.org/abs/2010.02502">Denoising Diffusion Implicit Models (DDIM, arXiv:2010.02502)</a></li>
+<li><a href="https://arxiv.org/abs/2112.10752">High-Resolution Image Synthesis with Latent Diffusion Models (LDM / Stable Diffusion, arXiv:2112.10752)</a></li>
+<li><a href="https://arxiv.org/abs/2201.12086">BLIP: Bootstrapping Language-Image Pre-training (arXiv:2201.12086)</a></li>
+<li><a href="https://arxiv.org/abs/2304.08485">Visual Instruction Tuning (LLaVA, arXiv:2304.08485)</a></li>
+<li><a href="https://arxiv.org/abs/2003.08934">NeRF: Representing Scenes as Neural Radiance Fields for View Synthesis (arXiv:2003.08934)</a></li>
+<li><a href="https://arxiv.org/abs/2308.04079">3D Gaussian Splatting for Real-Time Radiance Field Rendering (arXiv:2308.04079)</a>　·　<a href="https://arxiv.org/abs/2201.05989">Instant Neural Graphics Primitives (arXiv:2201.05989)</a></li>
+</ol>
+</section>
+<nav class="pager" aria-label="章节导航"><a href="26.html">← 第 26 章 自监督与基础模型</a><a href="28.html">第 28 章 综合实战项目 →</a></nav>
+</article>
+</main>
 </div>
 </body>
 </html>

@@ -212,6 +212,18 @@
       "claim": "NeRF is an implicit MLP radiance field rendered by volume rendering; 3D Gaussian Splatting uses explicit 3D Gaussians with differentiable rasterization for real-time rendering",
       "sources": ["https://arxiv.org/abs/2003.08934", "https://arxiv.org/abs/2308.04079"],
       "caveat": "Instant-NGP hash-encoding cited for training speedup; page cites no FPS/PSNR numbers as its own"
+    },
+    {
+      "chapter": "28",
+      "claim": "Project workflow: define metrics/constraints, choose tools by constraint, augment to match deployment degradation, anchor on a baseline, evaluate per scenario (worst-case gate), then export and validate on target hardware",
+      "sources": ["https://arxiv.org/abs/1506.02640", "https://docs.nvidia.com/deeplearning/tensorrt/"],
+      "caveat": "All project numbers (latency targets, mAP, F1) are illustrative 教学示意 and not measured results; the page's runnable F1 sample is toy data"
+    },
+    {
+      "chapter": "28",
+      "claim": "F1 = 2PR/(P+R) and acceptance should use the worst-case scenario rather than the test-set average",
+      "sources": ["https://arxiv.org/abs/1708.02002"],
+      "caveat": "Standard metric definition; the scenario table is illustrative"
     }
   ]
 }

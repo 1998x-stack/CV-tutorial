@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 300" role="img" aria-labelledby="map-title map-desc" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif">
+<title id="map-title">28 章知识地图：六个阶段的递进关系</title>
+<desc id="map-desc">课程分为六个阶段：视觉基础（01-06）、主干网络（07-12）、训练与评估（13-14）、检测与分割（15-22）、工程实践（23-25）、前沿与综合（26-28），每章遵循机制、公式、最小实验、边界的统一结构。</desc>
+<rect width="900" height="300" fill="#fffdf9"/>
+<defs><marker id="map-arw" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0 0 L7 3 L0 6 z" fill="#7a8a90"/></marker></defs>
+<text x="40" y="46" font-size="21" font-weight="700" fill="#203035">28 章知识地图：六个阶段</text>
+<text x="40" y="72" font-size="13.5" fill="#53676d">每章结构一致：机制 → 公式 → 最小可运行实验 → 适用条件与边界</text>
+
+<rect x="16" y="98" width="138" height="104" rx="10" fill="#d6f1eb" stroke="#147f80" stroke-width="1.6"/>
+<text x="85" y="134" font-size="14" font-weight="700" text-anchor="middle" fill="#0f5c5d">视觉基础</text>
+<text x="85" y="158" font-size="12.5" text-anchor="middle" fill="#147f80">01–06</text>
+<text x="85" y="180" font-size="11.5" text-anchor="middle" fill="#53676d">像素/特征/CNN</text>
+
+<rect x="162" y="98" width="138" height="104" rx="10" fill="#d6f1eb" stroke="#147f80" stroke-width="1.6"/>
+<text x="231" y="134" font-size="14" font-weight="700" text-anchor="middle" fill="#0f5c5d">主干网络</text>
+<text x="231" y="158" font-size="12.5" text-anchor="middle" fill="#147f80">07–12</text>
+<text x="231" y="180" font-size="11.5" text-anchor="middle" fill="#53676d">AlexNet→ConvNeXt</text>
+
+<rect x="308" y="98" width="138" height="104" rx="10" fill="#c9e0da" stroke="#147f80" stroke-width="1.6"/>
+<text x="377" y="134" font-size="14" font-weight="700" text-anchor="middle" fill="#0f5c5d">训练与评估</text>
+<text x="377" y="158" font-size="12.5" text-anchor="middle" fill="#147f80">13–14</text>
+<text x="377" y="180" font-size="11.5" text-anchor="middle" fill="#53676d">协议与选型</text>
+
+<rect x="454" y="98" width="138" height="104" rx="10" fill="#f7e2cf" stroke="#d06d4d" stroke-width="1.6"/>
+<text x="523" y="134" font-size="14" font-weight="700" text-anchor="middle" fill="#8a4526">检测与分割</text>
+<text x="523" y="158" font-size="12.5" text-anchor="middle" fill="#a05a32">15–22</text>
+<text x="523" y="180" font-size="11.5" text-anchor="middle" fill="#53676d">框/AP/掩码</text>
+
+<rect x="600" y="98" width="138" height="104" rx="10" fill="#ffecd9" stroke="#d06d4d" stroke-width="1.6"/>
+<text x="669" y="134" font-size="14" font-weight="700" text-anchor="middle" fill="#8a4526">工程实践</text>
+<text x="669" y="158" font-size="12.5" text-anchor="middle" fill="#a05a32">23–25</text>
+<text x="669" y="180" font-size="11.5" text-anchor="middle" fill="#53676d">增强/迁移/部署</text>
+
+<rect x="746" y="98" width="138" height="104" rx="10" fill="#ffecd9" stroke="#d06d4d" stroke-width="2"/>
+<text x="815" y="134" font-size="14" font-weight="700" text-anchor="middle" fill="#8a4526">前沿与综合</text>
+<text x="815" y="158" font-size="12.5" text-anchor="middle" fill="#a05a32">26–28</text>
+<text x="815" y="180" font-size="11.5" text-anchor="middle" fill="#53676d">自监督/多模态</text>
+
+<g fill="none" stroke="#7a8a90" stroke-width="1.6" marker-end="url(#map-arw)">
+<path d="M154 150 L158 150"/><path d="M300 150 L304 150"/><path d="M446 150 L450 150"/>
+<path d="M592 150 L596 150"/><path d="M738 150 L742 150"/></g>
+<text x="40" y="256" font-size="13.5" fill="#53676d">阶段之间是“工具递进”而非割裂：后面的检测、分割、部署都建立在主干与训练协议之上。</text>
+</svg>

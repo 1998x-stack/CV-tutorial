@@ -26,14 +26,14 @@ def check():
     for c in chapters:
         if not (SITE/c["file"]).is_file(): bad("missing chapter: "+c["file"])
     home_html=(SITE/"index.html").read_text(encoding="utf-8")
-    if home_html.count('class="state"') != 27: bad("home: exactly 27 chapters should be visibly refined")
+    if home_html.count('class="state"') != 28: bad("home: exactly 28 chapters should be visibly refined")
     files=[SITE/"index.html"]+sorted((SITE/"chapters").glob("*.html"))
     for file in files:
         html=file.read_text(encoding="utf-8")
         p=Page(); p.feed(html)
-        if file.name!="index.html" and len(p.headings)!=1 and file.name in {f"{i:02}.html" for i in range(1,28)}:
+        if file.name!="index.html" and len(p.headings)!=1 and file.name in {f"{i:02}.html" for i in range(1,29)}:
             bad(str(file.relative_to(ROOT))+": expected exactly one H1")
-        if file.parent.name=="chapters" and file.name in {f"{i:02}.html" for i in range(6,28)}:
+        if file.parent.name=="chapters" and file.name in {f"{i:02}.html" for i in range(6,29)}:
             n=int(file.stem)
             if html.count("<figure>") < (4 if n in (10,14,15) else 3): bad(f"{file.name}: insufficient illustrations")
             if "<math " not in html: bad(f"{file.name}: MathML equation missing")
@@ -41,7 +41,7 @@ def check():
             for image in p.images:
                 if not image.get("alt"): bad(f"{file.name}: figure image missing meaningful alt")
         if len(p.ids)!=len(set(p.ids)): bad(str(file.relative_to(ROOT))+": duplicate element IDs")
-        if file.parent.name=="chapters" and file.name in {f"{i:02}.html" for i in range(1,28)}:
+        if file.parent.name=="chapters" and file.name in {f"{i:02}.html" for i in range(1,29)}:
             for link in p.links:
                 if link.startswith("#") and link[1:] not in p.ids: bad(f"{file.name}: broken local anchor {link}")
         for link in p.links:

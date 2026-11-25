@@ -152,6 +152,42 @@
       "claim": "Deployment exports models to ONNX or TorchScript; engines such as TensorRT fuse operators (e.g. Conv+BN+ReLU) for speed",
       "sources": ["https://onnx.ai/", "https://docs.nvidia.com/deeplearning/tensorrt/"],
       "caveat": "Engine capabilities described from official docs; no latency speedups asserted"
+    },
+    {
+      "chapter": "26",
+      "claim": "SimCLR maximizes agreement of two augmented views with the NT-Xent loss; negatives come from the batch, so it depends strongly on batch size",
+      "sources": ["https://arxiv.org/abs/2002.05709"],
+      "caveat": "MathML states the NT-Xent form; no top-1 accuracy numbers are asserted"
+    },
+    {
+      "chapter": "26",
+      "claim": "MoCo keeps a queue of historical negatives and a momentum (EMA) encoder to decouple the negative pool from batch size",
+      "sources": ["https://arxiv.org/abs/1911.05722"],
+      "caveat": "Momentum/batch-size coupling described qualitatively; no numbers fixed"
+    },
+    {
+      "chapter": "26",
+      "claim": "MAE masks ~75% of patches, encodes only visible patches, and reconstructs all patches with a light decoder; loss is computed on masked patches",
+      "sources": ["https://arxiv.org/abs/2111.06377"],
+      "caveat": "High mask ratio is motivated by image spatial redundancy; the page's mask sample is a toy 教学示意 (14x14 patches)"
+    },
+    {
+      "chapter": "26",
+      "claim": "DINO is self-distillation with no labels (EMA teacher, shared architecture) and its ViT attention reveals emergent object segmentation; iBOT combines self-distillation with masked image modeling",
+      "sources": ["https://arxiv.org/abs/2104.14294", "https://arxiv.org/abs/2111.07832"],
+      "caveat": "The emergent-attention claim is qualitative; linear-probe percentages are not restated"
+    },
+    {
+      "chapter": "26",
+      "claim": "CLIP trains an image and a text encoder with contrastive learning over image-text pairs and enables zero-shot classification via class-name prompts",
+      "sources": ["https://arxiv.org/abs/2103.00020"],
+      "caveat": "Known limits (fine-grained, compositionality) are qualitative; dataset size not restated"
+    },
+    {
+      "chapter": "26",
+      "claim": "SAM is promptable (points/boxes/masks) and class-agnostic; its image encoder is ViT-based",
+      "sources": ["https://arxiv.org/abs/2304.02643"],
+      "caveat": "Cross-references chapter 22 for architecture details; no metrics asserted"
     }
   ]
 }

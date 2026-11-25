@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 380" role="img" aria-labelledby="ct-title ct-desc" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif">
+<title id="ct-title">对比学习：正样本对拉近，负样本推开</title>
+<desc id="ct-desc">同一张图像经两种增强得到两个视图，送入同一编码器后，在特征空间中彼此靠近（正样本对）；另一张图像的嵌入则被推远（负样本）。MoCo 用队列保存历史负样本、用动量编码器保持特征一致。</desc>
+<rect width="900" height="380" fill="#fffdf9"/>
+<defs><marker id="ct-arw" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0 0 L7 3 L0 6 z" fill="#7a8a90"/></marker></defs>
+<style>.o{fill:#ffecd9;stroke:#d06d4d;stroke-width:1.6}.t{fill:#d6f1eb;stroke:#147f80;stroke-width:1.6}</style>
+<text x="40" y="44" font-size="21" font-weight="700" fill="#203035">对比学习：拉近正样本，推开负样本</text>
+
+<rect class="t" x="40" y="130" width="110" height="70" rx="9"/>
+<text x="95" y="164" font-size="14" text-anchor="middle" fill="#0f5c5d">图像 x</text>
+<text x="95" y="184" font-size="12" text-anchor="middle" fill="#147f80">同一张</text>
+<rect class="o" x="190" y="100" width="120" height="52" rx="8"/><text x="250" y="132" font-size="13.5" text-anchor="middle" fill="#8a4526">增强视图 A</text>
+<rect class="o" x="190" y="180" width="120" height="52" rx="8"/><text x="250" y="212" font-size="13.5" text-anchor="middle" fill="#8a4526">增强视图 B</text>
+<rect class="t" x="350" y="130" width="120" height="70" rx="9"/><text x="410" y="160" font-size="14" text-anchor="middle" fill="#0f5c5d">编码器 f(·)</text><text x="410" y="182" font-size="12" text-anchor="middle" fill="#147f80">共享权重</text>
+<g fill="none" stroke="#7a8a90" stroke-width="1.6" marker-end="url(#ct-arw)">
+<path d="M150 158 C 175 158, 175 126, 186 126"/><path d="M150 172 C 175 172, 175 206, 186 206"/>
+<path d="M310 126 C 335 126, 335 150, 346 150"/><path d="M310 206 C 335 206, 335 180, 346 180"/>
+<path d="M470 165 L520 165"/></g>
+
+<ellipse cx="700" cy="190" rx="170" ry="110" fill="#f7faf9" stroke="#c9d8d3" stroke-width="1.5"/>
+<text x="700" y="102" font-size="13.5" text-anchor="middle" fill="#53676d">特征空间</text>
+<circle cx="648" cy="175" r="8" fill="#147f80"/><circle cx="690" cy="205" r="8" fill="#147f80"/>
+<circle cx="820" cy="150" r="8" fill="#d06d4d"/>
+<path d="M648 175 L690 205" stroke="#147f80" stroke-width="2.5"/>
+<text x="669" y="230" font-size="12.5" text-anchor="middle" fill="#0f5c5d">正样本对：拉近</text>
+<line x1="700" y1="190" x2="812" y2="152" stroke="#d06d4d" stroke-width="2" stroke-dasharray="6 5"/>
+<text x="800" y="188" font-size="12.5" text-anchor="end" fill="#8a4526">负样本：推开</text>
+
+<text x="40" y="330" font-size="13.5" fill="#53676d">SimCLR 的负样本来自当前 batch，受 batch size 限制；MoCo 用队列保存历史负样本，并用动量编码器保持一致。</text>
+<text x="40" y="356" font-size="13.5" fill="#53676d">增强太弱学不到不变性，太强会破坏语义——增强策略是对比学习成败的关键。</text>
+</svg>

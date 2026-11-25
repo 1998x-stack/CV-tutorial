@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 360" role="img" aria-labelledby="kd-title kd-desc" font-family="system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif">
+<title id="kd-title">知识蒸馏：教师软标签与学生硬标签共同监督学生</title>
+<desc id="kd-desc">教师模型输出经温度 T 软化得到软分布，学生的输出同时受到软分布 KL 散度与真实硬标签交叉熵的监督，两者按 alpha 加权。</desc>
+<rect width="900" height="360" fill="#fffdf9"/>
+<defs><marker id="kd-arw" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0 0 L7 3 L0 6 z" fill="#7a8a90"/></marker></defs>
+<style>.o{fill:#ffecd9;stroke:#d06d4d;stroke-width:1.6}.t{fill:#d6f1eb;stroke:#147f80;stroke-width:1.6}</style>
+<text x="40" y="44" font-size="21" font-weight="700" fill="#203035">知识蒸馏：软标签 + 硬标签</text>
+
+<rect class="o" x="60" y="76" width="180" height="96" rx="10"/>
+<text x="150" y="116" font-size="14" font-weight="700" text-anchor="middle" fill="#8a4526">教师模型</text>
+<text x="150" y="140" font-size="12.5" text-anchor="middle" fill="#a05a32">大、冻结</text>
+
+<rect class="t" x="320" y="76" width="180" height="96" rx="10"/>
+<text x="410" y="110" font-size="14" font-weight="700" text-anchor="middle" fill="#0f5c5d">软标签</text>
+<text x="410" y="132" font-size="12.5" text-anchor="middle" fill="#147f80">softmax(z / T)</text>
+<text x="410" y="152" font-size="12" text-anchor="middle" fill="#147f80">含类间相似性</text>
+
+<rect class="o" x="60" y="228" width="180" height="96" rx="10"/>
+<text x="150" y="268" font-size="14" font-weight="700" text-anchor="middle" fill="#8a4526">学生模型</text>
+<text x="150" y="292" font-size="12.5" text-anchor="middle" fill="#a05a32">小、可训练</text>
+
+<rect class="t" x="320" y="228" width="180" height="96" rx="10"/>
+<text x="410" y="268" font-size="14" font-weight="700" text-anchor="middle" fill="#0f5c5d">真实标签 y</text>
+<text x="410" y="292" font-size="12.5" text-anchor="middle" fill="#147f80">hard label</text>
+
+<rect x="590" y="130" width="250" height="140" rx="10" fill="#ece7f8" stroke="#7461ba" stroke-width="1.8"/>
+<text x="715" y="176" font-size="14" font-weight="700" text-anchor="middle" fill="#4a3d80">蒸馏损失</text>
+<text x="715" y="206" font-size="13" text-anchor="middle" fill="#4a3d80">L = (1−α)·CE(y, p_s)</text>
+<text x="715" y="228" font-size="13" text-anchor="middle" fill="#4a3d80">+ α·T²·KL(p_t^T ‖ p_s^T)</text>
+
+<g fill="none" stroke="#7a8a90" stroke-width="1.6" marker-end="url(#kd-arw)">
+<path d="M240 124 L316 124"/>
+<path d="M500 124 C 550 124, 550 176, 586 176"/>
+<path d="M240 276 C 340 276, 420 240, 586 218"/>
+<path d="M500 276 C 550 276, 550 240, 586 236"/>
+</g>
+<text x="40" y="344" font-size="13.5" fill="#53676d">教师与学生的 logits 都用同一温度 T 软化；CE 项用未软化的学生输出与真实标签。</text>
+</svg>

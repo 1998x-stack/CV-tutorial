@@ -1,331 +1,124 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
-    <title>第25章 模型优化与部署</title>
-    <link rel="stylesheet" href="theme.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="模型优化与部署：量化（PTQ/QAT、仿射映射与 scale/zero-point）、结构化与非结构化剪枝、知识蒸馏的温度与软标签、ONNX/TorchScript/TensorRT 导出与算子融合，以及各方法的精度—延迟—存储权衡与陷阱。">
+<title>第 25 章 · 模型优化与部署 | CV Tutorial</title>
+<link rel="stylesheet" href="../assets/css/article.css">
 </head>
 <body>
-<div class="double-border">
-<div class="container">
-    <div class="sidebar">
-        <h3>🖼️ 课程目录</h3>
-        <ul class="chapter-list">
-            <li><a href="01.html">第1章 计算机视觉概述与发展简史</a></li>
-            <li><a href="02.html">第2章 数字图像处理基础</a></li>
-            <li><a href="03.html">第3章 传统特征提取方法</a></li>
-            <li><a href="04.html">第4章 神经网络与反向传播</a></li>
-            <li><a href="05.html">第5章 卷积神经网络原理</a></li>
-            <li><a href="06.html">第6章 深度学习框架入门</a></li>
-            <li><a href="07.html">第7章 图像分类任务与数据集</a></li>
-            <li><a href="08.html">第8章 AlexNet——深度学习视觉起点</a></li>
-            <li><a href="09.html">第9章 VGG——小卷积堆叠的简洁哲学</a></li>
-            <li><a href="10.html">第10章 ResNet——残差学习突破深度瓶颈</a></li>
-            <li><a href="11.html">第11章 ViT——视觉Transformer革命</a></li>
-            <li><a href="12.html">第12章 ConvNeXt——CNN现代化改造</a></li>
-            <li><a href="13.html">第13章 训练策略与调参实战</a></li>
-            <li><a href="14.html">第14章 模型评估与对比分析</a></li>
-            <li><a href="15.html">第15章 目标检测基础</a></li>
-            <li><a href="16.html">第16章 R-CNN——两阶段检测开山</a></li>
-            <li><a href="17.html">第17章 Faster R-CNN与区域提议网络</a></li>
-            <li><a href="18.html">第18章 单阶段检测概述与对比</a></li>
-            <li><a href="19.html">第19章 图像分割基础与分类</a></li>
-            <li><a href="20.html">第20章 U-Net——医学图像分割标配</a></li>
-            <li><a href="21.html">第21章 Mask R-CNN——检测+分割统一</a></li>
-            <li><a href="22.html">第22章 语义分割前沿与全景分割</a></li>
-            <li><a href="23.html">第23章 数据增强与预处理实战</a></li>
-            <li><a href="24.html">第24章 迁移学习与模型微调</a></li>
-            <li><a href="25.html" class="active">第25章 模型优化与部署</a></li>
-            <li><a href="26.html">第26章 自监督学习与基础模型</a></li>
-            <li><a href="27.html">第27章 多模态与生成模型概览</a></li>
-            <li><a href="28.html">第28章 综合实战项目</a></li>
-        </ul>
-    </div>
-    <div class="main-content">
-
-        <h2>模型优化的目标</h2>
-
-        <p>2020年我参与过一个智慧零售项目，要求在一个嵌入式摄像头终端上实时运行行人检测模型。模型选型阶段，我用Faster R-CNN（ResNet-101 backbone）在GPU服务器上达到了95%的mAP，非常满意。结果一部署到终端设备上，发现了三个致命问题：第一，模型太大（300MB）——嵌入式的存储只有512MB；第二，推理速度太慢——每帧处理需要1.8秒，而业务要求是每秒25帧；第三，功耗太高——芯片直接过热降频。最终，95%的mAP变成了0%的实用性。</p>
-
-        <p>这个故事的教训很直接：<strong>在学术benchmark上跑高分和在真实场景中落地是两回事</strong>。模型优化的终极目标不是单一指标的最大化，而是<strong>在精度（Accuracy）、速度（Latency）和存储（Storage）三个维度上找到最佳平衡点</strong>。这个平衡点取决于部署场景：云端推理服务可以接受更大的模型和更高的延迟，但移动端App要求模型小于50MB、单帧推理低于50ms，自动驾驶领域甚至需要10ms以下的推理延迟。</p>
-
-        <table>
-            <tr><th>部署场景</th><th>典型延迟要求</th><th>存储上限</th><th>精度容忍度</th><th>常用优化策略</th></tr>
-            <tr><td>云端REST API</td><td>&lt;500ms</td><td>500MB</td><td>追求最高精度</td><td>模型集成、TTA</td></tr>
-            <tr><td>移动端App</td><td>&lt;50ms</td><td>50MB</td><td>可降低1-2%</td><td>量化+剪枝+蒸馏</td></tr>
-            <tr><td>嵌入式/边缘设备</td><td>&lt;30ms</td><td>10MB</td><td>可降低3-5%</td><td>INT8量化+轻量架构</td></tr>
-            <tr><td>自动驾驶</td><td>&lt;10ms</td><td>100MB</td><td>极低容忍度</td><td>TensorRT+FP16</td></tr>
-        </table>
-
-        <p>接下来的几节中，我们将逐一介绍模型优化的核心技术：<strong>量化、剪枝和知识蒸馏</strong>。这三种方法可以从不同维度减小模型体积、加速推理，且相互之间可以组合使用。</p>
-
-        <h2>模型量化</h2>
-
-        <p>模型量化（Quantization）是目前最实用、应用最广泛的模型压缩技术。它的核心理念非常直接：<strong>用更少的数据类型位数来表示模型的权重和激活值</strong>。</p>
-
-        <p>标准的深度学习模型使用32位浮点数（FP32）存储参数。量化将其转换为16位浮点数（FP16）、8位整数（INT8）甚至4位整数（INT4）。一个FP32的数值占据4字节，INT8只占1字节——也就是说，<strong>从FP32量化到INT8，理论上有4倍的模型压缩率</strong>，同时因为整数运算比浮点运算更快，还能获得1.5-3倍的推理加速。</p>
-
-        <h3>训练后量化（PTQ）</h3>
-
-        <p>训练后量化（Post-Training Quantization, PTQ）是最简单的量化方法：模型训练完成后，用一小部分校准数据统计激活值的分布范围，然后直接将权重和激活值映射到低精度表示。PTQ不需要重新训练模型，通常只需要几十到几百张校准图像就能完成。对于大多数CNN模型，PTQ到INT8几乎不会造成精度损失（通常&lt;0.5%）。但Transformer-based模型（如ViT）对量化更敏感，PTQ可能会导致1-3%的精度下降。</p>
-
-        <h3>量化感知训练（QAT）</h3>
-
-        <p>当PTQ的精度损失不可接受时，<strong>量化感知训练（Quantization-Aware Training, QAT）</strong>是更好的选择。QAT在训练过程中模拟量化操作（在前向传播中使用伪量化算子，即fake quantization），让模型在训练时就学会适应量化误差。QAT的精度通常比PTQ高0.5-2%，但需要额外的训练时间和标注数据。</p>
-
-        <pre><code># PyTorch量化示例 — PTQ (训练后量化)
-import torch
-import torch.quantization
-
-model = torch.load('resnet50_fp32.pth')
-model.eval()
-
-# 配置量化后端（x86 CPU使用fbgemm，ARM使用qnnpack）
-model.qconfig = torch.quantization.get_default_qconfig('fbgemm')
-model = torch.quantization.prepare(model, inplace=False)
-
-# 用校准数据观察激活值的分布
-with torch.no_grad():
-    for images, _ in calibration_dataloader:
-        model(images)
-
-# 转换为量化后的INT8模型
-quantized_model = torch.quantization.convert(model, inplace=False)
-torch.jit.save(torch.jit.script(quantized_model), 'resnet50_int8.pt')
-
-print(f"FP32模型大小: {120} MB")
-print(f"INT8模型大小: {30} MB（压缩4倍）")</code></pre>
-
-        <div class="tip">
-            <strong>💡 实战经验：</strong>量化对卷积层的影响很小，但对逐元素操作（如残差连接中的加法、SiLU激活函数）影响较大。如果你的模型包含大量逐元素操作（如EfficientNet、ConvNeXt），建议优先尝试QAT而非PTQ。另外，<strong>量化最好在训练的最后一站做</strong>——任何后续的微调或修改都可能破坏量化校准的统计信息。
-        </div>
-
-        <h2>模型剪枝</h2>
-
-        <p>模型剪枝（Pruning）的灵感来源于神经生物学：人脑在发育过程中会不断修剪不必要的突触连接，精炼出高效的信息处理网络。类似地，模型剪枝试图<strong>删除神经网络中"不重要"的权重、神经元或通道</strong>，在保持精度的前提下减少计算量。</p>
-
-        <h3>结构化剪枝 vs 非结构化剪枝</h3>
-
-        <p><strong>非结构化剪枝（Unstructured Pruning）</strong>删除的是单个权重值——那些绝对值小于阈值的权重被置为零。这种方法剪枝率高（可以达到90%以上），但产生的稀疏权重矩阵对常规硬件不友好，很难获得实际的推理加速。非结构化剪枝需要专门的稀疏矩阵运算库（如cuSPARSE）支持。</p>
-
-        <p><strong>结构化剪枝（Structured Pruning）</strong>删除的是整个通道、滤波器或层——直接剪掉不重要的卷积核。虽然结构化剪枝的剪枝率通常低于非结构化剪枝（50-70%），但剪枝后模型的结构保持不变，可以直接利用常规的密集矩阵运算进行加速。在实际工程中，结构化剪枝远比非结构化剪枝实用。</p>
-
-        <h3>通道剪枝</h3>
-
-        <p>通道剪枝是结构化剪枝中最主流的一种。它的做法是：<strong>评估每个卷积核的"重要性"，删除最不重要的那些卷积核及对应的特征图通道</strong>。评估通道重要性的常用指标包括：</p>
-
-        <ul>
-            <li><strong>L1/L2范数：</strong>卷积核权重的L1范数或L2范数越小，被认为越不重要。</li>
-            <li><strong>BN层缩放因子：</strong>Batch Normalization层后面的gamma参数（缩放因子）的大小越接近0，说明这个通道的贡献越小——可以直接将其修剪。</li>
-            <li><strong>基于梯度的重要性：</strong>使用泰勒展开近似每个通道移除后对loss的影响。</li>
-        </ul>
-
-        <p>通道剪枝的过程通常需要多次迭代：<strong>剪枝 → 微调恢复 → 再剪枝 → 再微调</strong>。一次性剪掉太多通道会导致精度急剧下降，微调也无法恢复。建议每次剪枝10-20%的通道，然后微调50-100个epoch让模型适应。</p>
-
-        <div class="warning">
-            <strong>⚠️ 踩坑提醒：</strong>剪枝后一定要做<strong>微调（fine-tuning）</strong>！有人做过实验：一次性剪掉50%的通道后精度掉了15%，但简单微调50个epoch就能恢复到仅下降1-2%。不做微调的剪枝没有意义。另外，对于有残差连接的网络（ResNet、ConvNeXt），通道剪枝要特别小心，确保残差分支和主分支的通道数保持一致。
-        </div>
-
-        <h2>知识蒸馏</h2>
-
-        <p>知识蒸馏（Knowledge Distillation, KD）是Hinton在2015年提出的一种模型压缩方法，其思想深刻而优雅：<strong>用一个大的、高精度的教师模型（Teacher）来指导一个小学生模型（Student）的训练</strong>。学生模型不直接学习真实标签（hard label），而是学习教师模型的输出分布（soft label）——这包含了教师模型"认为"哪些类别是相近的关键信息。</p>
-
-        <h3>软标签蒸馏</h3>
-
-        <p>标准的知识蒸馏使用"温度（temperature）"参数来软化教师模型的输出概率分布。高温下，类别的概率分布变得更平滑——比如"猫"的图像，高温下教师模型可能会输出"猫: 0.7, 狮子: 0.2, 老虎: 0.1"这样的软分布，这告诉学生模型："猫"和"狮子"比"猫"和"汽车"更相似。这种暗知识（dark knowledge）是蒸馏的核心价值所在。</p>
-
-        <pre><code># 知识蒸馏 — 训练学生模型的核心逻辑
-import torch.nn.functional as F
-
-def knowledge_distillation_loss(student_logits, teacher_logits, labels, T=4.0, alpha=0.7):
-    """
-    蒸馏损失 = alpha * KL散度(学生软输出 || 教师软输出)
-              + (1 - alpha) * CE(学生硬输出, 真实标签)
-    """
-    # 软标签损失：学生和教师的softmax输出之间的KL散度
-    student_soft = F.log_softmax(student_logits / T, dim=1)
-    teacher_soft = F.softmax(teacher_logits / T, dim=1)
-    kd_loss = F.kl_div(student_soft, teacher_soft, reduction='batchmean') * (T * T)
-
-    # 硬标签损失：标准的交叉熵
-    ce_loss = F.cross_entropy(student_logits, labels)
-
-    # 加权组合
-    return alpha * kd_loss + (1 - alpha) * ce_loss
-
-# 训练时教师模型不更新梯度
-with torch.no_grad():
-    teacher_outputs = teacher_model(images)
-
-loss = knowledge_distillation_loss(
-    student_logits=student_model(images),
-    teacher_logits=teacher_outputs,
-    labels=labels,
-    T=4.0,      # 温度参数，越大分布越平滑
-    alpha=0.7,  # 蒸馏损失的权重
-)</code></pre>
-
-        <h3>特征蒸馏</h3>
-
-        <p>软标签蒸馏只利用了教师模型的输出层信息。特征蒸馏（Feature-based Distillation）更进一步——它让学生模型<strong>模仿教师模型中间层的特征图</strong>。具体做法是：选择教师和学生网络中的对应中间层，计算它们的特征图之间的差异（如MSE损失），让学生的特征图在语义上接近教师的特征图。这种方法对检测和分割任务尤其有效，因为这些任务的中间特征包含了丰富的空间信息。</p>
-
-        <table>
-            <tr><th>蒸馏方法</th><th>知识来源</th><th>适用任务</th><th>效果</th></tr>
-            <tr><td>软标签蒸馏</td><td>教师输出logits</td><td>分类、分类头</td><td>学生接近教师精度的90-95%</td></tr>
-            <tr><td>特征蒸馏</td><td>中间层特征图</td><td>检测、分割</td><td>学生定位能力明显提升</td></tr>
-            <tr><td>关系蒸馏</td><td>样本间关系</td><td>度量学习、检索</td><td>保持特征空间的邻域结构</td></tr>
-            <tr><td>自蒸馏</td><td>自身（先训练教师再教自己）</td><td>通用</td><td>无需额外大模型，提升自身精度</td></tr>
-        </table>
-
-        <h2>模型导出与部署</h2>
-
-        <p>训练好的PyTorch模型不能直接在非Python环境中运行。将模型从训练框架导出到部署环境，需要经过一系列的格式转换。</p>
-
-        <h3>ONNX格式</h3>
-
-        <p>ONNX（Open Neural Network Exchange）是一种开放的神经网络交换格式，由Microsoft和Facebook共同推广。它充当了"通用中间表示"的角色——你可以把PyTorch模型导出为ONNX，然后在ONNX Runtime、TensorRT、OpenVINO等推理引擎上运行。ONNX的优势在于框架互操作性——训练用PyTorch，推理可以用任何支持ONNX的引擎。</p>
-
-        <h3>TorchScript</h3>
-
-        <p>TorchScript是PyTorch的原生模型导出格式。它通过<code>torch.jit.trace</code>（跟踪执行路径）或<code>torch.jit.script</code>（编译模型代码）将模型转换为静态计算图。导出的TorchScript模型可以直接在C++环境中加载推理（LibTorch），无需Python运行时。TorchScript最大的优点是<strong>与PyTorch的兼容性最好</strong>——任何PyTorch模型都能导出，但缺点是跨语言支持有限（主要是Python/C++）。</p>
-
-        <h3>TensorRT</h3>
-
-        <p>NVIDIA的TensorRT专门针对GPU推理做了极致优化。它通过<strong>算子融合、内存优化、精度校准和内核自动调优</strong>等技术，将模型在NVIDIA GPU上的推理加速2-5倍。TensorRT通常以ONNX作为输入，然后生成高度优化的推理引擎。如果你在GPU上部署模型，TensorRT几乎是标配——我们的智慧零售项目最终就是靠TensorRT将推理延迟从1.8秒降到了28毫秒。</p>
-
-        <pre><code># PyTorch → ONNX → TensorRT 的路径示例
-import torch
-import torch.onnx
-
-# 1. 导出ONNX
-dummy_input = torch.randn(1, 3, 224, 224)
-torch.onnx.export(
-    model,
-    dummy_input,
-    "model.onnx",
-    opset_version=17,
-    input_names=['input'],
-    output_names=['output'],
-    dynamic_axes={'input': {0: 'batch_size'},
-                  'output': {0: 'batch_size'}}
-)
-
-# 2. 使用trtexec转换ONNX到TensorRT引擎（命令行）
-# trtexec --onnx=model.onnx --saveEngine=model.trt \
-#         --fp16 --workspace=1024 --minShapes=input:1x3x224x224 \
-#         --optShapes=input:8x3x224x224 --maxShapes=input:32x3x224x224
-
-# 3. Python中加载TensorRT引擎推理
-import tensorrt as trt
-import pycuda.driver as cuda
-
-with open("model.trt", "rb") as f:
-    runtime = trt.Runtime(trt.Logger(trt.Logger.WARNING))
-    engine = runtime.deserialize_cuda_engine(f.read())
-
-# 使用engine进行推理（需要绑定输入输出buffer）
-# 详细代码可以参考TensorRT官方sample</code></pre>
-
-        <h2>边缘端部署</h2>
-
-        <p>边缘端部署是模型优化最具挑战性的场景——你需要在极小的计算资源和功耗预算下运行CV模型。以下是一些主流的边缘端推理方案和与之搭配的轻量级模型架构。</p>
-
-        <h3>轻量级模型架构</h3>
-
-        <p><strong>MobileNet系列</strong>是边缘端部署的事实标准。MobileNetV2使用深度可分离卷积（depthwise separable convolution）和倒残差结构（inverted residual），在ImageNet上以极低的参数量取得了接近传统CNN的性能。MobileNetV3进一步引入了神经架构搜索（NAS）和h-swish激活函数。对于检测任务，<strong>MobileNet-SSD</strong>和<strong>MobileNet-YOLO</strong>是常用的轻量级组合。</p>
-
-        <h3>边缘推理引擎</h3>
-
-        <table>
-            <tr><th>推理引擎</th><th>设备平台</th><th>量化支持</th><th>特点</th></tr>
-            <tr><td>NCNN</td><td>ARM CPU (Android/iOS)</td><td>FP16/INT8</td><td>腾讯开源，ARM平台极致优化，无第三方依赖</td></tr>
-            <tr><td>TFLite</td><td>Android/iOS/嵌入式</td><td>FP16/INT8/INT4</td><td>Google官方，硬件加速器支持（GPU/NPU）</td></tr>
-            <tr><td>CoreML</td><td>Apple A系列芯片</td><td>FP16/INT8</td><td>Apple官方，Ananeural引擎加速</td></tr>
-            <tr><td>OpenVINO</td><td>Intel CPU/VPU/GPU</td><td>FP16/INT8</td><td>Intel官方，x86平台推理优化极佳</td></tr>
-            <tr><td>ONNX Runtime</td><td>跨平台 (CPU/GPU)</td><td>FP16/INT8</td><td>Microsoft，支持最广泛的硬件后端</td></tr>
-        </table>
-
-        <div class="tip">
-            <strong>💡 平台选择建议：</strong>如果你面向Android生态，首选TFLite或NCNN（NCNN在ARM CPU上速度略优）。如果是iOS，CoreML是唯一选择——它可以直接调用Apple的神经网络引擎（Neural Engine），功耗极低。如果是Intel CPU服务器，OpenVINO可以将推理速度提升2-3倍。记住：<strong>没有"最好的推理引擎"，只有"最适合你的部署场景的推理引擎"</strong>。
-        </div>
-
-        <h2>部署实战</h2>
-
-        <p>最后，让我们用一个完整的实战案例来串起本章的所有知识——将一个PyTorch图像分类模型部署到生产环境的完整流程。</p>
-
-        <h3>第1步：模型训练与优化</h3>
-
-        <p>用PyTorch训练一个ResNet-50分类器，在验证集上达到目标精度。然后应用知识蒸馏（用ResNet-152作为教师蒸馏ResNet-50），再用通道剪枝移除30%不重要的卷积核，最后微调恢复精度。</p>
-
-        <h3>第2步：量化</h3>
-
-        <p>对剪枝后的模型进行PTQ量化到INT8。如果精度损失超过0.5%，改用QAT重新量化。最终模型从原始FP32的约100MB压缩到INT8的约12MB（剪枝50% + 量化4倍）。</p>
-
-        <h3>第3步：导出</h3>
-
-        <p>将量化后的模型导出为ONNX格式。在ONNX Runtime中验证精度和速度，确认输出与PyTorch一致（逐元素差异&lt;1e-3）。如果需要GPU推理，将ONNX通过TensorRT转换为TRT引擎。</p>
-
-        <h3>第4步：部署</h3>
-
-        <p>根据目标平台选择推理引擎：GPU服务器 → TensorRT；边缘设备 → NCNN/TFLite。编写推理服务代码（REST API或gRPC），集成健康检查、批处理、缓存等生产环境必备功能。</p>
-
-        <h3>第5步：监控与迭代</h3>
-
-        <p>部署上线后持续监控两个指标：<strong>推理时延（p99延迟）</strong>和<strong>在线精度</strong>。真实数据分布会随时间漂移（data drift），模型精度可能逐渐下降。建立自动化的模型重训和重新部署Pipeline，是生产环境的长久之计。</p>
-
-        <pre><code># 部署服务的简化示例 — Flask + ONNX Runtime
-import flask
-import onnxruntime as ort
-import numpy as np
-from PIL import Image
-from torchvision import transforms
-
-app = flask.Flask(__name__)
-
-# 加载ONNX模型
-session = ort.InferenceSession('model_quantized.onnx')
-input_name = session.get_inputs()[0].name
-
-# 预处理Pipeline
-preprocess = transforms.Compose([
-    transforms.Resize(256),
-    transforms.CenterCrop(224),
-    transforms.ToTensor(),
-    transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                         std=[0.229, 0.224, 0.225]),
-])
-
-@app.route('/predict', methods=['POST'])
-def predict():
-    # 接收图像
-    file = flask.request.files['image']
-    img = Image.open(file.stream).convert('RGB')
-    img_tensor = preprocess(img).unsqueeze(0).numpy()
-
-    # ONNX推理
-    outputs = session.run(None, {input_name: img_tensor})
-    pred_class = np.argmax(outputs[0])
-
-    return flask.jsonify({'prediction': int(pred_class)})
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080)</code></pre>
-
-        <div class="highlight">
-            <strong>🔑 部署箴言：</strong>我把从学术界到工业界的经验总结为三句话：<strong>"训练时考虑部署，量化时验证精度，上线后监控漂移。"</strong>太多优秀的模型死在部署这一步——不是因为精度不够，而是因为没考虑硬件的限制、没验证过框架的精度一致性、没处理好生产环境的数据分布变化。在下一章，我们将进入本课程的前沿部分，看看自监督学习和基础模型是如何重新定义CV研究范式的。
-        </div>
-
-        <p>从数据增强到迁移学习再到模型优化与部署，这三章构成了一条完整的CV实战流水线：<strong>用增强解决数据不足 → 用迁移学习解决标注不足 → 用优化解决部署资源不足</strong>。掌握了这些工程技巧，你就具备了将CV模型从论文复现到真正产品落地的能力。接下来的第26章，我们将进入完全不同的层面——不依赖标注数据的自监督学习和视觉基础模型，敬请期待。</p>
-
-        <div class="footer-nav">
-            <a href="24.html">← 上一章</a>
-            <a href="index.html">📖 返回目录</a>
-            <a href="26.html">下一章 →</a>
-        </div>
-
-    </div>
+<a class="skip" href="#content">跳转正文</a>
+<div class="chapter-shell">
+<nav class="toc" aria-label="文章目录">
+<h2>25 · 优化与部署</h2>
+<div class="toc-items">
+<a href="../index.html">← 课程目录</a>
+<a href="#s-goal">目标不是单一指标，而是三维权衡</a>
+<a href="#s-quant">量化：用更少的位数表示数值</a>
+<a href="#s-prune">剪枝：删权重还是删通道</a>
+<a href="#s-distill">知识蒸馏：学教师的软标签</a>
+<a href="#s-export">导出与部署：ONNX、TorchScript、TensorRT</a>
+<a href="#s-limits">常见陷阱与边界</a>
+<a href="#references">原始资料与口径</a>
 </div>
+</nav>
+<main class="reading" id="content">
+<article>
+<header>
+<div class="chapter-top"><a href="../index.html">CV TUTORIAL</a><span>工程实践 / 25</span></div>
+<p class="chapter-kicker">CHAPTER 25 · OPTIMIZATION & DEPLOYMENT</p>
+<h1>模型优化与部署：让精度落在真实设备上</h1>
+<p class="dek">在服务器上跑高分不等于能落地。端侧往往受限于存储、延迟与功耗，必须在精度、速度、体积之间取舍。本章讲清三类主流压缩手段的机制——量化的仿射映射、剪枝的结构选择、知识蒸馏的软标签——以及把 PyTorch 模型导出到 ONNX / TorchScript / TensorRT 时真正会发生什么。</p>
+</header>
+<section id="s-goal">
+<h2>目标不是单一指标，而是三维权衡</h2>
+<p>在 benchmark 上把精度推高，与在真实设备上跑得动，是两件事。部署侧的约束通常是三条线：<strong>精度（Accuracy）、延迟（Latency）与存储（Storage）</strong>它们互相拉扯。一个在 GPU 服务器上高精度的两阶段检测器，搬到嵌入式终端可能因为模型太大、单帧太慢而完全不实用。</p>
+<p>更关键的是：<strong>FLOPs 低不等于延迟低</strong>（第 14 章）。逐元素操作（激活函数、残差加法、重排）的访存开销可能成为瓶颈，所以优化后必须用<strong>同一协议、同一硬件</strong>实测端到端延迟，而不是只看参数量。</p>
+<table>
+<tr><th>场景</th><th>延迟量级</th><th>存储上限</th><th>常用手段</th></tr>
+<tr><td>云端推理</td><td>百毫秒级</td><td>百 MB 以上</td><td>追求精度，可接受大模型</td></tr>
+<tr><td>移动端 App</td><td>十毫秒级</td><td>数十 MB</td><td>量化 + 剪枝 + 蒸馏</td></tr>
+<tr><td>嵌入式 / 边缘</td><td>十毫秒级</td><td>十 MB 级</td><td>INT8 量化 + 轻量架构</td></tr>
+</table>
+<p class="tags">表内为典型量级（教学示意），具体阈值取决于硬件与业务。</p>
+</section>
+<section id="s-quant">
+<h2>量化：用更少的位数表示数值</h2>
+<p>标准模型用 32 位浮点数（FP32，4 字节）存权重与激活。量化把它们换成 FP16（2 字节）或 INT8（1 字节）。仅从字节数看，FP32 → INT8 理论上带来 <strong>4 倍存储压缩</strong>；整数运算在许多硬件上也更快。但“更少字节”不等于“同等精度”，关键在<strong>如何建立浮点数与整数之间的映射</strong>。</p>
+<p>最常用的是<strong>仿射量化</strong>：用一个缩放因子 <code>S</code> 和一个零点 <code>Z</code> 在实数与整数间映射，并截断到整数范围 <code>[q_min, q_max]</code>：</p>
+<div class="equation math-scroll" role="region" tabindex="0" aria-label="仿射量化：量化值 q 等于 x 除以 scale 后四舍五入再加 zero point；反量化 x 约等于 scale 乘以 q 减 zero point 的差。"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block" aria-label="仿射量化映射"><mi>q</mi><mo>=</mo><mi>round</mi><mo stretchy="false">(</mo><mfrac><mi>x</mi><mi>S</mi></mfrac><mo stretchy="false">)</mo><mo>+</mo><mi>Z</mi></math><math xmlns="http://www.w3.org/1998/Math/MathML" display="block" aria-label="反量化映射"><mover><mi>x</mi><mo>^</mo></mover><mo>=</mo><mi>S</mi><mo stretchy="false">(</mo><mi>q</mi><mo>−</mo><mi>Z</mi><mo stretchy="false">)</mo></math><p class="eq-caption">零点 Z 让整数范围能对齐实数上的非对称区间。<strong>对称量化</strong>取 <code>Z=0</code>，常用于权重；激活因经 ReLU 后非负，常用非对称（<code>Z≠0</code>）。一个步长 <code>S</code> 决定了最大舍入误差约为 <code>S/2</code>。</p></div>
+<figure><img src="../assets/svg/25-quant.svg" width="900" height="360" alt="连续的浮点数值经 scale 与 zero-point 映射到均匀的整数网格上，每个浮点值被舍入到最近的整数格点，舍入误差不超过半个量化步长。" loading="lazy"><figcaption>把连续实数轴映射到均匀整数格：<code>S</code> 是格距、<code>Z</code> 是零点。落在同一格区间内的实数会被映射为同一个整数，这就是量化误差的来源。</figcaption></figure>
+<p>按“什么时候量化”分两种：<strong>训练后量化（PTQ）</strong>用少量校准数据统计激活分布后直接转换，成本低；<strong>量化感知训练（QAT）</strong>在训练时插入伪量化（fake-quant）算子，让模型提前适应舍入误差，通常精度更好但需要额外训练。含大量逐元素操作或 Transformer 结构的模型对量化更敏感，往往需要 QAT。</p>
+</section>
+<section id="s-prune">
+<h2>剪枝：删权重还是删通道</h2>
+<p>剪枝删除网络中“不重要”的部分。按删除粒度分两类，差别不在“剪得多不多”，而在<strong>剪完能不能真的加速</strong>：</p>
+<ul>
+<li><strong>非结构化剪枝</strong>：把单个绝对值小的权重置零，可得到很高的稀疏度，但产生的是稀疏矩阵，常规硬件很难因此加快，往往需要专门的稀疏库。</li>
+<li><strong>结构化剪枝</strong>：直接删掉整个通道/滤波器，模型仍是规则密集结构，可直接享受常规加速。工程上更实用。</li>
+</ul>
+<p><strong>通道剪枝</strong>先给每个通道打“重要性分”，再删最低分的那批。常用打分依据：权重的 L1/L2 范数；BN 层缩放因子 γ 的大小（越小说明该通道贡献越低）；或基于梯度/泰勒展开估计移除后的损失变化。</p>
+<p>剪枝通常要<strong>迭代进行</strong>：剪一小批 → 微调恢复 → 再剪。<strong>剪后不微调基本没有意义</strong>。对带残差连接的网络（ResNet、ConvNeXt）尤其要注意：残差分支与主分支的通道数必须保持一致，否则相加会直接报错。</p>
+</section>
+<section id="s-distill">
+<h2>知识蒸馏：学教师的软标签</h2>
+<p>蒸馏不用删参数，而是用一个大的<strong>教师模型</strong>去指导一个小的<strong>学生模型</strong>训练。学生不只拟合真实标签（hard label），还拟合教师的输出分布（soft label）。教师对错类给出的“相似度”本身就是知识：一张猫的图，教师可能输出“猫 0.7、狮子 0.2、老虎 0.1”，告诉学生猫与狮子比与汽车更接近。这类信息被称为<strong>暗知识（dark knowledge）</strong>。</p>
+<p>用一个<strong>温度</strong> <code>T</code> 软化分布：<code>T</code> 越大，分布越平滑，类间关系越明显。蒸馏损失是软标签 KL 散度与硬标签交叉熵的加权和：</p>
+<div class="equation math-scroll" role="region" tabindex="0" aria-label="蒸馏损失等于一减 alpha 乘以学生硬标签交叉熵，加上 alpha 乘以 T 平方乘以教师与学生软分布之间的 KL 散度。"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block" aria-label="知识蒸馏损失"><mi>L</mi><mo>=</mo><mo stretchy="false">(</mo><mn>1</mn><mo>−</mo><mi>α</mi><mo stretchy="false">)</mo><mi>CE</mi><mo stretchy="false">(</mo><mi>y</mi><mo>,</mo><msub><mi>p</mi><mi>s</mi></msub><mo stretchy="false">)</mo><mo>+</mo><mi>α</mi><msup><mi>T</mi><mn>2</mn></msup><mi>KL</mi><mo stretchy="false">(</mo><msubsup><mi>p</mi><mi>t</mi><mi>T</mi></msubsup><mo>‖</mo><msubsup><mi>p</mi><mi>s</mi><mi>T</mi></msubsup><mo stretchy="false">)</mo></math><p class="eq-caption">乘 <code>T²</code> 是为了在求梯度时抵消 softmax 中用 T 缩放 logits 带来的 <code>1/T²</code> 系数，使软/硬两项的梯度尺度可比。α 控制两者比例。</p></div>
+<figure><img src="../assets/svg/25-distill.svg" width="900" height="360" alt="教师模型的输出经温度 T 软化得到软分布，学生的输出同时受软分布的 KL 散度与真实硬标签交叉熵监督，两项按 alpha 加权组成蒸馏损失。" loading="lazy"><figcaption>蒸馏的信息流：教师（冻结）提供含类间相似性的软分布，真实标签提供硬监督，两者共同训练学生。T 越大，软分布越平滑，暗知识越明显。</figcaption></figure>
+<pre><code>import math
+
+def softmax_T(logits, T):
+    """温度 T 的 softmax: T&gt;1 让分布更平滑, 暴露类间相似性."""
+    m = max(logits)
+    e = [math.exp((z - m) / T) for z in logits]
+    s = sum(e)
+    return [v / s for v in e]
+
+p1 = softmax_T([2.0, 1.0, 0.0], 1.0)
+p4 = softmax_T([2.0, 1.0, 0.0], 4.0)
+assert abs(sum(p4) - 1.0) &lt; 1e-9                # 仍是概率分布
+assert max(p4) - min(p4) &lt; max(p1) - min(p1)   # T 越大越接近均匀
+print("T=1:", [round(v, 3) for v in p1], " T=4:", [round(v, 3) for v in p4])</code></pre>
+<p>除软标签外，还可在中间层做<strong>特征蒸馏</strong>（让学生模仿教师特征图），对检测/分割等含空间信息较多的任务常更有效。</p>
+</section>
+<section id="s-export">
+<h2>导出与部署：ONNX、TorchScript、TensorRT</h2>
+<p>训练好的 PyTorch 模型不能直接在其他环境里跑，需要导出为推理格式。三种常见路径：</p>
+<ul>
+<li><strong>ONNX</strong>：开放的神经网络交换格式，充当“通用中间表示”。PyTorch 导出 ONNX 后，可在 ONNX Runtime、TensorRT、OpenVINO 等引擎上运行，优势是跨框架。</li>
+<li><strong>TorchScript</strong>：PyTorch 原生格式，用 <code>torch.jit.trace</code>（跟踪执行路径）或 <code>torch.jit.script</code>（编译模型代码）得到静态图，可直接在 C++（LibTorch）中加载，与 PyTorch 兼容性最好。</li>
+<li><strong>TensorRT</strong>：针对 NVIDIA GPU 的推理引擎，通过<strong>算子融合、精度校准与内核自动调优</strong>做优化，常以 ONNX 为输入。</li>
+</ul>
+<figure><img src="../assets/svg/25-deploy.svg" width="900" height="360" alt="部署链路：PyTorch 模型导出为 ONNX 中间表示，再交给 TensorRT 或 ONNX Runtime 等引擎；引擎会做算子融合，把 Conv、BatchNorm、ReLU 合并成单个算子以减少访存。" loading="lazy"><figcaption>导出与优化：训练框架 → 中间表示 → 推理引擎。引擎层面的<strong>算子融合</strong>把多个小算子（如 Conv+BN+ReLU）合并，减少中间张量的读写，这是延迟下降的重要原因之一。</figcaption></figure>
+<p>导出时有几个必须注意的点：<strong>静态形状</strong>——多数引擎在导出时固定输入尺寸，变尺寸输入需声明动态轴；<strong>控制流</strong>——<code>trace</code> 只记录实际执行路径，含数据依赖分支（如动态 crop）的模型应改用 <code>script</code> 或改写；<strong>算子支持</strong>——不支持的算子会被拆分或回退，可能反而变慢。因此导出后仍需用<strong>同一批输入</strong>比对数值一致性，并实测延迟。</p>
+</section>
+<section id="s-limits">
+<h2>常见陷阱与边界</h2>
+<ul>
+<li><strong>只看 FLOPs/参数量</strong>：延迟受访存与算子实现影响，必须同硬件实测（第 14 章）。</li>
+<li><strong>量化后不做端到端校验</strong>：应逐层比对量化前后输出，并用验证集确认精度损失是否可接受。</li>
+<li><strong>剪枝后不微调</strong>：不微调的剪枝得不到可用精度；残差网络的剪枝需保持通道对齐。</li>
+<li><strong>把硬件与协议混着比较</strong>：不同引擎、精度（FP16/INT8）、batch 下的延迟不可直接对比。</li>
+<li><strong>假设压缩可以叠加无代价</strong>：量化 + 剪枝 + 蒸馏同时使用可能互相干扰，需逐一验证。</li>
+</ul>
+<details class="mini-test"><summary>检查理解：为什么非结构化剪枝可以剪掉很多权重，却不一定变快？</summary><p>非结构化剪枝只是把单个权重置零，得到的仍是一个稀疏但形状不变的矩阵。常规密集矩阵乘不会跳过零，访存与计算量不会减少，所以硬件上难加速；除非有专门的稀疏运算库/硬件支持。结构化剪枝删的是整通道/滤波器，剩下的是更小的密集模型，因此能直接获得加速。</p></details>
+</section>
+<section id="references">
+<h2>原始资料与口径</h2>
+<p>本页的仿射量化、通道重要性（BN 缩放因子）、知识蒸馏与推理引擎能力依据对应原论文与官方文档；压缩倍率与加速比依赖硬件、精度与模型，本页不固化具体数值。</p>
+<ol class="refs">
+<li><a href="https://arxiv.org/abs/1712.05877">Quantization and Training of Neural Networks for Efficient Integer-Arithmetic-Only Inference (Jacob 等, arXiv:1712.05877)</a></li>
+<li><a href="https://arxiv.org/abs/1503.02531">Distilling the Knowledge in a Neural Network (Hinton 等, 2015, arXiv:1503.02531)</a></li>
+<li><a href="https://arxiv.org/abs/1708.06519">Learning Efficient Convolutional Networks through Network Slimming (Liu 等, 2017, arXiv:1708.06519)</a></li>
+<li><a href="https://onnx.ai/">ONNX 官方站点</a>　·　<a href="https://pytorch.org/docs/stable/jit.html">TorchScript 文档</a></li>
+<li><a href="https://docs.nvidia.com/deeplearning/tensorrt/">NVIDIA TensorRT 开发者文档</a></li>
+</ol>
+</section>
+<nav class="pager" aria-label="章节导航"><a href="24.html">← 第 24 章 迁移学习与微调</a><a href="26.html">第 26 章 自监督与基础模型 →</a></nav>
+</article>
+</main>
 </div>
 </body>
 </html>

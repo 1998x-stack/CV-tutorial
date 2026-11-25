@@ -122,6 +122,36 @@
       "claim": "Self-supervised pretraining (DINO, MAE) yields representations competitive with supervised pretraining",
       "sources": ["https://arxiv.org/abs/2104.14294", "https://arxiv.org/abs/2111.06377"],
       "caveat": "Competitiveness is described qualitatively; no mIoU/AP numbers are asserted"
+    },
+    {
+      "chapter": "25",
+      "claim": "Affine quantization maps reals to integers via q = round(x/S) + Z and dequantizes as x_hat = S(q - Z); symmetric quantization sets Z=0",
+      "sources": ["https://arxiv.org/abs/1712.05877"],
+      "caveat": "Per-step rounding error is ~S/2; page runnable sample is a toy 教学示意"
+    },
+    {
+      "chapter": "25",
+      "claim": "PTQ calibrates with a small dataset; QAT inserts fake-quant ops during training",
+      "sources": ["https://arxiv.org/abs/1712.05877"],
+      "caveat": "No specific accuracy-drop or compression numbers are asserted"
+    },
+    {
+      "chapter": "25",
+      "claim": "Unstructured pruning yields sparse matrices that rarely speed up dense hardware; structured/channel pruning yields smaller dense models that do",
+      "sources": ["https://arxiv.org/abs/1708.06519"],
+      "caveat": "Channel importance via BN scaling factor attributed to Network Slimming; no pruning ratios fixed here"
+    },
+    {
+      "chapter": "25",
+      "claim": "Knowledge distillation trains a student on the teacher's temperature-softened output; loss combines KL on soft labels with CE on hard labels, weighting the KL term by T^2",
+      "sources": ["https://arxiv.org/abs/1503.02531"],
+      "caveat": "The T^2 factor compensates the 1/T^2 gradient scale; the page's softmax numbers are toy 教学示意"
+    },
+    {
+      "chapter": "25",
+      "claim": "Deployment exports models to ONNX or TorchScript; engines such as TensorRT fuse operators (e.g. Conv+BN+ReLU) for speed",
+      "sources": ["https://onnx.ai/", "https://docs.nvidia.com/deeplearning/tensorrt/"],
+      "caveat": "Engine capabilities described from official docs; no latency speedups asserted"
     }
   ]
 }

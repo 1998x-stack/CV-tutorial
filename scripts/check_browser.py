@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Headless browser contract for the static home and deep chapters 06–15.
+"""Headless browser contract for the static home and all 28 chapters.
 
 Run after: python3 -m pip install playwright
            python3 -m playwright install chromium
@@ -15,8 +15,8 @@ from playwright.sync_api import sync_playwright
 ROOT = Path(__file__).resolve().parents[1]
 SITE = ROOT / "docs"
 OUT = ROOT / "reports/browser"
-PATHS = ["index.html"] + [f"chapters/{i:02}.html" for i in range(6,16)]
-WIDTHS = [1440, 390, 360]
+PATHS = ["index.html"] + [f"chapters/{i:02}.html" for i in range(1,29)]
+WIDTHS = [1440, 768, 390, 360]
 
 def run():
     OUT.mkdir(parents=True, exist_ok=True)
@@ -34,6 +34,8 @@ def run():
                     page = browser.new_page(viewport={"width":width,"height":900}, device_scale_factor=1)
                     js_errors = []
                     page.on("pageerror", lambda err: js_errors.append(str(err)))
+                    # All assets must remain local; external requests are blocked for offline reading QA.
+                    page.route("https://**", lambda route: route.abort())
                     response = page.goto(f"{base}/{path}", wait_until="load")
                     page.locator("h1").first.wait_for()
                     page.evaluate("document.fonts.ready")
@@ -47,7 +49,7 @@ def run():
                     images = page.locator("img").evaluate_all(
                         "(els)=>els.map(x=>({src:x.getAttribute('src'),ok:x.complete&&x.naturalWidth>0}))")
                     math_geo = page.locator("math").evaluate_all(
-                        "(els)=>els.map(x=>({width:x.getBoundingClientRect().width,height:x.getBoundingClientRect().height}))")
+                        "(els)=>els.map(x=>({width:x.getBoundingClientRect().width,height:x.getBoundingClientRect().height,ns:x.namespaceURI}))")
                     target = OUT / (path.replace("/", "-").replace(".html", "")+f"-{width}.png")
                     page.screenshot(path=str(target), full_page=False)
                     label = f"{path}@{width}"
@@ -68,9 +70,16 @@ def run():
                         errors.append(f"{label}: broken images {images}")
                     if any(x["width"]<=0 or x["height"]<=0 for x in math_geo):
                         errors.append(f"{label}: MathML has zero geometry")
+                    if any(x["ns"] != "http://www.w3.org/1998/Math/MathML" for x in math_geo):
+                        errors.append(f"{label}: MathML namespace incorrect")
+                    if page.locator("svg math").count():
+                        errors.append(f"{label}: MathML nested inside SVG")
                     if js_errors:
                         errors.append(f"{label}: page errors {js_errors}")
                     if width==390 and path!="index.html":
+                        page.keyboard.press("Tab")
+                        if not page.evaluate("document.activeElement.classList.contains('skip')"):
+                            errors.append(f"{label}: skip link is not first keyboard target")
                         first = page.locator("figure").first
                         if first.count():
                             first.scroll_into_view_if_needed()
@@ -90,12 +99,69 @@ def run():
                             summary.click()
                             if not summary.evaluate("(el)=>el.parentElement.open"):
                                 errors.append(f"{label}: details failed to open")
+                    if width==390 and path=="chapters/04.html":
+                        slider=page.locator("#weight")
+                        weight_label=page.locator("#weight-label")
+                        stats=page.locator("#weight-stats")
+                        initial=stats.inner_text()
+                        slider.focus()
+                        page.keyboard.press("ArrowRight")
+                        changed=stats.inner_text()
+                        value=weight_label.evaluate("(el)=>el.value")
+                        if changed==initial or value!="0.55":
+                            errors.append(f"{label}: gradient slider did not change weight (value={value})")
+                        if "1.100" not in changed or "0.605" not in changed or "2.200" not in changed:
+                            errors.append(f"{label}: expected w=.55, a=1.1, L=.605, grad=2.2; got {changed}")
+                        page.keyboard.press("ArrowLeft")
+                        restored=stats.inner_text()
+                        if restored!=initial:
+                            errors.append(f"{label}: gradient slider did not restore default state")
+                        if stats.get_attribute("aria-live")!="polite":
+                            errors.append(f"{label}: gradient output lacks aria-live")
+                        checks.append({"page":path,"width":width,"interaction":"weight-slider-change-and-restore","passed":restored==initial})
+                    if width==390 and path=="chapters/26.html":
+                        slider=page.locator("#mask-ratio")
+                        before=page.locator("#mask-output").inner_text()
+                        slider.focus()
+                        page.keyboard.press("ArrowLeft")
+                        after=page.locator("#mask-output").inner_text()
+                        if before==after or "50%" not in after or "8 / 16" not in after:
+                            errors.append(f"{label}: MAE mask ratio interaction did not change visible token count")
+                        page.keyboard.press("ArrowRight")
+                        restored=page.locator("#mask-output").inner_text()
+                        if restored!=before:
+                            errors.append(f"{label}: MAE mask ratio reset did not restore default")
+                        aria=page.locator("#mask-output").get_attribute("aria-live")
+                        if aria!="polite":
+                            errors.append(f"{label}: MAE interaction lacks live output")
+                    if width==360:
+                        scroll_index=page.locator(".equation").evaluate_all(
+                            "(els)=>els.findIndex(el=>el.scrollWidth>el.clientWidth+2)")
+                        if scroll_index>=0:
+                            region=page.locator(".equation").nth(scroll_index)
+                            region.evaluate("(el)=>{el.scrollLeft=0}")
+                            region.focus()
+                            before_scroll=region.evaluate("(el)=>el.scrollLeft")
+                            page.keyboard.press("ArrowRight")
+                            after_scroll=region.evaluate("(el)=>el.scrollLeft")
+                            if after_scroll<=before_scroll:
+                                errors.append(f"{label}: wide MathML region is not keyboard-scrollable")
+                            checks.append({"page":path,"width":width,"interaction":"math-keyboard-scroll","passed":after_scroll>before_scroll})
+                    if width==1440:
+                        page.emulate_media(media="print")
+                        print_overflow = page.evaluate("document.documentElement.scrollWidth - window.innerWidth")
+                        if print_overflow > 1:
+                            errors.append(f"{label}: print layout overflows {print_overflow}px")
+                        page.emulate_media(media="screen", reduced_motion="reduce")
+                        if not page.evaluate("matchMedia('(prefers-reduced-motion: reduce)').matches"):
+                            errors.append(f"{label}: reduced-motion preference was not applied")
+                        page.emulate_media(media="screen", reduced_motion="no-preference")
                     page.close()
             browser.close()
     finally:
         server.shutdown()
         server.server_close()
-    result={"pages":len(PATHS),"viewports":WIDTHS,"checks":checks,"failures":errors}
+    result={"pages":len(PATHS),"viewports":WIDTHS,"checks":checks,"failures":errors,"interactive_contracts":["chapter 04 weight slider changes loss/gradient and restores","chapter 26 MAE mask slider changes visible tokens and restores","wide MathML regions keyboard-scroll when overflowing"]}
     (OUT/"summary.json").write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding="utf8")
     print(f"Browser QA: {len(checks)} checks; {len(errors)} failures")
     if errors:raise SystemExit("\n".join(errors))

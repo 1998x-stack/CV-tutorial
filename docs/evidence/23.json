@@ -1,0 +1,42 @@
+{
+  "title": "Chapter 23: Task-aware augmentation and target geometry",
+  "date": "2026-11-22",
+  "entries": [
+    {
+      "id": "23-mixup",
+      "claim": "MixUp forms convex combinations of two inputs and labels with lambda sampled from Beta(alpha,alpha)",
+      "kind": "method",
+      "source_url": "https://arxiv.org/abs/1710.09412",
+      "locator": "Section 2; Figure 1",
+      "status": "verified",
+      "notes": "The article's toy code uses a fixed lambda to make the arithmetic deterministic."
+    },
+    {
+      "id": "23-cutmix",
+      "claim": "CutMix replaces a rectangular image patch and mixes labels in proportion to the actual patch area",
+      "kind": "method",
+      "source_url": "https://openaccess.thecvf.com/content_ICCV_2019/papers/Yun_CutMix_Regularization_Strategy_to_Train_Strong_Classifiers_With_Localizable_Features_ICCV_2019_paper.pdf",
+      "locator": "Section 3; Equations 1–2",
+      "status": "verified",
+      "notes": "After clipping the sampled box to image bounds, effective lambda should reflect the actual visible area."
+    },
+    {
+      "id": "23-mask-interpolation",
+      "claim": "Categorical segmentation masks should use nearest-neighbor interpolation to avoid inventing class IDs at boundaries",
+      "kind": "engineering",
+      "source_url": "https://albumentations.ai/docs/3-basic-usage/semantic-segmentation/",
+      "locator": "Mask interpolation and target handling",
+      "status": "verified",
+      "notes": "Continuous targets such as depth maps and heatmaps may require different interpolation."
+    },
+    {
+      "id": "23-instance-targets",
+      "claim": "Albumentations can bind boxes, keypoints and masks to synchronized geometric transforms using target parameters",
+      "kind": "engineering",
+      "source_url": "https://albumentations.ai/docs/3-basic-usage/instance-segmentation/",
+      "locator": "Instance segmentation guide",
+      "status": "verified",
+      "notes": "Coordinate format, label_fields and instance filtering must match the dataset contract."
+    }
+  ]
+}

@@ -9,4 +9,24 @@ for row in range(2):
         output[row, col] = np.sum(patch * kernel)
 assert output.shape == (2, 2)
 assert np.all(output == -4)
-print(output)</code></pre><p>这里没有填充、偏置、通道求和或非线性。实际部署还要核查不同框架的 padding、输入布局、数值精度和 kernel orientation；不能将这个 toy demo 当作完整 CNN 性能复现。</p></section><section id="references"><h2>来源与实现约定</h2><p>公式与张量维度以所述 stride、padding、dilation 和 groups 约定为前提；图中数据为教学构造。</p><ol class="refs"><li><a href="https://cs231n.github.io/convolutional-networks/">CS231n：Convolutional Neural Networks</a></li><li><a href="https://arxiv.org/abs/1603.07285">Dumoulin & Visin：A Guide to Convolution Arithmetic for Deep Learning</a></li><li><a href="https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html">PyTorch Conv2d API</a></li><li><a href="https://bottou.org/papers/lecun-98h">LeCun et al. (1998)：Gradient-Based Learning Applied to Document Recognition</a></li></ol></section><nav class="pager" aria-label="章节导航"><a href="04.html">← 第 04 章</a><a href="06.html">第 06 章：PyTorch 基础 →</a></nav></article></main></div></body></html>
+print(output)</code></pre><p>这里没有填充、偏置、通道求和或非线性。实际部署还要核查不同框架的 padding、输入布局、数值精度和 kernel orientation；不能将这个 toy demo 当作完整 CNN 性能复现。</p><h3>独立验证：多输入通道求和与输出尺寸</h3><pre><code>import numpy as np
+
+# NCHW: 1 batch, 2 input channels, 3×3 spatial size
+x = np.arange(1, 19, dtype=float).reshape(1, 2, 3, 3)
+# Cout=1, Cin=2, Kh=Kw=2
+weight = np.array([[[[1, 0], [0, -1]],
+                    [[1, 0], [0, -1]]]], dtype=float)
+out = np.zeros((1, 1, 2, 2), dtype=float)
+for ci in range(2):
+    for row in range(2):
+        for col in range(2):
+            patch = x[0, ci, row:row+2, col:col+2]
+            out[0, 0, row, col] += np.sum(patch * weight[0, ci])
+assert out.shape == (1, 1, 2, 2)
+assert np.all(out == -8)
+
+def output_size(size, kernel, padding, stride, dilation=1):
+    return (size + 2*padding - dilation*(kernel-1) - 1)//stride + 1
+
+assert output_size(32, 3, 1, 2) == 16
+print(&quot;multi-channel output:&quot;, out.tolist())</code></pre></section><section id="references"><h2>来源与实现约定</h2><p>公式与张量维度以所述 stride、padding、dilation 和 groups 约定为前提；图中数据为教学构造。</p><ol class="refs"><li><a href="https://cs231n.github.io/convolutional-networks/">CS231n：Convolutional Neural Networks</a></li><li><a href="https://arxiv.org/abs/1603.07285">Dumoulin & Visin：A Guide to Convolution Arithmetic for Deep Learning</a></li><li><a href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Conv2d.html">PyTorch Conv2d API</a></li><li><a href="https://bottou.org/papers/lecun-98h">LeCun et al. (1998)：Gradient-Based Learning Applied to Document Recognition</a></li></ol><p class="note"><strong>与后续章节的连接：</strong>卷积块如何组合为 AlexNet、VGG 与 ResNet 见 <a href="08.html">第 08 章</a>、<a href="09.html">第 09 章</a>、<a href="10.html">第 10 章</a>；卷积与自注意力的空间/全局信息路径对比见 <a href="11.html">第 11 章</a>。</p></section><nav class="pager" aria-label="章节导航"><a href="04.html">← 第 04 章</a><a href="06.html">第 06 章：PyTorch 基础 →</a></nav></article></main></div></body></html>

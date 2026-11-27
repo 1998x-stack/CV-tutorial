@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 420" role="img" aria-labelledby="title desc"><title id="title">IoU 的交集与并集</title><desc id="desc">两个集合 A 与 B 有交叠区域；IoU 是交集面积除以并集面积。</desc><rect width="800" height="420" rx="20" fill="#fffdfa"/>
+<text x="30" y="44" font-family="Arial,sans-serif" font-size="22" font-weight="700" fill="#243338" text-anchor="start">IoU：只看重叠部分相对整个覆盖区域的比例</text>
+<circle cx="310" cy="218" r="112" fill="#7bbba8" fill-opacity=".75" stroke="#087b7c" stroke-width="3"/>
+<circle cx="430" cy="218" r="112" fill="#e6a17d" fill-opacity=".72" stroke="#c46b45" stroke-width="3"/>
+<text x="245" y="116" font-family="Arial,sans-serif" font-size="22" font-weight="700" fill="#087b7c" text-anchor="middle">A</text><text x="494" y="116" font-family="Arial,sans-serif" font-size="22" font-weight="700" fill="#c46b45" text-anchor="middle">B</text>
+<text x="258" y="228" font-family="Arial,sans-serif" font-size="16" font-weight="400" fill="#243338" text-anchor="middle">A only</text><text x="370" y="228" font-family="Arial,sans-serif" font-size="18" font-weight="700" fill="#243338" text-anchor="middle">A ∩ B</text><text x="480" y="228" font-family="Arial,sans-serif" font-size="16" font-weight="400" fill="#243338" text-anchor="middle">B only</text>
+<rect x="585" y="132" width="180" height="180" rx="10" fill="#f5f8f6" stroke="#cbd8d2" stroke-width="2"/>
+<text x="675" y="170" font-family="Arial,sans-serif" font-size="23" font-weight="700" fill="#087b7c" text-anchor="middle">IoU</text>
+<text x="675" y="212" font-family="Arial,sans-serif" font-size="18" font-weight="400" fill="#243338" text-anchor="middle">交集</text><text x="675" y="242" font-family="Arial,sans-serif" font-size="18" font-weight="400" fill="#53676d" text-anchor="middle">────────</text><text x="675" y="274" font-family="Arial,sans-serif" font-size="18" font-weight="400" fill="#243338" text-anchor="middle">并集</text>
+<text x="30" y="385" font-family="Arial,sans-serif" font-size="16" font-weight="400" fill="#53676d" text-anchor="start">预测与标签都为空时，并集为 0；评估协议必须显式规定该类别如何处理。</text></svg>

@@ -191,11 +191,11 @@
     },
     {
       "num": "16",
-      "title": "R-CNN——两阶段检测开山",
+      "title": "R-CNN——从候选区域到 CNN 特征",
       "topics": [
         "Selective Search",
-        "CNN特征提取",
-        "SVM分类"
+        "每区域 CNN 特征",
+        "SVM 分类与框回归"
       ],
       "file": "chapters/16.html",
       "stage": "detection",
@@ -203,11 +203,11 @@
     },
     {
       "num": "17",
-      "title": "Faster R-CNN与区域提议网络",
+      "title": "Fast R-CNN——共享特征与 RoI Pooling",
       "topics": [
-        "RPN网络",
-        "Anchor机制",
-        "端到端训练"
+        "整图共享卷积",
+        "固定尺寸 RoI Pooling",
+        "分类与框回归多任务损失"
       ],
       "file": "chapters/17.html",
       "stage": "detection",
@@ -215,11 +215,11 @@
     },
     {
       "num": "18",
-      "title": "单阶段检测概述与对比",
+      "title": "Faster R-CNN——RPN 与 Anchor",
       "topics": [
-        "YOLO与SSD",
-        "DETR端到端",
-        "精度速度权衡"
+        "9-anchor 参考框",
+        "Objectness 与框偏移",
+        "IoU 正负样本分配"
       ],
       "file": "chapters/18.html",
       "stage": "detection",
@@ -227,11 +227,12 @@
     },
     {
       "num": "19",
-      "title": "图像分割基础与分类",
+      "title": "YOLO、SSD、RetinaNet 与 DETR——密集检测与集合预测",
       "topics": [
-        "语义/实例/全景分割",
-        "mIoU",
-        "分割数据集"
+        "YOLOv1 网格输出",
+        "SSD 多尺度 Default Boxes",
+        "RetinaNet Focal Loss",
+        "DETR Hungarian matching"
       ],
       "file": "chapters/19.html",
       "stage": "segmentation",
@@ -239,11 +240,11 @@
     },
     {
       "num": "20",
-      "title": "U-Net——医学图像分割标配",
+      "title": "U-Net——像素级语义分割",
       "topics": [
-        "编码-解码架构",
-        "跳跃连接",
-        "医学应用"
+        "Valid-convolution U 形结构",
+        "中心裁剪与 Skip Concatenation",
+        "Overlap-tile 与像素损失"
       ],
       "file": "chapters/20.html",
       "stage": "segmentation",
@@ -251,11 +252,11 @@
     },
     {
       "num": "21",
-      "title": "Mask R-CNN——检测+分割统一",
+      "title": "Mask R-CNN：让检测框长出实例掩码",
       "topics": [
-        "RoIAlign",
-        "多任务损失",
-        "实例分割"
+        "RoIAlign 连续采样",
+        "并行分类/框/掩码分支",
+        "前景门控 BCE 损失"
       ],
       "file": "chapters/21.html",
       "stage": "segmentation",
@@ -263,11 +264,11 @@
     },
     {
       "num": "22",
-      "title": "语义分割前沿与全景分割",
+      "title": "从 DeepLab 到 SAM：分割模型的三条演进路线",
       "topics": [
-        "DeepLab系列",
-        "全景分割",
-        "SAM基础模型"
+        "Atrous 与 ASPP",
+        "Panoptic / Mask2Former",
+        "SAM 与 SAM 2 提示式分割"
       ],
       "file": "chapters/22.html",
       "stage": "segmentation",
@@ -275,11 +276,11 @@
     },
     {
       "num": "23",
-      "title": "数据增强与预处理实战",
+      "title": "数据增强：把标签约束一起变换",
       "topics": [
-        "几何与颜色增强",
-        "MixUp/CutMix",
-        "Albumentations"
+        "同步几何变换",
+        "MixUp / CutMix",
+        "Mask 插值与无泄漏 Pipeline"
       ],
       "file": "chapters/23.html",
       "stage": "practice",
@@ -287,11 +288,11 @@
     },
     {
       "num": "24",
-      "title": "迁移学习与模型微调",
+      "title": "迁移学习与 LoRA：让预训练表征适应新任务",
       "topics": [
-        "预训练权重",
-        "微调策略",
-        "LoRA适配"
+        "Linear Probe / 解冻策略",
+        "差分学习率",
+        "LoRA 低秩参数预算"
       ],
       "file": "chapters/24.html",
       "stage": "practice",
@@ -299,11 +300,11 @@
     },
     {
       "num": "25",
-      "title": "模型优化与部署",
+      "title": "模型压缩与部署：从浮点权重到真实推理",
       "topics": [
-        "量化与剪枝",
-        "知识蒸馏",
-        "ONNX与TensorRT"
+        "结构化剪枝与量化",
+        "蒸馏 / ONNX",
+        "TensorRT 11 / 端到端基准"
       ],
       "file": "chapters/25.html",
       "stage": "practice",
@@ -311,11 +312,11 @@
     },
     {
       "num": "26",
-      "title": "自监督学习与基础模型",
+      "title": "自监督视觉表征：从对比学习到掩码重建",
       "topics": [
-        "对比学习",
-        "MAE掩码重构",
-        "CLIP与SAM"
+        "SimCLR / MoCo 对比学习",
+        "DINO 与 DINOv2 自蒸馏",
+        "MAE 掩码重构"
       ],
       "file": "chapters/26.html",
       "stage": "frontier",
@@ -323,11 +324,11 @@
     },
     {
       "num": "27",
-      "title": "多模态与生成模型概览",
+      "title": "多模态理解、生成与三维视觉",
       "topics": [
-        "扩散模型",
-        "视觉语言模型",
-        "3D视觉前沿"
+        "CLIP / BLIP / LLaVA",
+        "DDPM / Latent Diffusion",
+        "NeRF / 3D Gaussian Splatting"
       ],
       "file": "chapters/27.html",
       "stage": "frontier",
@@ -335,11 +336,11 @@
     },
     {
       "num": "28",
-      "title": "综合实战项目",
+      "title": "从数据到上线：一个可复现的视觉项目",
       "topics": [
-        "需求分析",
-        "模型训练部署",
-        "课程回顾"
+        "Group-aware Split",
+        "训练/宏 F1/拒识",
+        "模型工件与回归门禁"
       ],
       "file": "chapters/28.html",
       "stage": "frontier",

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 420" role="img" aria-labelledby="title desc"><title id="title">梯度下降沿负梯度更新参数</title><desc id="desc">在单神经元示例的正权重区间，损失为 2w²；w=0.5 时梯度为 2，学习率 0.1 将权重更新到 0.3。</desc><rect width="800" height="420" rx="20" fill="#fffdfa"/>
+<text x="28" y="44" font-family="Arial,sans-serif" font-size="23" font-weight="700" fill="#243338" text-anchor="start">梯度是局部斜率；参数沿负梯度方向移动</text>
+<path d="M80 320 Q190 70 300 320" fill="none" stroke="#087b7c" stroke-width="4"/>
+<path d="M80 320 H340 M80 320 V90" fill="none" stroke="#53676d" stroke-width="2"/>
+<text x="345" y="326" font-family="Arial,sans-serif" font-size="16" font-weight="400" fill="#53676d" text-anchor="start">w</text><text x="57" y="90" font-family="Arial,sans-serif" font-size="16" font-weight="400" fill="#53676d" text-anchor="start">L</text>
+<circle cx="190" cy="195" r="8" fill="#c46b45"/><circle cx="150" cy="250" r="8" fill="#087b7c"/>
+<path d="M190 195 L150 250 m-10 -8 10 8 -10 8" fill="none" stroke="#c46b45" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="208" y="182" font-family="Arial,sans-serif" font-size="17" font-weight="700" fill="#c46b45" text-anchor="start">w₀ = 0.5</text><text x="94" y="276" font-family="Arial,sans-serif" font-size="17" font-weight="700" fill="#087b7c" text-anchor="start">w₁ = 0.3</text>
+<rect x="430" y="125" width="320" height="185" rx="10" fill="#f5f8f6" stroke="#b7c9c2" stroke-width="2"/>
+<text x="590" y="163" font-family="Arial,sans-serif" font-size="20" font-weight="700" fill="#243338" text-anchor="middle">wₜ₊₁ = wₜ − η ∂L/∂w</text>
+<text x="590" y="210" font-family="Arial,sans-serif" font-size="19" font-weight="400" fill="#087b7c" text-anchor="middle">0.5 − 0.1 × 2 = 0.3</text>
+<text x="590" y="254" font-family="Arial,sans-serif" font-size="18" font-weight="700" fill="#c46b45" text-anchor="middle">L：0.50 → 0.18</text>
+<text x="30" y="385" font-family="Arial,sans-serif" font-size="15" font-weight="400" fill="#53676d" text-anchor="start">这是单参数、单样本的教学算例；真实训练还涉及 batch、优化器状态与学习率调度。</text></svg>

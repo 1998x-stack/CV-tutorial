@@ -12,8 +12,8 @@
 | 视觉基础 | 01–08 | 机器如何表示像素、构造特征并训练识别器？ |
 | 主干网络 | 09–12 | CNN 到 ViT 的架构选择源于什么瓶颈？ |
 | 训练评估 | 13–14 | 如何设计可比较、可复现的实验？ |
-| 目标检测 | 15–18 | 如何同时决定「是什么」与「在哪里」？ |
-| 图像分割 | 19–22 | 如何将预测从框推进到像素级？ |
+| 目标检测 | 15–19 | 如何同时决定「是什么」与「在哪里」？ |
+| 图像分割 | 20–22 | 如何将预测从框推进到像素级？ |
 | 工程实践 | 23–25 | 如何提升鲁棒性、迁移能力与部署效率？ |
 | 前沿实战 | 26–28 | 如何理解预训练、多模态与完整工程系统？ |
 
@@ -24,14 +24,14 @@ CV-tutorial/
 ├── docs/                       # GitHub Pages 站点根目录（无需 Node 构建）
 │   ├── index.html              # 课程门户：静态章节卡片 + 可选搜索
 │   ├── courses.json            # 28 章单一课程清单
-│   ├── chapters/               # 01–28 章；01–15 已按深度教程范式精修
+│   ├── chapters/               # 01–28 章；01–28 已按深度教程范式精修
 │   └── assets/
 │       ├── css/site.css        # 站点级设计系统
 │       ├── css/article.css     # 长文版式、MathML、移动端和打印
 │       └── svg/                # 按知识问题组织的原创独立 SVG
-├── scripts/check_site.py       # 静态链接 / SVG / 章节一致性门禁
-├── scripts/check_browser.py    # Chromium 1440/390/360 响应式浏览器验收
-├── tests/test_cv_examples.py   # 06–15 章教学代码断言
+├── scripts/check_site.py       # 全 28 章静态链接 / SVG / MathML / 证据一致性门禁
+├── scripts/check_browser.py    # 全站 Chromium 1440/768/390/360 验收
+├── tests/test_foundations.py   # 01–05 章 NumPy/OpenCV 代码 + 算法契约测试\n├── requirements-vision-tests.txt # 锁定 NumPy 与 headless OpenCV\n├── tests/test_cv_examples.py   # 06–28 章教学代码断言
 ├── .github/workflows/          # QA 与 GitHub Pages 部署
 ├── pdfs/                       # 历史论文资料（不参与本次迁移）
 ├── AGENTS.md                   # 事实核验和长期维护规范
@@ -61,14 +61,22 @@ python3 scripts/check_browser.py
 
 | 批次 | 内容 | 图解 | 状态 |
 | --- | --- | --- | --- |
-| 01–05 | 像素、滤波、传统特征、反向传播与 CNN 基础 | 10 张 | 已深化 |
+| 01–05 | 像素张量与任务指标、OpenCV 滤波/边缘/形态学、SIFT/HOG/Haar、反向传播与 softmax、NCHW 多通道卷积 | 25 张 | 第二轮精修 |
 | 06–10 | PyTorch、分类协议、AlexNet、VGG、ResNet | 16 张 | 已深化 |
 | 11–15 | ViT、ConvNeXt、训练策略、评估选型、检测基础 | 17 张 | 已深化 |
-| 16–28 | R-CNN、Faster R-CNN、单阶段检测、分割、部署与前沿 | 原课程内容保留 | 等待逐篇复审 |
+| 16–20 | R-CNN、Fast/Faster R-CNN、YOLO、SSD、RetinaNet、DETR、分割基础与 U-Net | 21 张 | 已深化 |
+| 21–25 | Mask R-CNN、DeepLab、Mask2Former、SAM、数据增强、迁移学习、LoRA、量化、剪枝、蒸馏与部署 | 20 张 | 已深化 |
+| 26–28 | 自监督表征 SimCLR/MoCo/DINOv2/MAE、CLIP/VLM/扩散/3DGS、端到端视觉工程 | 15 张 | 已深化 |
+
+01–05 第二轮精修新增 BGR/RGB 张量索引、空并集 IoU 处理、Canny 与形态学断言、确定性 SIFT 128 维描述子、OpenCV HOG 324 维窗口特征、积分图四角查询、softmax 交叉熵与多通道互相关。15 张新 SVG 解释颜色通道、Sobel、形态学、SIFT/HOG、积分图、链式法则、softmax 与卷积算术；站点当前共有 115 张 SVG（含首页图）。\n\n26–28 章完成 SimCLR NT-Xent 与 2N 视图监督、MoCo EMA 队列、DINO 自蒸馏与 DINOv2 数据配方、MAE visible-only encoder；分离 CLIP 图文检索、BLIP/LLaVA 视觉语言生成、DDPM/LDM 与 NeRF/3DGS 的任务边界；最后以分组无泄漏数据划分、合成图像分类器、拒识阈值、可复现工件与部署回归门禁构建完整工程闭环。新增 15 张独立 SVG 和 `docs/evidence/26-28.json`，每章有独立 CPU Python/PyTorch 实验与断言。
+
+21–25 章进一步梳理 Mask R-CNN 的 RoIAlign 与正 RoI mask BCE；对照 DeepLabv3+、Mask2Former、SAM/SAM 2 的输出契约；推导 MixUp/CutMix 标签权重与 mask 最近邻插值；区分迁移学习策略和原始 LoRA 论文的语言模型范围；按 2026 年工具链更新 torchao PT2E、PyTorch dynamo ONNX exporter 与 TensorRT 11 强类型 / Q-DQ。证据登记于 `docs/evidence/21.json` 至 `25.json`。
+
+16–20 章进一步梳理 R-CNN→Fast R-CNN→Faster R-CNN 的共享计算演进，严格区分 RoI Pooling 与后来的 RoIAlign、原始 Faster R-CNN 与 FPN；单阶段与集合预测部分分开说明 YOLOv1 的 7×7×30 输出、SSD300 的 8,732 个 default boxes、RetinaNet 的 Focal Loss 与 DETR 的 Hungarian matching；U-Net 复核 572→388 valid-convolution 几何、中心裁剪、overlap-tile 与原论文加权 softmax loss。证据登记于 docs/evidence/16-20.json。
 
 11–15 章另增加 Vision Transformer token/attention 算术、ConvNeXt 深度卷积成本、AdamW 解耦衰减、Pareto 选型以及 IoU/COCO AP/NMS 的可运行样例。所有性能示例均独立标注为教学构造，并记录参考来源于 `docs/evidence/11-15.json`。
 
-本轮特别区分 AlexNet 2012 年原版与现代 torchvision，VGG-16 原配置与带 BN 变体，以及 ResNet v1、pre-activation v2 与 torchvision v1.5。历史指标只在指定论文/数据/协议下成立。
+第二轮复审优先重构 01–05：补齐 BGR/RGB 与 HWC 索引、空并集 IoU、Canny/形态学边界、SIFT/HOG 实际描述子、积分图闭区间索引、softmax/CE 和多通道卷积。复审记录见 [docs/reviews/2026-11-23-foundations-01-05.md](docs/reviews/2026-11-23-foundations-01-05.md)。\n\n本轮特别区分 AlexNet 2012 年原版与现代 torchvision，VGG-16 原配置与带 BN 变体，以及 ResNet v1、pre-activation v2 与 torchvision v1.5。历史指标只在指定论文/数据/协议下成立。
 
 ## 协作约定
 

@@ -25,6 +25,7 @@ def check():
     if len(set(c["file"] for c in chapters))!=28: bad("courses.json: duplicate chapter paths")
     for c in chapters:
         if not (SITE/c["file"]).is_file(): bad("missing chapter: "+c["file"])
+        if not c.get("refined"): bad("all 28 chapters should be refined: "+c["num"])
     home_html=(SITE/"index.html").read_text(encoding="utf-8")
     if home_html.count('class="state"') != 28: bad("home: exactly 28 chapters should be visibly refined")
     files=[SITE/"index.html"]+sorted((SITE/"chapters").glob("*.html"))
@@ -35,7 +36,8 @@ def check():
             bad(str(file.relative_to(ROOT))+": expected exactly one H1")
         if file.parent.name=="chapters" and file.name in {f"{i:02}.html" for i in range(6,29)}:
             n=int(file.stem)
-            if html.count("<figure>") < (4 if n in (10,14,15) else 3): bad(f"{file.name}: insufficient illustrations")
+            required = 5 if n >= 26 else (4 if n in (10,14,15,20,21,22,23,24,25) else 3)
+            if html.count("<figure>") < required: bad(f"{file.name}: insufficient illustrations")
             if "<math " not in html: bad(f"{file.name}: MathML equation missing")
             if "<pre>" not in html or "assert " not in html: bad(f"{file.name}: runnable test/assertion missing")
             for image in p.images:
@@ -49,6 +51,26 @@ def check():
             path=unquote(urlsplit(link).path)
             if not path: continue
             if not (file.parent/path).exists(): bad(f"{file.relative_to(ROOT)}: missing relative reference {link}")
+    foundation_evidence=json.loads((SITE/"evidence/01-05.json").read_text(encoding="utf-8"))["entries"]
+    if len(foundation_evidence) < 25: bad("evidence: chapters 01–05 require at least 25 claim/source records")
+    foundation_ids=set()
+    for claim in foundation_evidence:
+        if not claim.get("id") or claim.get("id") in foundation_ids: bad("foundation evidence: missing or duplicate ID "+str(claim.get("id")))
+        foundation_ids.add(claim.get("id"))
+        if claim.get("chapter") not in ("01","02","03","04","05"): bad("foundation evidence: invalid chapter "+str(claim.get("id")))
+        if not claim.get("source_url","").startswith("https://"): bad("foundation evidence: source URL missing "+str(claim.get("id")))
+        if not claim.get("locator"): bad("foundation evidence: locator missing "+str(claim.get("id")))
+        if claim.get("status") not in ("verified","derived","illustrative"): bad("foundation evidence: invalid status "+str(claim.get("id")))
+    evidence=json.loads((SITE/"evidence/26-28.json").read_text(encoding="utf-8"))["entries"]
+    if len(evidence) < 18: bad("evidence: at least 18 source-linked records required for 26–28")
+    ids=set()
+    for claim in evidence:
+        if claim.get("id") in ids: bad("evidence: duplicate claim ID "+str(claim.get("id")))
+        ids.add(claim.get("id"))
+        if claim.get("chapter") not in (26,27,28): bad("evidence: wrong chapter "+str(claim.get("id")))
+        if claim.get("status") not in ("verified","derived","illustrative"): bad("evidence: invalid status "+str(claim.get("id")))
+        if not claim.get("source_url","").startswith("https://"): bad("evidence: source URL missing "+str(claim.get("id")))
+        if not claim.get("locator"): bad("evidence: source locator missing "+str(claim.get("id")))
     svgfiles=list((SITE/"assets/svg").glob("*.svg"))
     if len(svgfiles)<64: bad("expected at least 64 SVGs (home + chapters 01–21)")
     for f in svgfiles:
@@ -58,6 +80,13 @@ def check():
             titles=[e for e in node.iter() if e.tag.endswith("title")]
             desc=[e for e in node.iter() if e.tag.endswith("desc")]
             if not titles or not desc: bad(f"{f.name}: accessible title/desc missing")
+            if f.name[:2] in {"01","02","03","04","05"}:
+                texts=[e for e in node.iter() if e.tag.endswith("text")]
+                if len(texts) < 5: bad(f"{f.name}: diagram has too few explanatory labels")
+                for label in texts:
+                    size=label.attrib.get("font-size")
+                    if size is not None and float(size.replace("px","")) < 13:
+                        bad(f"{f.name}: SVG label below 13px ({size})")
         except ET.ParseError as ex: bad(f"{f.name}: invalid XML {ex}")
     for n in range(1,29):
         old=ROOT/f"{n:02}.html"
